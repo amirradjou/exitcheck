@@ -1,0 +1,38 @@
+# secrets / local config
+.env
+.env.*
+!.env.example
+.envrc
+.claude/settings.local.json
+
+# dependencies / build
+node_modules/
+.venv/
+venv/
+dist/
+build/
+target/
+*.egg-info/
+__pycache__/
+*.pyc
+.ruff_cache/
+.mypy_cache/
+.pytest_cache/
+.coverage
+coverage/
+htmlcov/
+
+# editors / OS
+.idea/
+.vscode/*
+!.vscode/settings.json
+!.vscode/extensions.json
+.DS_Store
+*.swp
+
+# Claude Code project files: local only, never committed
+.claude/
+CLAUDE.md
+
+# build output
+bin/
