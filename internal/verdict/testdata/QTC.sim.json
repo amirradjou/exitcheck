@@ -1,0 +1,31 @@
+{
+  "chain": "ethereum",
+  "token": "0x541e9505aaf0a7d2d26fe0123d0f2419cdbb3ad7",
+  "block": 26301188,
+  "venue": "uniswap-v2 pool 0x7fBb7A991cd418996054A9dbA73ed71c5Edc7178",
+  "spent_eth": 0.05,
+  "buy": {
+    "ok": true,
+    "tax": 0,
+    "gas": 130916
+  },
+  "transfer": {
+    "ok": true,
+    "tax": 0,
+    "gas": 61859
+  },
+  "sell": {
+    "ok": false,
+    "error": "TransferHelper: TRANSFER_FROM_FAILED"
+  },
+  "sell_half": {
+    "ok": false,
+    "error": "TransferHelper: TRANSFER_FROM_FAILED"
+  },
+  "verdict": "honeypot",
+  "reasons": [
+    "selling reverts: TransferHelper: TRANSFER_FROM_FAILED"
+  ],
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 3959571835
+}

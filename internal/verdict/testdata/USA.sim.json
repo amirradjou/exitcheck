@@ -1,0 +1,28 @@
+{
+  "chain": "ethereum",
+  "token": "0x1761177dfe78996d81aa0b1b0004f3e06ce7170d",
+  "block": 26301202,
+  "venue": "uniswap-v2 pool 0xEB6b0E1E4d18dE9d8eA40A3D62291690DC5e6f29",
+  "spent_eth": 0.000001457965470406,
+  "buy": {
+    "ok": true,
+    "tax": 0,
+    "gas": 178878
+  },
+  "transfer": {
+    "ok": true,
+    "tax": 0,
+    "gas": 71107
+  },
+  "sell": {
+    "ok": true,
+    "tax": 0.24907157728269147,
+    "gas": 146961
+  },
+  "verdict": "high-tax",
+  "reasons": [
+    "sell tax 24.9%"
+  ],
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 4843865468
+}

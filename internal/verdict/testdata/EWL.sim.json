@@ -1,0 +1,11 @@
+{
+  "chain": "ethereum",
+  "token": "0x752b6569279c353766eb7cb3058dcacc3032c565",
+  "block": 26301194,
+  "verdict": "no-pool",
+  "reasons": [
+    "no pool against WETH, USDC or USDT has liquidity"
+  ],
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 2183347014
+}

@@ -1,0 +1,243 @@
+{
+  "chain": "base",
+  "address": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+  "block": 53260563,
+  "checked_at": "2026-10-29T21:47:53.196631607Z",
+  "token": {
+    "name": "Degen",
+    "symbol": "DEGEN",
+    "decimals": 18,
+    "total_supply": 35931707858569188412045054390
+  },
+  "contract": {
+    "code_size": 11608,
+    "verified": true,
+    "verified_by": "sourcify",
+    "source_name": "DegenToken",
+    "owner": "0x704ec5c12ca20a293c2c0b72b22619a4231f3c0d",
+    "owner_status": "contract",
+    "creation": {
+      "Block": 8925894,
+      "Tx": "0xcea27f1618e28ecc59b2faed86cdec29a92218261fe9efe374a39201e93545c5",
+      "Deployer": "0x3c12b77ae8b7dd1feb63d1d6a2a819acda0a41d2",
+      "Factory": null
+    },
+    "created_at": "2024-01-07T15:25:35Z",
+    "delegatecall": false,
+    "selfdestruct": false
+  },
+  "powers": [
+    {
+      "kind": "mint",
+      "function": "mint(address,uint96)",
+      "where": "DegenToken.sol:104",
+      "probed": true
+    },
+    {
+      "kind": "pause",
+      "function": "pause()",
+      "where": "DegenToken.sol:127",
+      "callable_by": [
+        "owner"
+      ],
+      "probed": true
+    },
+    {
+      "kind": "pause",
+      "function": "unpause()",
+      "where": "DegenToken.sol:134",
+      "probed": true
+    }
+  ],
+  "settings": [
+    {
+      "kind": "pause",
+      "getter": "paused()",
+      "value": "false"
+    }
+  ],
+  "shares": {
+    "deployer": 0,
+    "owner": 0.005300251441747719,
+    "burned": 0.000006223987992172575,
+    "in_pools": 0.00792850564097495
+  },
+  "pools": [
+    {
+      "dex": "uniswap-v3",
+      "address": "0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 3000,
+      "quote_amount": 51.48657255699498,
+      "usd": 116969.33984282754,
+      "token_amount": 151178401378476521496496951
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x0ca6485b7e9cf814a3fd09d81672b07323535b64",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 10000,
+      "quote_amount": 46.19492708873203,
+      "usd": 104947.55928208375,
+      "token_amount": 118196564206612277507016044
+    },
+    {
+      "dex": "aerodrome",
+      "address": "0x2c4909355b0c036840819484c3a882a95659abf3",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "quote_amount": 5.343832603720448,
+      "usd": 12140.341468560962,
+      "token_amount": 13749961264571819703760432
+    },
+    {
+      "dex": "aerodrome",
+      "address": "0x637ad8d2611d3efe2ef41fdbb40b9f21abaf9585",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "quote_amount": 1055.86385,
+      "usd": 1055.86385,
+      "token_amount": 1190234424235205875654496
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x0cc3150056ff3fa2e70be77d25fe9ec33d12a437",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 3000,
+      "quote_amount": 137.730258,
+      "usd": 137.730258,
+      "token_amount": 143683809541902615842460
+    },
+    {
+      "dex": "uniswap-v2",
+      "address": "0x7c327d692b72f60b28aecedbcc1ba784712fe7b2",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "quote_amount": 0.02086300410720717,
+      "usd": 47.39744163115162,
+      "token_amount": 53219002699771445827164
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x29715d8d279cab143a12ff515b40a2b35d7bad37",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 10000,
+      "quote_amount": 44.283596,
+      "usd": 44.283596,
+      "token_amount": 181425158946793815433908
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xb0037fffffb6e514f88458bc698102865bca910a",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 500,
+      "quote_amount": 0.016147931035043882,
+      "usd": 36.685542252899005,
+      "token_amount": 49909977920676401857847
+    },
+    {
+      "dex": "aerodrome",
+      "address": "0xd64a19ba768ff2b911af217b0c325cf745d61432",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "stable": true,
+      "quote_amount": 0.014312549066353607,
+      "usd": 32.515845056615866,
+      "token_amount": 109212545663984439021537
+    },
+    {
+      "dex": "uniswap-v2",
+      "address": "0x1281769c87c71bfc2613259c4bea97670e04c4a4",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "quote_amount": 26.092124,
+      "usd": 26.092124,
+      "token_amount": 29199487482510805697812
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xac1bd19ba4d6e8e4a40eb6088f9cdc7ca34f36b6",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 100,
+      "quote_amount": 0.000904530741768802,
+      "usd": 2.05495061096013,
+      "token_amount": 2413308462387795759739
+    },
+    {
+      "dex": "aerodrome",
+      "address": "0x67fbd3c6ffbd29506f3ca395cb4c6092e5eefc9c",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "stable": true,
+      "quote_amount": 0.124834,
+      "usd": 0.124834,
+      "token_amount": 390725075819776483304
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xa528671c1c7c50d685674a2b06d9b9d5d0bf798d",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 500,
+      "quote_amount": 0.040908,
+      "usd": 0.040908,
+      "token_amount": 117671750850284251701
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x8f8799cef65e4dda2853619ada8f5290493f3ae5",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 100,
+      "quote_amount": 0.000004,
+      "usd": 0.000004,
+      "token_amount": 15485089241991055259
+    }
+  ],
+  "liquidity": {
+    "pool": "0xc9034c3e7f58003e6ae0c8438e7c8f4598d5acaa",
+    "dex": "uniswap-v3",
+    "created_block": 8933249,
+    "created_at": "2024-01-07T19:30:45Z",
+    "pulled": false
+  },
+  "deployer": {
+    "address": "0x3c12b77ae8b7dd1feb63d1d6a2a819acda0a41d2",
+    "nonce": 1320,
+    "balance_eth": 0.000108924211354521,
+    "scanned": 1000,
+    "tokens": [
+      {
+        "address": "0xa8a30e0dafca4156f28d96cca5671a0eeca5e407",
+        "symbol": "LDEGEN",
+        "pool": "none",
+        "weth": 0
+      }
+    ],
+    "pulled": 0
+  },
+  "gaps": [
+    "holders: too much history to replay through the RPC (log scan budget exhausted: 44334670 blocks need at least 44335 requests of 1000 blocks, budget is 150) (explorer: HTTP 403 from base.blockscout.com)",
+    "deployer history: only the last 1000 of 1320 transactions were checked",
+    "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "elapsed_ns": 16499227474,
+  "timings_ms": {
+    "basics": 103,
+    "contract": 222,
+    "creation": 3695,
+    "deployer": 12575,
+    "holders": 38,
+    "liquidity": 3599,
+    "pools": 107,
+    "probe": 78,
+    "shares": 60,
+    "source": 24
+  }
+}

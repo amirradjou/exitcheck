@@ -1,0 +1,366 @@
+{
+  "chain": "ethereum",
+  "address": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+  "block": 26301170,
+  "checked_at": "2026-10-29T21:44:52.714636517Z",
+  "token": {
+    "name": "USD Coin",
+    "symbol": "USDC",
+    "decimals": 6,
+    "total_supply": 47383538625170500
+  },
+  "contract": {
+    "code_size": 2186,
+    "verified": true,
+    "verified_by": "sourcify",
+    "source_name": "FiatTokenV2_2",
+    "proxy": {
+      "kind": "OpenZeppelin (legacy slots)",
+      "implementation": "0x43506849d7c04f9138d1a2050bbf3a0c054402dd",
+      "admin": "0x807a96288a1a408dbc13de2b1d087d10356395d2"
+    },
+    "owner": "0xfcb19e6a322b27c06842a71e8c725399f049ae3a",
+    "owner_status": "wallet",
+    "creation": {
+      "Block": 6082465,
+      "Tx": "0xe7e0fe390354509cd08c9a0168536938600ddc552b3f7cb96030ebef62e75895",
+      "Deployer": "0x95ba4cf87d6723ad9c0db21737d862be80e93911",
+      "Factory": null
+    },
+    "created_at": "2018-08-03T19:28:24Z",
+    "delegatecall": true,
+    "selfdestruct": false
+  },
+  "powers": [
+    {
+      "kind": "mint",
+      "function": "mint(address,uint256)",
+      "where": "FiatTokenV1.sol:121",
+      "probed": true
+    },
+    {
+      "kind": "mint",
+      "function": "configureMinter(address,uint256)",
+      "where": "FiatTokenV1.sol:326",
+      "probed": true
+    },
+    {
+      "kind": "mint",
+      "function": "removeMinter(address)",
+      "where": "FiatTokenV1.sol:343",
+      "probed": true
+    },
+    {
+      "kind": "mint",
+      "function": "updateMasterMinter(address)",
+      "where": "FiatTokenV1.sol:380",
+      "callable_by": [
+        "owner"
+      ],
+      "probed": true
+    },
+    {
+      "kind": "blacklist",
+      "function": "blacklist(address)",
+      "where": "Blacklistable.sol:71",
+      "probed": true
+    },
+    {
+      "kind": "blacklist",
+      "function": "unBlacklist(address)",
+      "where": "Blacklistable.sol:80",
+      "probed": true
+    },
+    {
+      "kind": "blacklist",
+      "function": "updateBlacklister(address)",
+      "where": "Blacklistable.sol:89",
+      "callable_by": [
+        "owner"
+      ],
+      "probed": true
+    },
+    {
+      "kind": "pause",
+      "function": "pause()",
+      "where": "Pausable.sol:70",
+      "probed": true
+    },
+    {
+      "kind": "pause",
+      "function": "unpause()",
+      "where": "Pausable.sol:78",
+      "probed": true
+    },
+    {
+      "kind": "pause",
+      "function": "updatePauser(address)",
+      "where": "Pausable.sol:87",
+      "callable_by": [
+        "owner"
+      ],
+      "probed": true
+    },
+    {
+      "kind": "upgrade",
+      "function": "upgradeTo(address)",
+      "where": "bytecode",
+      "probed": false
+    },
+    {
+      "kind": "upgrade",
+      "function": "upgradeToAndCall(address,bytes)",
+      "where": "bytecode",
+      "probed": false
+    }
+  ],
+  "settings": [
+    {
+      "kind": "pause",
+      "getter": "paused()",
+      "value": "false"
+    }
+  ],
+  "shares": {
+    "deployer": 5.287604439633564e-8,
+    "owner": 3.871597717747276e-13,
+    "burned": 0.000001212858815412991,
+    "in_pools": 0.0019966501744182173
+  },
+  "holders": {
+    "source": "blockscout",
+    "count": 9565791,
+    "top": [
+      {
+        "address": "0x37305b1cd40574e4c5ce33f8e8306be057fd7341",
+        "balance": 3820019741535197,
+        "share": 0.08061913171478445,
+        "label": "wallet"
+      },
+      {
+        "address": "0xe1940f578743367f38d3f25c2d2d32d6636929b6",
+        "balance": 1699999999039577,
+        "share": 0.03587743862879257,
+        "label": "contract"
+      },
+      {
+        "address": "0xffa69c0080582098af595156240214b742735a5e",
+        "balance": 1582999999860100,
+        "share": 0.03340822669202672,
+        "label": "contract"
+      },
+      {
+        "address": "0xad354cfbaa4a8572dd6df021514a3931a8329ef5",
+        "balance": 1400000000520100,
+        "share": 0.02954612595726249,
+        "label": "contract"
+      },
+      {
+        "address": "0x40ec5b33f54e0e8a33a975908c5ba1c14e5bbbdf",
+        "balance": 1052697331497319,
+        "share": 0.022216519956956487,
+        "label": "contract"
+      },
+      {
+        "address": "0xe20d20b0cc4e44cd23d5b0488d5250a9ac426875",
+        "balance": 900000000395377,
+        "share": 0.018993938116670966,
+        "label": "wallet"
+      },
+      {
+        "address": "0x5227f603c1ee34ce3c06efe6477003bdfccb2f8c",
+        "balance": 823000000000000,
+        "share": 0.01736890118128105,
+        "label": "wallet"
+      },
+      {
+        "address": "0x3b4d794a66304f130a4db8f2551b0070dfcf5ca7",
+        "balance": 572522799132123,
+        "share": 0.012082736235912835,
+        "label": "contract"
+      },
+      {
+        "address": "0x36db199f0a1cd131ad0b5cf4fe94286faab9fda5",
+        "balance": 524744272389687,
+        "share": 0.011074400258298539,
+        "label": "contract"
+      },
+      {
+        "address": "0x08f619716db7c6245401b543e59acac1d25cb483",
+        "balance": 501148023186638,
+        "share": 0.010576416150574797,
+        "label": "contract"
+      }
+    ],
+    "top_share": 0.08061913171478445,
+    "top10_share": 0.2717638348925609
+  },
+  "pools": [
+    {
+      "dex": "uniswap-v3",
+      "address": "0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "fee": 3000,
+      "quote_amount": 16119.840539137756,
+      "usd": 36941212.03043752,
+      "token_amount": 17222872500949
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x3416cf6c708da44db2624d63ea0aaef7113527c6",
+      "quote": "USDT",
+      "quote_token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "fee": 100,
+      "quote_amount": 28572659.258847,
+      "usd": 28572659.258847,
+      "token_amount": 5410828929770
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x88e6a0c2ddd26feeb64f039a2c41296fcb3f5640",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "fee": 500,
+      "quote_amount": 9461.283135701367,
+      "usd": 21682054.828480467,
+      "token_amount": 57942015617842
+    },
+    {
+      "dex": "uniswap-v2",
+      "address": "0xb4e16d0168e52d35cacd2c6185b44281ec28c9dc",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "quote_amount": 4230.744263530778,
+      "usd": 9695432.19154,
+      "token_amount": 9695432191540
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xe0554a476a092703abdb3ef35c80e0d76d32939f",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "fee": 100,
+      "quote_amount": 2878.754847843155,
+      "usd": 6597130.595654901,
+      "token_amount": 2031079161788
+    },
+    {
+      "dex": "uniswap-v2",
+      "address": "0x3041cbd36888becc7bbcbc0045e3b1f144466f5f",
+      "quote": "USDT",
+      "quote_token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "quote_amount": 1823070.669174,
+      "usd": 1823070.669174,
+      "token_amount": 1817892841308
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x7bea39867e4169dbe237d55c8242a8f2fcdcc387",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "fee": 10000,
+      "quote_amount": 190.6488683547166,
+      "usd": 436902.6016203553,
+      "token_amount": 358250231317
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x7858e59e0c01ea06df3af3d20ac7b0003275d4bf",
+      "quote": "USDT",
+      "quote_token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "fee": 500,
+      "quote_amount": 388915.548218,
+      "usd": 388915.548218,
+      "token_amount": 109431008169
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xee4cf3b78a74affa38c6a926282bcd8b5952818d",
+      "quote": "USDT",
+      "quote_token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "fee": 3000,
+      "quote_amount": 41896.307712,
+      "usd": 41896.307712,
+      "token_amount": 20415211581
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xbb256c2f1b677e27118b0345fd2b3894d2e6d487",
+      "quote": "USDT",
+      "quote_token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "fee": 10000,
+      "quote_amount": 168.368699,
+      "usd": 168.368699,
+      "token_amount": 132966235
+    }
+  ],
+  "liquidity": {
+    "pool": "0x8ad599c3a0ff1de082011efddc58f1908eb6e6d8",
+    "dex": "uniswap-v3",
+    "created_block": 12370624,
+    "created_at": "2021-05-04T23:10:00Z",
+    "pulled": false
+  },
+  "deployer": {
+    "address": "0x95ba4cf87d6723ad9c0db21737d862be80e93911",
+    "nonce": 46,
+    "balance_eth": 0.30618459170649037,
+    "scanned": 46,
+    "tokens": [
+      {
+        "address": "0xa2327a938febf5fec13bacfb16ae10ecbc4cbdcf",
+        "symbol": "",
+        "pool": "none",
+        "weth": 0
+      },
+      {
+        "address": "0xb7277a6e95992041568d9391d09d0122023778a2",
+        "symbol": "",
+        "pool": "none",
+        "weth": 0
+      },
+      {
+        "address": "0x0882477e7895bdc5cea7cb1552ed914ab157fe56",
+        "symbol": "",
+        "pool": "none",
+        "weth": 0
+      },
+      {
+        "address": "0xde0aa21af41176cb05e5a80f26dd7949380f0195",
+        "symbol": "RRR",
+        "pool": "none",
+        "weth": 0
+      },
+      {
+        "address": "0x0fbbc6a4e951b00b1ac170325763bd4d5149a77f",
+        "symbol": "",
+        "pool": "none",
+        "weth": 0
+      },
+      {
+        "address": "0x8cbde23b1416cac07a52591bba744c744d77a91a",
+        "symbol": "QQQ",
+        "pool": "none",
+        "weth": 0
+      }
+    ],
+    "pulled": 0
+  },
+  "gaps": [
+    "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "elapsed_ns": 4631137948,
+  "timings_ms": {
+    "basics": 89,
+    "contract": 315,
+    "creation": 2198,
+    "deployer": 249,
+    "holders": 1061,
+    "liquidity": 2115,
+    "pools": 95,
+    "probe": 139,
+    "shares": 47,
+    "source": 21
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "chain": "ethereum",
+  "address": "0xd2ab2bf8c6e9e8070c8d9c24001d9a579620cab2",
+  "block": 26301189,
+  "checked_at": "2026-10-29T21:48:44.384652889Z",
+  "token": {
+    "name": "Freedom 250",
+    "symbol": "FREEDOM250",
+    "decimals": 9,
+    "total_supply": 1000000000000000000
+  },
+  "contract": {
+    "code_size": 9424,
+    "verified": true,
+    "verified_by": "sourcify",
+    "source_name": "FREEDOM",
+    "owner": "0x0000000000000000000000000000000000000000",
+    "owner_status": "renounced",
+    "creation": {
+      "Block": 25437649,
+      "Tx": "0x4db8d5e96f4cfc1af1a8d185fb433344ed689bc3817f6b57d67d2af04c1375bc",
+      "Deployer": "0x7f579c298a82de1fbd3abd0fa5ccf649abc68e34",
+      "Factory": null
+    },
+    "created_at": "2026-07-01T12:24:59Z",
+    "delegatecall": false,
+    "selfdestruct": false
+  },
+  "powers": [
+    {
+      "kind": "trading",
+      "function": "OpenTrade()",
+      "where": "FREEDOM.sol:988",
+      "probed": true
+    },
+    {
+      "kind": "fees",
+      "function": "configBuyFee(uint256)",
+      "where": "FREEDOM.sol:1089",
+      "probed": true
+    },
+    {
+      "kind": "fees",
+      "function": "configSellFee(uint256)",
+      "where": "FREEDOM.sol:1102",
+      "probed": true
+    },
+    {
+      "kind": "fees",
+      "function": "configTransferFee(uint256)",
+      "where": "FREEDOM.sol:1111",
+      "probed": true
+    },
+    {
+      "kind": "fees",
+      "function": "addressFeeExemptSet(address,bool)",
+      "where": "FREEDOM.sol:1126",
+      "probed": true
+    },
+    {
+      "kind": "limits",
+      "function": "removeLimits()",
+      "where": "FREEDOM.sol:1007",
+      "probed": true
+    },
+    {
+      "kind": "limits",
+      "function": "setMaxTransactionLimit(uint256)",
+      "where": "FREEDOM.sol:1047",
+      "probed": true
+    },
+    {
+      "kind": "limits",
+      "function": "setMaxWalletLimit(uint256)",
+      "where": "FREEDOM.sol:1059",
+      "probed": true
+    },
+    {
+      "kind": "limits",
+      "function": "setAddressAsLimitExempt(address,bool)",
+      "where": "FREEDOM.sol:1074",
+      "probed": true
+    }
+  ],
+  "settings": null,
+  "shares": {
+    "deployer": 0,
+    "owner": 0,
+    "burned": 0,
+    "in_pools": 0.030350079147424134
+  },
+  "holders": {
+    "source": "blockscout",
+    "count": 35,
+    "top": [
+      {
+        "address": "0xe9084b1b98d3ceb3cb42691e31c9e1f1231498f5",
+        "balance": 279107768728705904,
+        "share": 0.2791077687287059,
+        "label": "wallet"
+      },
+      {
+        "address": "0x1c257840393e55016ee1fbc1bab5d9e5035213a5",
+        "balance": 30660590197853132,
+        "share": 0.03066059019785313,
+        "label": "wallet"
+      },
+      {
+        "address": "0xfcb16f17de224f9223b4c0e56c42e59372a62fe4",
+        "balance": 30350079147424133,
+        "share": 0.030350079147424134,
+        "label": "pool"
+      },
+      {
+        "address": "0x84b5ade3873c2222fa5d5ed3dd0c0eef8ef5f240",
+        "balance": 29301659819587284,
+        "share": 0.029301659819587284,
+        "label": "wallet"
+      },
+      {
+        "address": "0xce9acc034da8e6b8f07a4529ff0ea685bc55e9e4",
+        "balance": 27862214497599181,
+        "share": 0.02786221449759918,
+        "label": "wallet"
+      },
+      {
+        "address": "0x8969191ae73108757691f5b80ee61a6969b7cced",
+        "balance": 24776533478204784,
+        "share": 0.024776533478204785,
+        "label": "wallet"
+      },
+      {
+        "address": "0x540d036eaac3e03416085c83716094473e90b9bc",
+        "balance": 23668648771242521,
+        "share": 0.02366864877124252,
+        "label": "wallet"
+      },
+      {
+        "address": "0x0417c2c274e0078eb4c65602f62724c49891d98c",
+        "balance": 23518153009410117,
+        "share": 0.02351815300941012,
+        "label": "wallet"
+      },
+      {
+        "address": "0x07016d23a72003094bc6cb0a469442df94c5180d",
+        "balance": 22060168341504896,
+        "share": 0.022060168341504895,
+        "label": "wallet"
+      },
+      {
+        "address": "0x268a0887831a57078906e5c9b2a45ed5a811b28d",
+        "balance": 20421346803500919,
+        "share": 0.02042134680350092,
+        "label": "wallet"
+      }
+    ],
+    "top_share": 0.2791077687287059,
+    "top10_share": 0.5013510836476087
+  },
+  "pools": [
+    {
+      "dex": "uniswap-v2",
+      "address": "0xfcb16f17de224f9223b4c0e56c42e59372a62fe4",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "quote_amount": 0.000033252402723988,
+      "usd": 0.07737017434258446,
+      "token_amount": 30350079147424133
+    }
+  ],
+  "liquidity": {
+    "pool": "0xfcb16f17de224f9223b4c0e56c42e59372a62fe4",
+    "dex": "uniswap-v2",
+    "created_block": 25437649,
+    "created_at": "2026-07-01T12:24:59Z",
+    "pulled": false,
+    "lp": {
+      "burned": 0.999999999999999,
+      "locked": 0,
+      "deployer": 0,
+      "owner": 0,
+      "protocol": 0,
+      "other": 9.992007221626409e-16,
+      "top": [
+        {
+          "address": "0x000000000000000000000000000000000000dead",
+          "balance": 999999999999999000,
+          "share": 0.999999999999999,
+          "label": "burn"
+        }
+      ],
+      "source": "blockscout"
+    }
+  },
+  "deployer": {
+    "address": "0x7f579c298a82de1fbd3abd0fa5ccf649abc68e34",
+    "nonce": 9,
+    "balance_eth": 0,
+    "scanned": 9,
+    "tokens": null,
+    "pulled": 0
+  },
+  "gaps": [],
+  "elapsed_ns": 6753722274,
+  "timings_ms": {
+    "basics": 41,
+    "contract": 250,
+    "creation": 2361,
+    "deployer": 114,
+    "holders": 438,
+    "liquidity": 4140,
+    "pools": 86,
+    "probe": 82,
+    "shares": 42,
+    "source": 23
+  }
+}

@@ -1,0 +1,321 @@
+{
+  "chain": "ethereum",
+  "address": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+  "block": 26301177,
+  "checked_at": "2026-10-29T21:46:20.554311039Z",
+  "token": {
+    "name": "Pepe",
+    "symbol": "PEPE",
+    "decimals": 18,
+    "total_supply": 420689899644022253222026406842902
+  },
+  "contract": {
+    "code_size": 4517,
+    "verified": true,
+    "verified_by": "sourcify",
+    "source_name": "PepeToken",
+    "owner": "0x0000000000000000000000000000000000000000",
+    "owner_status": "renounced",
+    "creation": {
+      "Block": 17046105,
+      "Tx": "0x2afae7763487e60b893cb57803694810e6d3d136186a6de6719921afd7ca304a",
+      "Deployer": "0xfbfeaf0da0f2fde5c66df570133ae35f3eb58c9a",
+      "Factory": null
+    },
+    "created_at": "2023-04-14T14:51:35Z",
+    "delegatecall": false,
+    "selfdestruct": false
+  },
+  "powers": [
+    {
+      "kind": "blacklist",
+      "function": "blacklist(address,bool)",
+      "where": "PepeToken.sol:601",
+      "probed": true
+    }
+  ],
+  "settings": null,
+  "shares": {
+    "deployer": 8.838664924321616e-9,
+    "owner": 0,
+    "burned": 0.01644334592233948,
+    "in_pools": 0.008869802819140505
+  },
+  "holders": {
+    "source": "blockscout",
+    "count": 598942,
+    "top": [
+      {
+        "address": "0xf977814e90da44bfa03b6295a0616a897441acec",
+        "balance": 49052080033007733000000000000000,
+        "share": 0.11659913887762562,
+        "label": "wallet"
+      },
+      {
+        "address": "0x1d48963dd8fada6ab5c2c7b92eba81ecc5030270",
+        "balance": 24651969229996646104356460249562,
+        "share": 0.05859890919857252,
+        "label": "wallet"
+      },
+      {
+        "address": "0x3f9a8345729ea842708e080e238c92731e5699b8",
+        "balance": 13550280533762561934294677054085,
+        "share": 0.03220966451827934,
+        "label": "wallet"
+      },
+      {
+        "address": "0x611f7bf868a6212f871e89f7e44684045ddfb09d",
+        "balance": 12504647207019643331872716941006,
+        "share": 0.029724144120409777,
+        "label": "wallet"
+      },
+      {
+        "address": "0x5a52e96bacdabb82fd05763e25335261b270efcb",
+        "balance": 9356015673840960877378668900100,
+        "share": 0.02223969646468289,
+        "label": "wallet"
+      },
+      {
+        "address": "0xc93e48d89f2d6dbc1672908aa68ce7c24d0413b4",
+        "balance": 8600000000130020000000000000000,
+        "share": 0.0204426110714974,
+        "label": "wallet"
+      },
+      {
+        "address": "0xbf45fb5d20bc3d0954188773e803b4e30e87e0b8",
+        "balance": 8051614074754317072250000000000,
+        "share": 0.019139071514594007,
+        "label": "wallet"
+      },
+      {
+        "address": "0x5227f603c1ee34ce3c06efe6477003bdfccb2f8c",
+        "balance": 7772977017415968168766645550511,
+        "share": 0.018476737910734904,
+        "label": "wallet"
+      },
+      {
+        "address": "0x176f3dab24a159341c0509bb36b833e7fdd0a132",
+        "balance": 7268180950036540000000000000000,
+        "share": 0.017276813529839202,
+        "label": "wallet"
+      },
+      {
+        "address": "0x000000000000000000000000000000000000dead",
+        "balance": 6917549545880938959867444617341,
+        "share": 0.01644334592233948,
+        "label": "burn"
+      }
+    ],
+    "top_share": 0.11659913887762562,
+    "top10_share": 0.35064867427310775
+  },
+  "pools": [
+    {
+      "dex": "uniswap-v2",
+      "address": "0xa43fe16908251ee70ef74718545e4fe6c5ccec9f",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "quote_amount": 6850.101000879281,
+      "usd": 15652528.520002585,
+      "token_amount": 3194153099078517032706215111353
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x11950d141ecb863f01007add7d1a342041227b58",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "fee": 3000,
+      "quote_amount": 39.0000659221042,
+      "usd": 89115.42239294856,
+      "token_amount": 529131632021489800956212471092
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xf239009a101b6b930a527deaab6961b6e7dec8a6",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "fee": 10000,
+      "quote_amount": 6.6112909350666795,
+      "usd": 15106.84585554032,
+      "token_amount": 6730965124762612415142904094
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xcee31c846cbf003f4ceb5bbd234cba03c6e940c7",
+      "quote": "USDC",
+      "quote_token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "fee": 10000,
+      "quote_amount": 4657.400081,
+      "usd": 4657.400081,
+      "token_amount": 957357644883746116904643758
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xa7bc6c09907fa2ded89f1c8d05374621cb1f88c5",
+      "quote": "USDT",
+      "quote_token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "fee": 3000,
+      "quote_amount": 1381.06915,
+      "usd": 1381.06915,
+      "token_amount": 460160399093681071846738553
+    },
+    {
+      "dex": "uniswap-v2",
+      "address": "0x5a75ed4624bbda1e992dd006ea2aca83d64c30fb",
+      "quote": "USDC",
+      "quote_token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "quote_amount": 14.727393,
+      "usd": 14.727393,
+      "token_amount": 1923166281835006420921052
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x261d53f3cd0b38dabbab252dcc8adeaa8c67bcba",
+      "quote": "USDC",
+      "quote_token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+      "fee": 3000,
+      "quote_amount": 2.33136,
+      "usd": 2.33136,
+      "token_amount": 688325539261931123269722
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x9b96128a3f770faf7a882af4b0156e6976fed3d0",
+      "quote": "USDT",
+      "quote_token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "fee": 500,
+      "quote_amount": 2.073971,
+      "usd": 2.073971,
+      "token_amount": 241419720465190737805706
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x6e5c0b204d8c5311687513f0e71c10cb9e114b6b",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "fee": 500,
+      "quote_amount": 0.00015855448523394,
+      "usd": 0.362298103601686,
+      "token_amount": 383579629467396519110900
+    },
+    {
+      "dex": "uniswap-v2",
+      "address": "0xb676b41f577812c5d5d755d22d302bc7a84bb489",
+      "quote": "USDT",
+      "quote_token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+      "quote_amount": 0.0294,
+      "usd": 0.0294,
+      "token_amount": 5245748730234271767531
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xa786568aa87ffb8aafd1e532b66909eeb8d79399",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "fee": 100,
+      "quote_amount": 0.000002731585588564,
+      "usd": 0.0062416921041511435,
+      "token_amount": 1840817507898119315626
+    }
+  ],
+  "liquidity": {
+    "pool": "0xa43fe16908251ee70ef74718545e4fe6c5ccec9f",
+    "dex": "uniswap-v2",
+    "created_block": 17046833,
+    "created_at": "2023-04-14T17:21:11Z",
+    "pulled": false,
+    "lp": {
+      "burned": 0.00009087245658369099,
+      "locked": 0,
+      "deployer": 0,
+      "owner": 0,
+      "protocol": 0,
+      "other": 0.9999091275434163,
+      "top": [
+        {
+          "address": "0x6982508145454ce325ddbe47a25d4ec3d2311933",
+          "balance": 27987939902750970427665813,
+          "share": 0.9935350963604311,
+          "label": "token"
+        },
+        {
+          "address": "0x7a6a59588b8106045303e1923227a2cefbec2b66",
+          "balance": 52644559746881776412508,
+          "share": 0.001868812707284312,
+          "label": "wallet"
+        },
+        {
+          "address": "0x4f748d76346a3740a99a46c41fe6b7b0b602dc3f",
+          "balance": 47769265360305341523845,
+          "share": 0.001695746161658473,
+          "label": "wallet"
+        },
+        {
+          "address": "0x6022da250359ae571420ae410abfa9a84b664689",
+          "balance": 44665115941826434695451,
+          "share": 0.0015855529354931387,
+          "label": "wallet"
+        },
+        {
+          "address": "0x371d98623613ef5e9bb04014b999e2b7da4d3739",
+          "balance": 6568668179010222481018,
+          "share": 0.00023317909052502825,
+          "label": "wallet"
+        },
+        {
+          "address": "0x6c67f9fa72a8c45875a378f3f0ab8f2d962505dc",
+          "balance": 5990010322292046535074,
+          "share": 0.00021263749684461222,
+          "label": "wallet"
+        },
+        {
+          "address": "0x4c3923c5e4e87eb2f0eb7db6818ee743ddc9cd50",
+          "balance": 5180666601520862562934,
+          "share": 0.00018390685806236762,
+          "label": "wallet"
+        },
+        {
+          "address": "0xe1512fb3d7c9bd07fb27d199cc037de5c5f81a31",
+          "balance": 2697745134329246312255,
+          "share": 0.00009576640800662293,
+          "label": "wallet"
+        },
+        {
+          "address": "0x000000000000000000000000000000000000dead",
+          "balance": 2559882245726958199859,
+          "share": 0.00009087245658369099,
+          "label": "burn"
+        },
+        {
+          "address": "0x4dc77f9318bfd41bafe10603c65c00e93c6be11f",
+          "balance": 2228478069257613878418,
+          "share": 0.00007910804371347628,
+          "label": "wallet"
+        }
+      ],
+      "source": "blockscout"
+    }
+  },
+  "deployer": {
+    "address": "0xfbfeaf0da0f2fde5c66df570133ae35f3eb58c9a",
+    "nonce": 43,
+    "balance_eth": 0.28755304469854,
+    "scanned": 43,
+    "tokens": null,
+    "pulled": 0
+  },
+  "gaps": [],
+  "elapsed_ns": 5268381919,
+  "timings_ms": {
+    "basics": 62,
+    "contract": 321,
+    "creation": 2272,
+    "deployer": 157,
+    "holders": 826,
+    "liquidity": 2674,
+    "pools": 77,
+    "probe": 54,
+    "shares": 70,
+    "source": 20
+  }
+}

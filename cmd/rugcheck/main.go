@@ -27,6 +27,9 @@ const usage = `usage: rugcheck <command> [flags]
 commands:
   facts <address>   contract, owner powers, holders and liquidity of a token
   sim <address>     buy then sell the token on a local fork (needs Foundry's anvil)
+  check <address>   the verdict: facts and simulation together, as the bot answers
+  bot               run the Telegram bot (TELEGRAM_BOT_TOKEN, REDIS_URL)
+  bench <cases.json> time the bot's answers, cold and cached (needs Redis)
   eval <cases.json> check facts against hand-labelled tokens (testdata/tokens.json)
   version           print the version
 
@@ -35,6 +38,8 @@ Run "rugcheck <command> -h" for a command's flags.
 environment:
   RUGCHECK_RPC_ETHEREUM, RUGCHECK_RPC_BASE   RPC endpoints (default: free public RPCs with archive state)
   ETHERSCAN_API_KEY                          optional; lets "verified source" answer no instead of unknown
+  TELEGRAM_BOT_TOKEN                         the bot's token from @BotFather (bot only)
+  REDIS_URL                                  answer cache, e.g. redis://localhost:6379/0 (bot, check)
 `
 
 func main() {
@@ -44,6 +49,11 @@ func main() {
 	}
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
 	defer stop()
+	// The first Ctrl-C cancels work in flight; once it has, a second one exits at once.
+	go func() {
+		<-ctx.Done()
+		stop()
+	}()
 
 	var err error
 	switch os.Args[1] {
@@ -53,6 +63,12 @@ func main() {
 		err = runFacts(ctx, os.Args[2:])
 	case "sim":
 		err = runSim(ctx, os.Args[2:])
+	case "check":
+		err = runCheck(ctx, os.Args[2:])
+	case "bot":
+		err = runBot(ctx, os.Args[2:])
+	case "bench":
+		err = runBench(ctx, os.Args[2:])
 	case "eval":
 		err = runEval(ctx, os.Args[2:])
 	case "-h", "--help", "help":
@@ -317,7 +333,7 @@ func (s *evalStats) count(tc eval.Case, flagged bool) {
 }
 
 // valueFlags are the flags that take a value as the next argument.
-var valueFlags = map[string]bool{"chain": true, "timeout": true, "pause": true, "block": true}
+var valueFlags = map[string]bool{"chain": true, "timeout": true, "pause": true, "block": true, "cache": true, "ttl": true}
 
 // interleave moves flags ahead of positional arguments, so "facts 0xabc -json" works like "facts -json 0xabc".
 func interleave(args []string) []string {

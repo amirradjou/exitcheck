@@ -1,0 +1,80 @@
+{
+  "chain": "base",
+  "address": "0xef77fb35d6e0503faf3cbe9565193195aa4c6ef8",
+  "block": 53260628,
+  "checked_at": "2026-10-29T21:50:04.787623959Z",
+  "token": {
+    "name": "ZiG",
+    "symbol": "ZiG",
+    "decimals": 8,
+    "total_supply": 1000000000000000
+  },
+  "contract": {
+    "code_size": 7172,
+    "verified": true,
+    "verified_by": "sourcify",
+    "source_name": "ZiG",
+    "owner": "0x0000000000000000000000000000000000000000",
+    "owner_status": "renounced",
+    "creation": {
+      "Block": 52984898,
+      "Tx": "0x5d925301c48a467c8ff000ae9e61dddeb38e297ecb669db3925edd0cd0e228ec",
+      "Deployer": "0x361b0c5d8b581d3477acf76af0a19f389c964e57",
+      "Factory": null
+    },
+    "created_at": "2026-10-23T12:39:03Z",
+    "delegatecall": false,
+    "selfdestruct": false
+  },
+  "powers": [],
+  "settings": null,
+  "shares": {
+    "deployer": 0,
+    "owner": 0,
+    "burned": 0,
+    "in_pools": 0.195114327423159
+  },
+  "pools": [
+    {
+      "dex": "uniswap-v2",
+      "address": "0xaea338724cc01adacb4b768ad6417aada28d6802",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "quote_amount": 5.154087732545389,
+      "usd": 11710.194298916018,
+      "token_amount": 195114327423159
+    }
+  ],
+  "liquidity": {
+    "pool": "0xaea338724cc01adacb4b768ad6417aada28d6802",
+    "dex": "uniswap-v2",
+    "created_block": 52984998,
+    "created_at": "2026-10-23T12:42:23Z",
+    "pulled": false
+  },
+  "deployer": {
+    "address": "0x361b0c5d8b581d3477acf76af0a19f389c964e57",
+    "nonce": 224,
+    "balance_eth": 0.08452608527199419,
+    "scanned": 224,
+    "tokens": null,
+    "pulled": 0
+  },
+  "gaps": [
+    "holders: too much history to replay through the RPC (log scan budget exhausted: 275731 blocks need at least 276 requests of 1000 blocks, budget is 150) (explorer: HTTP 403 from base.blockscout.com)",
+    "LP holders: too much history to replay through the RPC (log scan budget exhausted: 275631 blocks need at least 276 requests of 1000 blocks, budget is 150) (explorer: HTTP 403 from base.blockscout.com)"
+  ],
+  "elapsed_ns": 7506439174,
+  "timings_ms": {
+    "basics": 46,
+    "contract": 170,
+    "creation": 3703,
+    "deployer": 339,
+    "holders": 26,
+    "liquidity": 3632,
+    "pools": 84,
+    "probe": 0,
+    "shares": 44,
+    "source": 19
+  }
+}

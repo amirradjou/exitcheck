@@ -1,0 +1,31 @@
+{
+  "chain": "ethereum",
+  "token": "0xbe2ab177599c6381c70725feee6663f9bcff2197",
+  "block": 26301188,
+  "venue": "uniswap-v2 pool 0x43118291dBC0C1Fcc8423b32dbaC3234C8ad4B44",
+  "spent_eth": 0.012919068416651752,
+  "buy": {
+    "ok": true,
+    "tax": 0,
+    "gas": 123566
+  },
+  "transfer": {
+    "ok": true,
+    "tax": 0,
+    "gas": 54557
+  },
+  "sell": {
+    "ok": false,
+    "error": "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT"
+  },
+  "sell_half": {
+    "ok": false,
+    "error": "UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT"
+  },
+  "verdict": "honeypot",
+  "reasons": [
+    "selling reverts: UniswapV2Library: INSUFFICIENT_INPUT_AMOUNT"
+  ],
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 5675493094
+}
