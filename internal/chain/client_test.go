@@ -1,0 +1,211 @@
+package chain
+
+import (
+	"context"
+	"encoding/json"
+	"errors"
+	"fmt"
+	"io"
+	"net/http"
+	"net/http/httptest"
+	"net/url"
+	"strings"
+	"sync"
+	"testing"
+	"time"
+
+	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/core/types"
+)
+
+type rpcReq struct {
+	ID     json.RawMessage   `json:"id"`
+	Method string            `json:"method"`
+	Params []json.RawMessage `json:"params"`
+}
+
+type rpcErr struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+}
+
+// fakeRPC serves JSON-RPC (single and batch requests) from handle, answering eth_chainId itself.
+func fakeRPC(t *testing.T, net Network, handle func(method string, params []json.RawMessage) (any, *rpcErr)) string {
+	t.Helper()
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		body, _ := io.ReadAll(r.Body)
+		answer := func(q rpcReq) map[string]any {
+			out := map[string]any{"jsonrpc": "2.0", "id": q.ID}
+			if q.Method == "eth_chainId" {
+				out["result"] = hexutil.EncodeUint64(uint64(net.ChainID))
+				return out
+			}
+			res, e := handle(q.Method, q.Params)
+			if e != nil {
+				out["error"] = e
+			} else {
+				out["result"] = res
+			}
+			return out
+		}
+		var batch []rpcReq
+		if json.Unmarshal(body, &batch) == nil {
+			var outs []map[string]any
+			for _, q := range batch {
+				outs = append(outs, answer(q))
+			}
+			_ = json.NewEncoder(w).Encode(outs)
+			return
+		}
+		var q rpcReq
+		if err := json.Unmarshal(body, &q); err != nil {
+			t.Errorf("bad request: %s", body)
+			return
+		}
+		_ = json.NewEncoder(w).Encode(answer(q))
+	}))
+	t.Cleanup(srv.Close)
+	return srv.URL
+}
+
+func blockParam(t *testing.T, raw json.RawMessage) uint64 {
+	t.Helper()
+	var s string
+	if err := json.Unmarshal(raw, &s); err != nil {
+		t.Fatalf("block param %s: %v", raw, err)
+	}
+	n, err := hexutil.DecodeUint64(s)
+	if err != nil {
+		t.Fatalf("block param %s: %v", s, err)
+	}
+	return n
+}
+
+func TestScanLogsShrinksTheWindowAndCoversEveryBlockOnce(t *testing.T) {
+	net := Ethereum
+	net.LogWindow = 1000
+	const limit = 300 // the fake provider rejects larger ranges
+	var mu sync.Mutex
+	seen := map[uint64]int{}
+	url := fakeRPC(t, net, func(method string, params []json.RawMessage) (any, *rpcErr) {
+		var q struct{ FromBlock, ToBlock string }
+		_ = json.Unmarshal(params[0], &q)
+		from, _ := hexutil.DecodeUint64(q.FromBlock)
+		to, _ := hexutil.DecodeUint64(q.ToBlock)
+		if to-from+1 > limit {
+			return nil, &rpcErr{-32602, "block range too large"}
+		}
+		mu.Lock()
+		for b := from; b <= to; b++ {
+			seen[b]++
+		}
+		mu.Unlock()
+		return []types.Log{}, nil
+	})
+	c, err := DialURLs(context.Background(), net, url, url, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	err = c.ScanLogs(context.Background(), LogScan{From: 100, To: 2099}, func([]types.Log) error { return nil })
+	if err != nil {
+		t.Fatal(err)
+	}
+	for b := uint64(100); b <= 2099; b++ {
+		if seen[b] != 1 {
+			t.Fatalf("block %d scanned %d times", b, seen[b])
+		}
+	}
+	if len(seen) != 2000 {
+		t.Fatalf("scanned %d blocks, want 2000", len(seen))
+	}
+}
+
+func TestScanLogsRefusesARangeOverBudgetUpFront(t *testing.T) {
+	net := Ethereum
+	net.LogWindow = 100
+	calls := 0
+	url := fakeRPC(t, net, func(string, []json.RawMessage) (any, *rpcErr) { calls++; return []types.Log{}, nil })
+	c, err := DialURLs(context.Background(), net, url, url, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	err = c.ScanLogs(context.Background(), LogScan{From: 0, To: 10_000, MaxRequests: 50, Query: ethereum.FilterQuery{}},
+		func([]types.Log) error { return nil })
+	if !errors.Is(err, ErrBudget) || calls != 0 {
+		t.Fatalf("err = %v after %d calls; want ErrBudget before any call", err, calls)
+	}
+}
+
+func TestCreationBlockFindsTheFirstBlockWithANonce(t *testing.T) {
+	const created, head = 12_345_678, 26_000_000
+	for _, rate := range []float64{0, 1000} { // batched k-ary search, then paced binary search
+		net := Ethereum
+		requests := 0
+		url := fakeRPC(t, net, func(method string, params []json.RawMessage) (any, *rpcErr) {
+			requests++
+			if method != "eth_getTransactionCount" {
+				return nil, &rpcErr{-32601, "unexpected " + method}
+			}
+			if blockParam(t, params[1]) >= created {
+				return "0x1", nil
+			}
+			return "0x0", nil
+		})
+		c, err := DialURLs(context.Background(), net, url, url, rate)
+		if err != nil {
+			t.Fatal(err)
+		}
+		got, err := c.CreationBlock(context.Background(), [20]byte{1}, head)
+		c.Close()
+		if err != nil || got != created {
+			t.Fatalf("rate %v: CreationBlock = %d, %v; want %d", rate, got, err, created)
+		}
+		t.Logf("rate %v: %d requests", rate, requests)
+	}
+}
+
+func TestPacerSpacesRequests(t *testing.T) {
+	p := newPacer(200) // 5ms apart
+	start := time.Now()
+	for range 3 {
+		if err := p.wait(context.Background(), 2); err != nil {
+			t.Fatal(err)
+		}
+	}
+	// Three waits of two requests each: the third may start after 4 slots (20ms).
+	if d := time.Since(start); d < 20*time.Millisecond {
+		t.Errorf("3 paced waits took %s, want at least 20ms", d)
+	}
+	if newPacer(0) != nil {
+		t.Error("rate 0 should mean no pacer")
+	}
+	var nilPacer *pacer
+	if err := nilPacer.wait(context.Background(), 100); err != nil {
+		t.Error(err)
+	}
+}
+
+func TestIsRateLimit(t *testing.T) {
+	for _, msg := range []string{"429 Too Many Requests", "rate limit exceeded", "Capacity exceeded"} {
+		if !isRateLimit(errors.New(msg)) {
+			t.Errorf("%q not seen as a rate limit", msg)
+		}
+	}
+	if isRateLimit(errors.New("execution reverted")) {
+		t.Error("revert seen as a rate limit")
+	}
+}
+
+func TestStripURLKeepsOnlyTheHost(t *testing.T) {
+	err := &url.Error{Op: "Post", URL: "https://base-mainnet.g.alchemy.com/v2/SECRETKEY", Err: context.DeadlineExceeded}
+	got := stripURL(fmt.Errorf("holders: %w", err))
+	if s := got.Error(); strings.Contains(s, "SECRETKEY") || !strings.Contains(s, "https://base-mainnet.g.alchemy.com") {
+		t.Errorf("stripURL = %q", s)
+	}
+	if !errors.Is(got, context.DeadlineExceeded) {
+		t.Error("stripURL lost the underlying error")
+	}
+}
