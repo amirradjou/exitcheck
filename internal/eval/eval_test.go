@@ -11,6 +11,7 @@ import (
 
 	"github.com/amirradjou/rugcheck/internal/chain"
 	"github.com/amirradjou/rugcheck/internal/facts"
+	"github.com/amirradjou/rugcheck/internal/sim"
 )
 
 func ptr[T any](v T) *T { return &v }
@@ -54,6 +55,20 @@ func TestCheckFacts(t *testing.T) {
 	}
 }
 
+func TestCheckSim(t *testing.T) {
+	honeypot := &sim.Result{Verdict: sim.Honeypot}
+	if s := Summary(CheckSim(SimExpect{Flagged: true}, honeypot)); s != "ok" {
+		t.Errorf("flagged honeypot: %s", s)
+	}
+	if s := Summary(CheckSim(SimExpect{Flagged: true}, &sim.Result{Verdict: sim.OK})); s == "ok" {
+		t.Error("a missed honeypot passed")
+	}
+	// cannot-buy is not flagged: nobody can be trapped while buying reverts.
+	if s := Summary(CheckSim(SimExpect{Flagged: false}, &sim.Result{Verdict: sim.CannotBuy})); s != "ok" {
+		t.Errorf("cannot-buy on a legitimate token: %s", s)
+	}
+}
+
 func TestLoadRejectsUnknownLabels(t *testing.T) {
 	path := filepath.Join(t.TempDir(), "cases.json")
 	raw, _ := json.Marshal([]Case{{Chain: "ethereum", Name: "x", Label: "maybe"}})
@@ -62,6 +77,13 @@ func TestLoadRejectsUnknownLabels(t *testing.T) {
 	}
 	if _, err := Load(path); err == nil {
 		t.Error("label \"maybe\" accepted")
+	}
+	raw, _ = json.Marshal([]Case{{Chain: "ethereum", Name: "x", Label: "scam"}})
+	if err := os.WriteFile(path, raw, 0o600); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := Load(path); err == nil {
+		t.Error("a scam without a kind (honeypot or rug) accepted")
 	}
 }
 

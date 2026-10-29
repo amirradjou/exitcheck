@@ -165,9 +165,10 @@ func runSim(ctx context.Context, args []string) error {
 func runEval(ctx context.Context, args []string) error {
 	fs := flag.NewFlagSet("eval", flag.ContinueOnError)
 	markdown := fs.Bool("markdown", false, "print a Markdown table of the results")
+	withSim := fs.Bool("sim", true, "also run the buy-then-sell simulation where a case expects one (needs anvil)")
 	pause := fs.Duration("pause", 2*time.Second, "wait between tokens, to stay under free RPC rate limits")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck eval [-markdown] <cases.json>")
+		fmt.Fprintln(fs.Output(), "usage: rugcheck eval [-markdown] [-sim=false] <cases.json>")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(interleave(args)); err != nil {
@@ -192,7 +193,7 @@ func runEval(ctx context.Context, args []string) error {
 	}()
 	ex := explorer.New()
 	var rows []string
-	passed, checks, failedChecks := 0, 0, 0
+	var st evalStats
 	for i, tc := range cases {
 		if i > 0 {
 			select {
@@ -212,46 +213,107 @@ func runEval(ctx context.Context, args []string) error {
 			}
 			clients[tc.Chain] = c
 		}
+
 		tctx, cancel := context.WithTimeout(ctx, 3*time.Minute)
 		f, err := facts.Gather(tctx, c, ex, tc.Address)
 		cancel()
-		var result string
-		var failed int
-		var elapsed time.Duration
-		if err != nil {
-			result, failed = "error: "+err.Error(), 1
-		} else {
+		factsResult, elapsed := "error: "+fmt.Sprint(err), time.Duration(0)
+		factsOK := false
+		if err == nil {
 			cs := eval.CheckFacts(tc.Expect, f)
-			checks += len(cs)
+			st.checks += len(cs)
 			for _, ch := range cs {
 				if !ch.OK {
-					failed++
+					st.failedChecks++
 				}
 			}
-			result, elapsed = eval.Summary(cs), f.Elapsed
+			factsResult, elapsed, factsOK = eval.Summary(cs), f.Elapsed, eval.Summary(cs) == "ok"
 		}
-		failedChecks += failed
+		if factsOK {
+			st.factsCorrect++
+		}
+
+		simCell, simOK, simTime := "-", true, "-"
+		if e := tc.Expect.Sim; e != nil && *withSim {
+			sctx, cancel := context.WithTimeout(ctx, 5*time.Minute)
+			r, err := sim.Run(sctx, c, tc.Address, sim.Options{Block: e.Block})
+			cancel()
+			if err != nil {
+				simCell, simOK = "error: "+err.Error(), false
+			} else {
+				simOK = eval.Summary(eval.CheckSim(*e, r)) == "ok"
+				simCell = r.Verdict
+				if e.Block != 0 {
+					simCell += fmt.Sprintf(" @%d", e.Block)
+				}
+				simTime = fmt.Sprintf("%.1f s", r.Elapsed.Seconds())
+			}
+			st.count(tc, err == nil && r.Flagged())
+			if !simOK {
+				st.simWrong++
+				simCell = "WRONG: " + simCell
+			}
+		}
+
 		status := "ok  "
-		if failed == 0 {
-			passed++
-		} else {
+		if !factsOK || !simOK {
 			status = "FAIL"
 		}
-		fmt.Fprintf(os.Stderr, "%s %-5s %-8s %-10s %s  %4.1fs  %s\n", status, tc.Label, tc.Chain, tc.Name, tc.Address.Hex(), elapsed.Seconds(), result)
-		rows = append(rows, fmt.Sprintf("| %s | %s | %s | `%s` | %s | %.1f s |", tc.Label, tc.Chain, tc.Name, tc.Address.Hex(), map[bool]string{true: "correct", false: "WRONG: " + result}[failed == 0], elapsed.Seconds()))
+		kind := tc.Label
+		if tc.Kind != "" {
+			kind = tc.Kind
+		}
+		fmt.Fprintf(os.Stderr, "%s %-8s %-8s %-10s %s  facts %5.1fs: %s  sim %s: %s\n",
+			status, kind, tc.Chain, tc.Name, tc.Address.Hex(), elapsed.Seconds(), factsResult, simTime, simCell)
+		rows = append(rows, fmt.Sprintf("| %s | %s | %s | `%s` | %s | %.1f s | %s | %s |", kind, tc.Chain, tc.Name, tc.Address.Hex(),
+			map[bool]string{true: "correct", false: "WRONG: " + factsResult}[factsOK], elapsed.Seconds(), simCell, simTime))
 	}
-	fmt.Fprintf(os.Stderr, "\n%d/%d tokens correct; %d/%d checks passed\n", passed, len(cases), checks-failedChecks, checks)
+	fmt.Fprintf(os.Stderr, "\nfacts (M0): %d/%d tokens correct; %d/%d checks passed\n", st.factsCorrect, len(cases), st.checks-st.failedChecks, st.checks)
+	if *withSim {
+		line := fmt.Sprintf("simulation (M1): %d/%d honeypots flagged; %d/%d legitimate tokens flagged",
+			st.flagged["honeypot"], st.simulated["honeypot"], st.flagged["legit"], st.simulated["legit"])
+		if st.simulated["rug"] > 0 {
+			line += fmt.Sprintf("; %d/%d rugs flagged", st.flagged["rug"], st.simulated["rug"])
+		}
+		fmt.Fprintln(os.Stderr, line)
+	}
 	if *markdown {
-		fmt.Println("| label | chain | token | address | facts | time |")
-		fmt.Println("|---|---|---|---|---|---|")
+		fmt.Println("| kind | chain | token | address | facts | facts time | simulation | sim time |")
+		fmt.Println("|---|---|---|---|---|---|---|---|")
 		for _, r := range rows {
 			fmt.Println(r)
 		}
 	}
-	if passed != len(cases) {
-		return fmt.Errorf("%d of %d tokens have wrong facts", len(cases)-passed, len(cases))
+	if st.factsCorrect != len(cases) {
+		return fmt.Errorf("%d of %d tokens have wrong facts", len(cases)-st.factsCorrect, len(cases))
+	}
+	if st.simWrong > 0 {
+		return fmt.Errorf("%d simulations missed their expected verdict or failed to run", st.simWrong)
 	}
 	return nil
+}
+
+// evalStats tallies an eval run.
+type evalStats struct {
+	factsCorrect, checks, failedChecks int
+	// simWrong counts simulations that did not match their case's expectation, including runs that failed.
+	simWrong int
+	// simulated and flagged count simulations by kind: honeypot, rug or legit.
+	simulated, flagged map[string]int
+}
+
+func (s *evalStats) count(tc eval.Case, flagged bool) {
+	if s.simulated == nil {
+		s.simulated, s.flagged = map[string]int{}, map[string]int{}
+	}
+	kind := tc.Kind
+	if tc.Label == "legit" {
+		kind = "legit"
+	}
+	s.simulated[kind]++
+	if flagged {
+		s.flagged[kind]++
+	}
 }
 
 // valueFlags are the flags that take a value as the next argument.
