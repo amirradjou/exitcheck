@@ -1,0 +1,169 @@
+{
+  "chain": "ethereum",
+  "address": "0x5e82442d47b2e14b6f621a256dfb115dbd9f83ee",
+  "block": 26301190,
+  "checked_at": "2026-10-29T21:48:57.872603082Z",
+  "token": {
+    "name": "America250",
+    "symbol": "AMERICA250",
+    "decimals": 9,
+    "total_supply": 1000000000000000000
+  },
+  "contract": {
+    "code_size": 9426,
+    "verified": null,
+    "owner": "0x0000000000000000000000000000000000000000",
+    "owner_status": "renounced",
+    "creation": {
+      "Block": 25440683,
+      "Tx": "0x4b5b5d9db85de6e0ffb0c2d99a8702f4c1cdaefd67a4757773b90f614a2a3e55",
+      "Deployer": "0xebc39451449645337e4c0c1a67e729692e94b555",
+      "Factory": null
+    },
+    "created_at": "2026-07-01T22:35:23Z",
+    "delegatecall": false,
+    "selfdestruct": false
+  },
+  "powers": [
+    {
+      "kind": "limits",
+      "function": "removeLimits()",
+      "where": "bytecode",
+      "probed": true
+    }
+  ],
+  "settings": null,
+  "shares": {
+    "deployer": 0,
+    "owner": 0,
+    "burned": 0,
+    "in_pools": 3.2753735316e-8
+  },
+  "holders": {
+    "source": "blockscout",
+    "count": 38,
+    "top": [
+      {
+        "address": "0x3b6d4dd98f9c47bf1679c6356705215344276a63",
+        "balance": 292282737488127678,
+        "share": 0.29228273748812766,
+        "label": "wallet"
+      },
+      {
+        "address": "0x330225b7565decbe3d5bbc18d00d3660f5b46305",
+        "balance": 23039595852346567,
+        "share": 0.023039595852346568,
+        "label": "wallet"
+      },
+      {
+        "address": "0x868ca8a9b21638578b98bd7ea6448500c087294c",
+        "balance": 22412777958899219,
+        "share": 0.02241277795889922,
+        "label": "wallet"
+      },
+      {
+        "address": "0x3671d6cbd659ef565a166649d22541754fc02997",
+        "balance": 21383394319164028,
+        "share": 0.02138339431916403,
+        "label": "wallet"
+      },
+      {
+        "address": "0xec33bd4286a01fbdbac6ebd2e08c6e4d9e2d0416",
+        "balance": 20331882867743599,
+        "share": 0.020331882867743598,
+        "label": "wallet"
+      },
+      {
+        "address": "0xff6a61bee7a979d5d81c3cd8683af319a9cb29ee",
+        "balance": 19999999999999999,
+        "share": 0.02,
+        "label": "wallet"
+      },
+      {
+        "address": "0xf6b7741e44338c947fc21934fc58f7024df98a1b",
+        "balance": 19999999999999999,
+        "share": 0.02,
+        "label": "wallet"
+      },
+      {
+        "address": "0xf5deafef6c38eb8f5b81c64ab534b6e2aaead5ae",
+        "balance": 19999999999999999,
+        "share": 0.02,
+        "label": "wallet"
+      },
+      {
+        "address": "0xe7a4c3e5b4db46e2043f35ad9943311cff6cd215",
+        "balance": 19999999999999999,
+        "share": 0.02,
+        "label": "wallet"
+      },
+      {
+        "address": "0xe2b5a682bba510e817edf9b5f764fb1ad5372e9f",
+        "balance": 19999999999999999,
+        "share": 0.02,
+        "label": "wallet"
+      }
+    ],
+    "top_share": 0.29228273748812766,
+    "top10_share": 0.4794503884862812
+  },
+  "pools": [
+    {
+      "dex": "uniswap-v2",
+      "address": "0x9ac1c5741361afc5ae8cd55d99b0697b1caf5afb",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "quote_amount": 0.000031011940793003,
+      "usd": 0.07195023895363041,
+      "token_amount": 32753735316
+    }
+  ],
+  "liquidity": {
+    "pool": "0x9ac1c5741361afc5ae8cd55d99b0697b1caf5afb",
+    "dex": "uniswap-v2",
+    "created_block": 25440683,
+    "created_at": "2026-07-01T22:35:23Z",
+    "pulled": false,
+    "lp": {
+      "burned": 0,
+      "locked": 0,
+      "deployer": 0.999999999999999,
+      "owner": 0,
+      "protocol": 0,
+      "other": 9.992007221626409e-16,
+      "top": [
+        {
+          "address": "0xebc39451449645337e4c0c1a67e729692e94b555",
+          "balance": 999999999999999000,
+          "share": 0.999999999999999,
+          "label": "deployer"
+        }
+      ],
+      "source": "blockscout"
+    }
+  },
+  "deployer": {
+    "address": "0xebc39451449645337e4c0c1a67e729692e94b555",
+    "nonce": 10,
+    "balance_eth": 0,
+    "scanned": 10,
+    "tokens": null,
+    "pulled": 0
+  },
+  "gaps": [
+    "verified source: not verified on Sourcify or Blockscout; Etherscan not checked (set ETHERSCAN_API_KEY)"
+  ],
+  "elapsed_ns": 9638774103,
+  "timings_ms": {
+    "basics": 45,
+    "contract": 224,
+    "creation": 2301,
+    "deployer": 119,
+    "holders": 379,
+    "liquidity": 7112,
+    "pools": 85,
+    "probe": 37,
+    "shares": 33,
+    "source": 456
+  }
+}

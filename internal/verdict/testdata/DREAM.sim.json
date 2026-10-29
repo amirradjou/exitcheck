@@ -1,0 +1,26 @@
+{
+  "chain": "ethereum",
+  "token": "0x809010db55f12ef7e082d6e58461c58e27f1aa9b",
+  "block": 26301192,
+  "venue": "uniswap-v2 pool 0x0cec6CA4E35D24923953f16AD0B35B11899193bC",
+  "spent_eth": 0.000002571007923364,
+  "buy": {
+    "ok": true,
+    "tax": 0,
+    "gas": 150396
+  },
+  "transfer": {
+    "ok": true,
+    "tax": 0,
+    "gas": 89649
+  },
+  "sell": {
+    "ok": true,
+    "tax": 0,
+    "gas": 157426
+  },
+  "verdict": "ok",
+  "reasons": [],
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 5556759428
+}

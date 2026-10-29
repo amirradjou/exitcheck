@@ -1,0 +1,266 @@
+{
+  "chain": "base",
+  "address": "0x532f27101965dd16442e59d40670faf5ebb142e4",
+  "block": 53260546,
+  "checked_at": "2026-10-29T21:47:19.492807541Z",
+  "token": {
+    "name": "Brett",
+    "symbol": "BRETT",
+    "decimals": 18,
+    "total_supply": 9999997544340006294456944163
+  },
+  "contract": {
+    "code_size": 23271,
+    "verified": true,
+    "verified_by": "sourcify",
+    "source_name": "BrettToken",
+    "owner": "0x0000000000000000000000000000000000000000",
+    "owner_status": "renounced",
+    "creation": {
+      "Block": 10983962,
+      "Tx": "0x9c18c50988784c501e7ff16e913f2ba5c6b6e504ed6d7d63914326368a278b50",
+      "Deployer": "0x46f64bec31eaf281176f9bb5899107a80e932b45",
+      "Factory": null
+    },
+    "created_at": "2024-02-24T06:47:51Z",
+    "delegatecall": false,
+    "selfdestruct": false
+  },
+  "powers": [
+    {
+      "kind": "trading",
+      "function": "enableTrading()",
+      "where": "BrettToken.sol:1304",
+      "probed": true
+    },
+    {
+      "kind": "fees",
+      "function": "excludeFromFees(address,bool)",
+      "where": "BrettToken.sol:1426",
+      "probed": true
+    },
+    {
+      "kind": "fees",
+      "function": "setBuyFees(uint256,uint256,uint256)",
+      "where": "BrettToken.sol:1353",
+      "probed": true
+    },
+    {
+      "kind": "fees",
+      "function": "setSellFees(uint256,uint256,uint256)",
+      "where": "BrettToken.sol:1368",
+      "probed": true
+    },
+    {
+      "kind": "fees",
+      "function": "bulkExcludeFromFees(address[],bool)",
+      "where": "BrettToken.sol:1431",
+      "probed": true
+    },
+    {
+      "kind": "limits",
+      "function": "removeLimits()",
+      "where": "BrettToken.sol:1310",
+      "probed": true
+    },
+    {
+      "kind": "limits",
+      "function": "setMaxWalletAndMaxTransaction(uint256,uint256)",
+      "where": "BrettToken.sol:1337",
+      "probed": true
+    },
+    {
+      "kind": "limits",
+      "function": "excludeFromMaxTransaction(address,bool)",
+      "where": "BrettToken.sol:1408",
+      "probed": true
+    },
+    {
+      "kind": "limits",
+      "function": "bulkExcludeFromMaxTransaction(address[],bool)",
+      "where": "BrettToken.sol:1416",
+      "probed": true
+    }
+  ],
+  "settings": [
+    {
+      "kind": "fees",
+      "getter": "buyTotalFees()",
+      "value": "0"
+    },
+    {
+      "kind": "fees",
+      "getter": "sellTotalFees()",
+      "value": "0"
+    },
+    {
+      "kind": "limits",
+      "getter": "maxWallet()",
+      "value": "10000000000000000000000000000",
+      "supply_share": 1.0000002455660597
+    },
+    {
+      "kind": "trading",
+      "getter": "tradingActive()",
+      "value": "true"
+    },
+    {
+      "kind": "trading",
+      "getter": "swapEnabled()",
+      "value": "true"
+    }
+  ],
+  "shares": {
+    "deployer": 0.0000019907037897188823,
+    "owner": 0,
+    "burned": 0.00904133806525361,
+    "in_pools": 0.010480359101914
+  },
+  "pools": [
+    {
+      "dex": "uniswap-v3",
+      "address": "0xba3f945812a83471d709bce9c3ca699a19fb46f7",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 10000,
+      "quote_amount": 300.64741980847947,
+      "usd": 683770.3882495898,
+      "token_amount": 88052077127149651694156900
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x76bf0abd20f1e0155ce40a62615a90a709a6c3d8",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 3000,
+      "quote_amount": 12.128390442905236,
+      "usd": 27583.919553578122,
+      "token_amount": 16179562452443295280353397
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x36a46dff597c5a444bbc521d26787f57867d2214",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 500,
+      "quote_amount": 0.1735810500759589,
+      "usd": 394.77997874992036,
+      "token_amount": 320699120143348260646120
+    },
+    {
+      "dex": "uniswap-v2",
+      "address": "0xb34380ba6a17b022782c7fc91e319c10c168fb98",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "quote_amount": 0.14257041183016927,
+      "usd": 324.2516630015305,
+      "token_amount": 73997570035010672034939
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xbf0a0c12e7c0610002f6aa6e609755ede42d6a4d",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 10000,
+      "quote_amount": 93.865511,
+      "usd": 93.865511,
+      "token_amount": 160585058087027937908960
+    },
+    {
+      "dex": "aerodrome",
+      "address": "0xfbb7df8b446f6d216702c0c3898fb681a21186d3",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "quote_amount": 61.414516,
+      "usd": 61.414516,
+      "token_amount": 14063913123748445600058
+    },
+    {
+      "dex": "aerodrome",
+      "address": "0x214356cc4aab907244a791ca9735292860490d5a",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "quote_amount": 0.001488740733148047,
+      "usd": 3.3858824724193046,
+      "token_amount": 750233020219080042831
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xcfe206d9880c5f16b6822ce1b95be59d2fec6e77",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 3000,
+      "quote_amount": 1.542007,
+      "usd": 1.542007,
+      "token_amount": 1795180910929948341317
+    },
+    {
+      "dex": "uniswap-v2",
+      "address": "0xe0b2d3a2c11794b65e4e5b20b3e3b670a4cbafb0",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "quote_amount": 0.142296,
+      "usd": 0.142296,
+      "token_amount": 34628028209019282229
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x3b22a2801cc2434acb8aed531beacfdde07d769c",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 500,
+      "quote_amount": 0.000003,
+      "usd": 0.000003,
+      "token_amount": 6
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xa75f3a2b9ec0df5a485b4776760588d4d9d7e66b",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 100,
+      "quote_amount": 2.3999822e-11,
+      "usd": 5.458343070868492e-8,
+      "token_amount": 21
+    }
+  ],
+  "liquidity": {
+    "pool": "0xba3f945812a83471d709bce9c3ca699a19fb46f7",
+    "dex": "uniswap-v3",
+    "created_block": 11125895,
+    "created_at": "2024-02-27T13:38:57Z",
+    "pulled": false
+  },
+  "deployer": {
+    "address": "0x46f64bec31eaf281176f9bb5899107a80e932b45",
+    "nonce": 50,
+    "balance_eth": 1.6795352509856436,
+    "scanned": 50,
+    "tokens": [
+      {
+        "address": "0x0e82f2d85750218e7a6aa3f78324993fa6572097",
+        "symbol": "HONEY",
+        "pool": "none",
+        "weth": 0
+      }
+    ],
+    "pulled": 0
+  },
+  "gaps": [
+    "holders: too much history to replay through the RPC (log scan budget exhausted: 42276585 blocks need at least 42277 requests of 1000 blocks, budget is 150) (explorer: HTTP 403 from base.blockscout.com)",
+    "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "elapsed_ns": 7532974622,
+  "timings_ms": {
+    "basics": 36,
+    "contract": 233,
+    "creation": 3703,
+    "deployer": 296,
+    "holders": 70,
+    "liquidity": 3594,
+    "pools": 81,
+    "probe": 126,
+    "shares": 68,
+    "source": 20
+  }
+}

@@ -1,0 +1,116 @@
+{
+  "chain": "ethereum",
+  "address": "0x809010db55f12ef7e082d6e58461c58e27f1aa9b",
+  "block": 26301191,
+  "checked_at": "2026-10-29T21:49:14.89509445Z",
+  "token": {
+    "name": "American Dream",
+    "symbol": "DREAM",
+    "decimals": 9,
+    "total_supply": 1000000000000000000
+  },
+  "contract": {
+    "code_size": 9384,
+    "verified": null,
+    "owner": "0x0000000000000000000000000000000000000000",
+    "owner_status": "renounced",
+    "creation": {
+      "Block": 25452256,
+      "Tx": "0x14dea3fa02cfce78388370ac09d9ed28e5e7324f39cb5a7c6dc9f7dae484eaf7",
+      "Deployer": "0xad744282b5196775d47766370bb658c1f8dab31e",
+      "Factory": null
+    },
+    "created_at": "2026-07-03T13:22:23Z",
+    "delegatecall": false,
+    "selfdestruct": false
+  },
+  "powers": [
+    {
+      "kind": "trading",
+      "function": "enableTrading()",
+      "where": "bytecode",
+      "probed": true
+    },
+    {
+      "kind": "limits",
+      "function": "removeLimits()",
+      "where": "bytecode",
+      "probed": true
+    }
+  ],
+  "settings": null,
+  "shares": {
+    "deployer": 0.9994874362397917,
+    "owner": 0,
+    "burned": 0,
+    "in_pools": 0.000511053975632031
+  },
+  "holders": {
+    "source": "blockscout",
+    "count": 3,
+    "top": [
+      {
+        "address": "0xad744282b5196775d47766370bb658c1f8dab31e",
+        "balance": 999487436239791792,
+        "share": 0.9994874362397917,
+        "label": "deployer"
+      },
+      {
+        "address": "0x0cec6ca4e35d24923953f16ad0b35b11899193bc",
+        "balance": 511053975632031,
+        "share": 0.000511053975632031,
+        "label": "pool"
+      },
+      {
+        "address": "0x7b4e9914c7f8189ce89f1e24a7f5729e936b01cb",
+        "balance": 1509784576177,
+        "share": 0.000001509784576177,
+        "label": "contract"
+      }
+    ],
+    "top_share": 0.9994874362397917,
+    "top10_share": 0.9994889460243679
+  },
+  "pools": [
+    {
+      "dex": "uniswap-v2",
+      "address": "0x0cec6ca4e35d24923953f16ad0b35b11899193bc",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "quote_amount": 0.000514201584672986,
+      "usd": 1.1891326462585696,
+      "token_amount": 511053975632031
+    }
+  ],
+  "liquidity": {
+    "pool": "0x0cec6ca4e35d24923953f16ad0b35b11899193bc",
+    "dex": "uniswap-v2",
+    "created_block": 25452256,
+    "created_at": "2026-07-03T13:22:23Z",
+    "pulled": true
+  },
+  "deployer": {
+    "address": "0xad744282b5196775d47766370bb658c1f8dab31e",
+    "nonce": 7,
+    "balance_eth": 0,
+    "scanned": 7,
+    "tokens": null,
+    "pulled": 0
+  },
+  "gaps": [
+    "verified source: not verified on Sourcify or Blockscout; Etherscan not checked (set ETHERSCAN_API_KEY)"
+  ],
+  "elapsed_ns": 8249871386,
+  "timings_ms": {
+    "basics": 38,
+    "contract": 292,
+    "creation": 5813,
+    "deployer": 118,
+    "holders": 430,
+    "liquidity": 2144,
+    "pools": 77,
+    "probe": 48,
+    "shares": 46,
+    "source": 687
+  }
+}

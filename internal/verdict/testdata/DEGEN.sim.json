@@ -1,0 +1,26 @@
+{
+  "chain": "base",
+  "token": "0x4ed4e862860bed51a9570b96d89af5e1b0efefed",
+  "block": 53260571,
+  "venue": "aerodrome pool 0x2C4909355b0C036840819484c3A882A95659aBf3",
+  "spent_eth": 0.02671916301860224,
+  "buy": {
+    "ok": true,
+    "tax": 0,
+    "gas": 272864
+  },
+  "transfer": {
+    "ok": true,
+    "tax": 0,
+    "gas": 58424
+  },
+  "sell": {
+    "ok": true,
+    "tax": 0,
+    "gas": 194447
+  },
+  "verdict": "ok",
+  "reasons": [],
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 7324286574
+}

@@ -1,0 +1,232 @@
+{
+  "chain": "base",
+  "address": "0x940181a94a35a4569e4529a3cdfb74e38fd98631",
+  "block": 53260554,
+  "checked_at": "2026-10-29T21:47:36.430637496Z",
+  "token": {
+    "name": "Aerodrome",
+    "symbol": "AERO",
+    "decimals": 18,
+    "total_supply": 2007019188331730216671688408
+  },
+  "contract": {
+    "code_size": 4736,
+    "verified": true,
+    "verified_by": "sourcify",
+    "source_name": "Aero",
+    "owner_status": "none",
+    "creation": {
+      "Block": 3200550,
+      "Tx": "0x5727b7b346eb94d6f139e10e7ac922158dacd84f5d2844c01cf815b29d9ba58c",
+      "Deployer": "0xe83f922c34a1962e9ae9f52b59e18239764f2818",
+      "Factory": null
+    },
+    "created_at": "2023-08-28T02:40:47Z",
+    "delegatecall": false,
+    "selfdestruct": false
+  },
+  "powers": [
+    {
+      "kind": "mint",
+      "function": "mint(address,uint256)",
+      "where": "Aero.sol:1757",
+      "probed": true
+    },
+    {
+      "kind": "mint",
+      "function": "setMinter(address)",
+      "where": "Aero.sol:1752",
+      "probed": true
+    }
+  ],
+  "settings": null,
+  "shares": {
+    "deployer": 0,
+    "owner": 0,
+    "burned": 9.970587606999119e-7,
+    "in_pools": 0.003797466913667375
+  },
+  "pools": [
+    {
+      "dex": "aerodrome",
+      "address": "0x6cdcb1c4a4d1c3c6d054b27ac5b77e89eafb971d",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "quote_amount": 3108364.535772,
+      "usd": 3108364.535772,
+      "token_amount": 4790606546374325387121587
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x3d5d143381916280ff91407febeb52f2b60f33cf",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 3000,
+      "quote_amount": 259.51926835602785,
+      "usd": 589586.6822848753,
+      "token_amount": 1221751291758104237716138
+    },
+    {
+      "dex": "aerodrome",
+      "address": "0x7f670f78b17dec44d5ef68a48740b6f8849cc2e6",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "quote_amount": 215.62863774335446,
+      "usd": 489874.11970622075,
+      "token_amount": 748363656919110470709666
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xe5b5f522e98b5a2baae212d4da66b865b781db97",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 500,
+      "quote_amount": 61063.109283,
+      "usd": 61063.109283,
+      "token_amount": 191228437362092386601729
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x0d5959a52e7004b601f0be70618d01ac3cdce976",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 10000,
+      "quote_amount": 17.129911267217143,
+      "usd": 38916.445841768946,
+      "token_amount": 644722779642011906218840
+    },
+    {
+      "dex": "aerodrome",
+      "address": "0x861ee8b9f7e42edcf4f1b5614c6595f71a879f3f",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "stable": true,
+      "quote_amount": 4089.717879,
+      "usd": 4089.717879,
+      "token_amount": 15833138724679840890442
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x2426dc0a657bd481ab48f86c1616431905901238",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 3000,
+      "quote_amount": 2003.192585,
+      "usd": 2003.192585,
+      "token_amount": 3801713510932196689622
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x611374654470457af78aa4056f34e64b9acbec8b",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 10000,
+      "quote_amount": 880.303893,
+      "usd": 880.303893,
+      "token_amount": 1860751626610864912781
+    },
+    {
+      "dex": "uniswap-v2",
+      "address": "0x081ec5d6b68a28c9e3a73ec97e351161dbb5e8ef",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "quote_amount": 0.2767152649756517,
+      "usd": 628.6532635825582,
+      "token_amount": 967422996598883501211
+    },
+    {
+      "dex": "aerodrome",
+      "address": "0x80abe24a3ef1fc593ac5da960f232ca23b2069d0",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "stable": true,
+      "quote_amount": 0.23728055609037818,
+      "usd": 539.0638495640123,
+      "token_amount": 2451225004908461734772
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x18ec0afa38e54850f51f03a673352ddd0fffd8ba",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 100,
+      "quote_amount": 0.002285342726612921,
+      "usd": 5.191936786054394,
+      "token_amount": 1664927544154233988
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0xdee40d2c0855557d174cdd8b0862fd24a65423ee",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "fee": 100,
+      "quote_amount": 0.260801,
+      "usd": 0.260801,
+      "token_amount": 109991075587743370
+    },
+    {
+      "dex": "uniswap-v2",
+      "address": "0x9ded8b880fa4128ba9c564823e403c1ea5e04b8d",
+      "quote": "USDC",
+      "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+      "quote_amount": 0.154396,
+      "usd": 0.154396,
+      "token_amount": 223947302765594886
+    },
+    {
+      "dex": "uniswap-v3",
+      "address": "0x9e88239ac8c225e4fe63c72a4c7fc9d1c9ef7e24",
+      "quote": "WETH",
+      "quote_token": "0x4200000000000000000000000000000000000006",
+      "fee": 500,
+      "quote_amount": 2.8e-17,
+      "usd": 6.361156614132027e-14,
+      "token_amount": 18
+    }
+  ],
+  "liquidity": {
+    "pool": "0x6cdcb1c4a4d1c3c6d054b27ac5b77e89eafb971d",
+    "dex": "aerodrome",
+    "created_block": 3668849,
+    "created_at": "2023-09-07T22:50:45Z",
+    "pulled": false
+  },
+  "deployer": {
+    "address": "0xe83f922c34a1962e9ae9f52b59e18239764f2818",
+    "nonce": 731,
+    "balance_eth": 0.12093949560774606,
+    "scanned": 731,
+    "tokens": [
+      {
+        "address": "0xebf418fe2512e7e6bd9b87a8f0f294acdc67e6b4",
+        "symbol": "veNFT",
+        "pool": "none",
+        "weth": 0
+      },
+      {
+        "address": "0xa4e46b4f701c62e14df11b48dce76a7d793cd6d7",
+        "symbol": "",
+        "pool": "none",
+        "weth": 0
+      }
+    ],
+    "pulled": 0
+  },
+  "gaps": [
+    "holders: too much history to replay through the RPC (log scan budget exhausted: 50060005 blocks need at least 50061 requests of 1000 blocks, budget is 150) (explorer: HTTP 403 from base.blockscout.com)",
+    "LP holders: too much history to replay through the RPC (log scan budget exhausted: 49591706 blocks need at least 49592 requests of 1000 blocks, budget is 150) (explorer: HTTP 403 from base.blockscout.com)"
+  ],
+  "elapsed_ns": 7535529875,
+  "timings_ms": {
+    "basics": 40,
+    "contract": 185,
+    "creation": 3677,
+    "deployer": 1277,
+    "holders": 26,
+    "liquidity": 3670,
+    "pools": 95,
+    "probe": 72,
+    "shares": 72,
+    "source": 21
+  }
+}

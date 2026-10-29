@@ -1,0 +1,144 @@
+{
+  "chain": "ethereum",
+  "address": "0x752b6569279c353766eb7cb3058dcacc3032c565",
+  "block": 26301194,
+  "checked_at": "2026-10-29T21:49:42.526535163Z",
+  "token": {
+    "name": "Emerald Wave Legacy",
+    "symbol": "EWL",
+    "decimals": 18,
+    "total_supply": 516000000000000000000000000000000
+  },
+  "contract": {
+    "code_size": 1764,
+    "verified": true,
+    "verified_by": "sourcify",
+    "source_name": "EthereumClassicVault",
+    "owner_status": "none",
+    "creation": {
+      "Block": 25976381,
+      "Tx": "0xbe61ab3a35c4239376b617fad727f5a78e8565fd35338ad8bd083f55fbb94165",
+      "Deployer": "0xaddfc0e8753e4c8df552f5f6f303822a2b5af0a3",
+      "Factory": null
+    },
+    "created_at": "2026-09-14T14:45:23Z",
+    "delegatecall": false,
+    "selfdestruct": false
+  },
+  "powers": [],
+  "settings": null,
+  "shares": {
+    "deployer": 0.8089841258095722,
+    "owner": 0,
+    "burned": 0,
+    "in_pools": 0.10002341309066688
+  },
+  "holders": {
+    "source": "blockscout",
+    "count": 39,
+    "top": [
+      {
+        "address": "0xaddfc0e8753e4c8df552f5f6f303822a2b5af0a3",
+        "balance": 417435808917739283658864078374598,
+        "share": 0.8089841258095722,
+        "label": "deployer"
+      },
+      {
+        "address": "0xffa418b60ffc08553c979dcdc7b91983ff729d7a",
+        "balance": 51612081154784111773082900390599,
+        "share": 0.10002341309066688,
+        "label": "pool"
+      },
+      {
+        "address": "0x1af34b3c841f30c250c2e374a7c17eaed6c307d9",
+        "balance": 5691920130383942623862984364133,
+        "share": 0.011030852965860354,
+        "label": "contract"
+      },
+      {
+        "address": "0xe7d9c0684d4916394d5f57384b1b3999f8b92a2f",
+        "balance": 4420435573004845920580681598173,
+        "share": 0.00856673560659854,
+        "label": "wallet"
+      },
+      {
+        "address": "0xdf3e52af51a6c51b1f77a71fd936fd541c07c9da",
+        "balance": 4085245608788188886421501505832,
+        "share": 0.00791714265269029,
+        "label": "wallet"
+      },
+      {
+        "address": "0x94489b930a7e8614e27e7d7c8649e6d9174d1512",
+        "balance": 3936761107239931157374867391596,
+        "share": 0.00762938199077506,
+        "label": "wallet"
+      },
+      {
+        "address": "0xbe898127f408f85be5c537fa4f0da321cc823cdc",
+        "balance": 3624634609787457155067600205147,
+        "share": 0.007024485677882669,
+        "label": "wallet"
+      },
+      {
+        "address": "0x25e8afd17e04e99dc2d1ca844173a735a7f03b56",
+        "balance": 3472178350007513924280422054757,
+        "share": 0.006729027810092081,
+        "label": "wallet"
+      },
+      {
+        "address": "0x7492945aa577f724ec9215974325af96d1d0f1bd",
+        "balance": 3150133781013680348179667508275,
+        "share": 0.006104910428321086,
+        "label": "wallet"
+      },
+      {
+        "address": "0x3b092102ba9b759570596eb66ff3e85e1499e034",
+        "balance": 2341767207427215843546737029640,
+        "share": 0.004538308541525612,
+        "label": "wallet"
+      }
+    ],
+    "top_share": 0.8089841258095722,
+    "top10_share": 0.8718557066877881
+  },
+  "pools": [
+    {
+      "dex": "uniswap-v2",
+      "address": "0xffa418b60ffc08553c979dcdc7b91983ff729d7a",
+      "quote": "WETH",
+      "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+      "quote_amount": 2.5952801155e-8,
+      "usd": 0.000060671273426711905,
+      "token_amount": 51612081154784111773082900390599
+    }
+  ],
+  "liquidity": {
+    "pool": "0xffa418b60ffc08553c979dcdc7b91983ff729d7a",
+    "dex": "uniswap-v2",
+    "created_block": 25976385,
+    "created_at": "2026-09-14T14:46:11Z",
+    "pulled": true
+  },
+  "deployer": {
+    "address": "0xaddfc0e8753e4c8df552f5f6f303822a2b5af0a3",
+    "nonce": 8,
+    "balance_eth": 1e-9,
+    "scanned": 8,
+    "tokens": null,
+    "pulled": 0
+  },
+  "gaps": [],
+  "elapsed_ns": 5142692606,
+  "timings_ms": {
+    "basics": 40,
+    "contract": 260,
+    "creation": 2464,
+    "deployer": 109,
+    "holders": 782,
+    "liquidity": 2416,
+    "pools": 81,
+    "probe": 0,
+    "shares": 37,
+    "source": 162
+  }
+}
