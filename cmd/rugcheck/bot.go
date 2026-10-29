@@ -8,6 +8,7 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -175,7 +176,8 @@ func runBot(ctx context.Context, args []string) error {
 		}
 		return usageError{err.Error()}
 	}
-	token := os.Getenv("TELEGRAM_BOT_TOKEN")
+	// Hand-edited .env files leave stray spaces and CRLF carriage returns behind.
+	token := strings.TrimSpace(os.Getenv("TELEGRAM_BOT_TOKEN"))
 	if token == "" {
 		return usageError{"rugcheck bot: set TELEGRAM_BOT_TOKEN (from @BotFather)"}
 	}

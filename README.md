@@ -359,5 +359,9 @@ What the numbers show:
   - UNI: a treasury holding 26%.
   - SHIB: its 41% "top holder" is SHIB's own burn address, which facts does not yet count as burned.
   - DEGEN: an owner contract that can pause.
+- **Live in Telegram** (2026-10-29), with the bot's log timing each message up to Telegram accepting the reply:
+  - ZiG: "Honeypot", 8.7 s cold, with its chain (Base) found by the bot;
+  - PEPE: "No red flags found", 7.5 s cold;
+  - PEPE again: 128 ms cached. That is mostly one round trip to Telegram's API, which the bench stubs out.
 - **The verdict rules are also tested offline.** `internal/verdict/testdata` holds the recorded facts and
   simulations of all 20 tokens, so CI checks every rule change against real tokens without a network.
