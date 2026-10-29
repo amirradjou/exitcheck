@@ -3,8 +3,8 @@
 Paste a token address, get a straight answer: is this token built to take your money? A Telegram bot that gives a
 risk verdict with the reasons behind it, plus a live watch of new token launches.
 
-> **Status: M0 (contract facts) and M1 (buy-then-sell simulation) built.** This README is the spec. The milestones at
-> the end track what is built.
+> **Status: M0 (contract facts), M1 (buy-then-sell simulation) and M2 (Telegram bot) built.** This README is the
+> spec. The milestones at the end track what is built.
 
 ## Try it
 
@@ -15,7 +15,9 @@ make build
 ./bin/rugcheck facts -json <address>                                        # machine-readable
 ./bin/rugcheck sim 0x6982508145454Ce325dDbE47a25d4ec3d2311933              # buy then sell on a fork
 ./bin/rugcheck sim -chain base 0x940181a94A35A4569E4529A3CDfB74e38FD98631  # AERO, through Aerodrome
+./bin/rugcheck check 0xEF77fB35d6e0503faf3cbe9565193195Aa4c6eF8            # the verdict, as the bot gives it
 ./bin/rugcheck eval testdata/tokens.json                                    # the labelled set
+make bot                                                                    # the Telegram bot (TELEGRAM_BOT_TOKEN in .env)
 ```
 
 No keys needed: it runs on free public RPCs. `ETHERSCAN_API_KEY` is optional (see `.env.example`). A report covers
@@ -139,6 +141,43 @@ switches after launch, use allowlists or time- and block-gated rules, or change 
 guarantee: it answers "could a buyer sell right now". The contract facts cover what can still change (who can set
 fees, blacklist or pause).
 
+## How the verdict and the bot work (M2)
+
+`rugcheck check <address>` and the Telegram bot give the same answer. Facts and the simulation run side by side,
+because an answer has to come back in seconds; one after the other they take about 13 s at the median. Fixed rules
+then turn the results into one of four levels. The level never comes from a language model.
+
+| level | when |
+|---|---|
+| 🔴 scam | the test sale fails or the token keeps most of it (honeypot), or the liquidity was pulled |
+| 🟠 high risk | a tax of 10% or more; sales capped or transfers blocked; a live power that can trap holders (mint, blacklist, pause, fees, trading switch, seize, upgrade, reclaim ownership) held by the owner, the deployer or anyone; the deployer or owner holds half the LP; the deployer pulled liquidity before |
+| 🟡 caution | a tax under 10%; unpublished source; a pool younger than three days; under $10k of liquidity; one wallet with 20% of the supply; buying blocked; no pool; the high-risk powers above on an *established* token; a decisive check that did not finish |
+| 🟢 no red flags | none of the above |
+
+An established token has been on chain for a year and keeps at least $100k in its pools. USDT's owner can mint,
+blacklist and pause, and has been able to for years. On USDT that is a known trade-off. On a two-day-old token it is
+a trap waiting to be sprung. Each answer lists its reasons from most to least severe, then what could not be checked.
+
+The bot:
+
+- **Finding the chain.** Send it an address, adding "base" to pick the chain. Otherwise it uses the chain where the
+  address is a contract. It replies "Checking…" and edits the answer in.
+- **Caching.**
+  - Answers are cached in Redis for 10 minutes, and so is the chain lookup, so a repeated address needs no RPC call.
+  - An answer whose decisive checks did not all finish is kept for one minute only, so a retry soon gets a full
+    check.
+  - Concurrent requests for one token share one check.
+  - If Redis is down, the bot answers without it. It leaves Redis alone for 30 s after a failure, so a hung Redis
+    costs one answer a quarter of a second at most.
+- **Rationing.** Each check starts an Anvil fork and makes dozens of calls to free RPCs, so checks are rationed:
+  - two at a time across all chats (the rest queue, and are told so);
+  - one at a time per chat;
+  - ten uncached checks per chat per ten minutes.
+- **Safe output.**
+  - Answers are plain text. Names and revert reasons come from the token's author, so they lose control characters
+    and can't carry formatting.
+  - The bot token is part of every Telegram API URL, so no error message carries a URL.
+
 ## Stack
 
 - Go: RPC and explorer clients, Anvil fork simulation, analyzer workers, Telegram bot, HTTP API
@@ -152,7 +191,7 @@ fees, blacklist or pause).
 |---|---|---|
 | M0 ✅ | `rugcheck facts <address>`: contract, owner powers, holders, LP state | correct on 20 hand-picked tokens (10 known scams, 10 legitimate) — **20/20, see [M0 results](#m0-results)** |
 | M1 ✅ | Buy-then-sell simulation on an Anvil fork | every known honeypot in the set flagged; no legitimate token flagged — **6/6 flagged, 0/10 legitimate flagged, see [M1 results](#m1-results)** |
-| M2 | Telegram bot: verdict + reasons, cached in Redis | median answer under 10 s cold, instant when cached |
+| M2 ✅ | Telegram bot: verdict + reasons, cached in Redis | median answer under 10 s cold, instant when cached — **9.1 s cold, 0.5 ms cached, see [M2 results](#m2-results)** |
 | M3 | Live watch: factory events → Kafka → analyzers → alerts channel | a day of launches processed with lag under a minute and no duplicates |
 | M4 | Labelled dataset, features, model, MLflow | time-split precision/recall published; beats the hard rules alone |
 | M5 | Grounded "why" explanations | on a review set, every sentence cites a check or a source line |
@@ -256,11 +295,69 @@ What the honeypots show:
   - ASN's `sellTax()` reads 100. Nothing reaches the pool, so the router reverts.
   - QTC and Indy revert inside the token's transfer.
   - FREEDOM250 and AMERICA250 pay their fee wallet on every sale. That wallet is the deployer's own account,
-    delegated by EIP-7702 to code that reverts on payment. The token's code, its renounced ownership and its burned LP all look clean: the
-    trap lives in another account.
+    delegated by EIP-7702 to code that reverts on payment. The token's code, its renounced ownership and its burned
+    LP all look clean: the trap lives in another account.
   - ZiG's verified source lets only seven hard-coded wallets sell. The three wallets that ever sold are on that list.
 - **Names and owners can be faked; a sale cannot.** The function that arms ZiG's trap, `actionPair`, has a
   non-standard name and checks a hard-coded address instead of the owner. So M0 reports no privileged functions and a
   renounced owner. The simulation sees the effect however the cause is hidden.
 - **Sniper bots look like victims.** Most buyers of FREEDOM250, AMERICA250 and Indy bought within two blocks of
   launch. The buys of ASN, QTC and ZiG were spread over 52, 90 and 109 blocks.
+
+## M2 results
+
+`rugcheck bench testdata/tokens.json`, run 2026-10-29 on the default public RPCs with Redis from `compose.yaml`.
+Results: **median answer 9.1 s cold and 0.5 ms cached; 20/20 verdicts in their label's range**. Every scam comes
+out at least high risk, and no legitimate token worse than caution.
+
+The bench drives the bot's own message handler, with real RPCs, Anvil and Redis, and stands in only for Telegram. So
+the times run from the message arriving to the answer being handed to Telegram; Telegram's delivery adds its own
+fraction of a second. Each token is asked twice: first with its cache entries deleted (cold), then again (cached).
+
+| label | chain | token | verdict | cold | cached |
+|---|---|---|---|---|---|
+| legit | ethereum | USDT | caution | 15.1 s | 0.2 ms |
+| legit | ethereum | USDC | caution | 10.0 s | 0.5 ms |
+| legit | ethereum | DAI | clear | 9.8 s | 0.5 ms |
+| legit | ethereum | PEPE | clear | 8.6 s | 0.2 ms |
+| legit | ethereum | UNI | caution | 9.3 s | 0.2 ms |
+| legit | ethereum | LINK | clear | 9.4 s | 0.2 ms |
+| legit | ethereum | SHIB | caution | 20.0 s | 0.5 ms |
+| legit | base | BRETT | clear | 9.1 s | 0.5 ms |
+| legit | base | AERO | clear | 8.1 s | 0.5 ms |
+| legit | base | DEGEN | caution | 20.1 s | 0.5 ms |
+| scam | ethereum | ASN | scam | 7.4 s | 0.2 ms |
+| scam | ethereum | QTC | scam | 9.0 s | 0.5 ms |
+| scam | ethereum | FREEDOM250 | scam | 10.2 s | 0.5 ms |
+| scam | ethereum | AMERICA250 | scam | 8.7 s | 0.3 ms |
+| scam | ethereum | DREAM | scam | 8.9 s | 0.5 ms |
+| scam | ethereum | ARC | scam | 6.4 s | 0.5 ms |
+| scam | ethereum | EWL | scam | 5.1 s | 0.5 ms |
+| scam | ethereum | Indy | scam | 10.3 s | 0.5 ms |
+| scam | base | ZiG | scam | 9.2 s | 0.4 ms |
+| scam | ethereum | USA | scam | 8.6 s | 0.2 ms |
+
+What the numbers show:
+
+- **The tail comes from the free RPCs, not the work.**
+  - Checked alone, SHIB takes about 5 s. In an earlier bench run it took 74 s, waiting out mevblocker's Cloudflare
+    rate-limit cooldowns.
+  - Facts now get a 20 s budget and the simulation 30 s. A stage still running at its deadline becomes a "not checked"
+    line, so a slow answer is bounded instead of hanging. p90 was 15.1 s, max 20.1 s.
+  - DEGEN hits the budget in every run. Its deployer has 1,320 transactions, and listing the deployer's other tokens
+    checks each one's address through Base's RPC. That is not a decisive check, so DEGEN's answer stays complete.
+- **A cut-short check is never called clear.** The verdict is at least caution, and says which check is missing, if
+  any of these did not finish:
+  - the simulation;
+  - the power probes;
+  - pool discovery or the LP supply;
+  - the proxy check;
+  - the owner read, or finding who deployed the token (both are needed to probe their powers);
+  - for a token without a year-long record, who holds the LP.
+- **Caution on legitimate tokens:**
+  - USDT and USDC: owner powers (and USDC's upgradeable proxy), marked as a known trade-off on an established token.
+  - UNI: a treasury holding 26%.
+  - SHIB: its 41% "top holder" is SHIB's own burn address, which facts does not yet count as burned.
+  - DEGEN: an owner contract that can pause.
+- **The verdict rules are also tested offline.** `internal/verdict/testdata` holds the recorded facts and
+  simulations of all 20 tokens, so CI checks every rule change against real tokens without a network.
