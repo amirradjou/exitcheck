@@ -4,6 +4,7 @@ package verdict
 
 import (
 	"fmt"
+	"math"
 	"slices"
 	"sort"
 	"strings"
@@ -437,10 +438,11 @@ func (j *judge) headline() string {
 	}[j.v.Level]
 }
 
-// pct formats a share, keeping a decimal near 100% so 99.6% does not read as everything.
+// pct formats a share, keeping a decimal near 100% so 99.6% does not read as everything. The decimal is rounded down:
+// 99.97% must not print as 100.0%.
 func pct(share float64) string {
 	if share >= 0.995 && share < 1 {
-		return fmt.Sprintf("%.1f%%", 100*share)
+		return fmt.Sprintf("%.1f%%", math.Floor(1000*share)/10)
 	}
 	return fmt.Sprintf("%.0f%%", 100*share)
 }
@@ -469,6 +471,10 @@ func age(d time.Duration) string {
 		return fmt.Sprintf("%d days", int(d.Hours()/24))
 	case d >= 2*time.Hour:
 		return fmt.Sprintf("%d hours", int(d.Hours()))
+	case d < time.Minute:
+		return "less than a minute"
+	case d < 2*time.Minute:
+		return "1 minute"
 	}
 	return fmt.Sprintf("%d minutes", int(d.Minutes()))
 }

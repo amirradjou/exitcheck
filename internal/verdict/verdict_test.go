@@ -198,6 +198,19 @@ func TestTaxesAreNeverReassurances(t *testing.T) {
 	}
 }
 
+func TestShareAndAgeWording(t *testing.T) {
+	for share, want := range map[float64]string{0.9997: "99.9%", 0.996: "99.6%", 1: "100%", 0.5: "50%"} {
+		if got := pct(share); got != want {
+			t.Errorf("pct(%v) = %s, want %s", share, got, want)
+		}
+	}
+	for d, want := range map[time.Duration]string{20 * time.Second: "less than a minute", 90 * time.Second: "1 minute", 5 * time.Minute: "5 minutes"} {
+		if got := age(d); got != want {
+			t.Errorf("age(%v) = %s, want %s", d, got, want)
+		}
+	}
+}
+
 func TestLevelText(t *testing.T) {
 	for l := Clear; l <= Scam; l++ {
 		b, _ := l.MarshalText()
