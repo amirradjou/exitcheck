@@ -36,21 +36,22 @@ features above for the grey zone. The verdict and its score come from the checks
 
 ### 4. "Why" in plain words
 
-The LLM only explains: it gets the decisive checks plus the relevant source lines (retrieved from the verified source
-and a small library of known scam patterns) and writes two or three sentences that cite them. If it cannot ground a
+The LLM only explains, through retrieval-augmented generation (RAG): it gets the decisive checks plus the relevant
+source lines (retrieved from the verified source and a small library of known scam patterns) and writes two or three sentences that cite them. If it cannot ground a
 sentence in a check or a line of code, the sentence is dropped.
 
-### 5. Live watch
+### 5. Live watch (event-driven)
 
-New-pool events from the Uniswap v2/v3 factories (and Base's main DEXes) stream from a WebSocket RPC into Kafka;
-analyzer workers check each new token and post high-risk launches to an alerts channel. Results land in Postgres;
-Redis caches verdicts so a repeated address answers instantly.
+An event-driven pipeline: new-pool events from the Uniswap v2/v3 factories (and Base's main DEXes) stream from a WebSocket RPC into Kafka;
+analyzer workers check each new token and post high-risk launches to an alerts channel. Analyzers are independent consumers in one Kafka consumer group, so adding
+workers scales the watch and a crashed worker's partitions move to the others; results land in Postgres. Caching:
+Redis holds recent verdicts so a repeated address answers instantly.
 
 ### 6. Dataset and model
 
 A labelled set: known honeypots and rugs from public scam reports, and tokens that are clearly legitimate (listed on
-major exchanges, long-lived liquidity). Gradient-boosted model over the contract, holder and simulation features,
-tracked in MLflow. Evaluated on a **time split** — trained on older launches, tested on newer ones — with precision and
+major exchanges, long-lived liquidity). A machine-learning classifier (gradient-boosted trees, scikit-learn/XGBoost) over the contract, holder and simulation
+features, tracked in MLflow. Evaluated on a **time split** — trained on older launches, tested on newer ones — with precision and
 recall at the alert threshold published in this README.
 
 ## Stack
