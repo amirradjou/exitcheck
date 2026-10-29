@@ -1,6 +1,7 @@
 // Package eval checks rugcheck against hand-labelled tokens. Each case states why the token is labelled scam or
 // legitimate and lists facts established independently of rugcheck (block explorer records, cast calls against
-// another RPC, the verified source); a run passes when every stated fact comes out the same.
+// another RPC, the verified source); a run passes when every stated fact comes out the same, and when the
+// buy-then-sell simulation flags exactly the cases expected to be flagged.
 package eval
 
 import (
@@ -15,6 +16,7 @@ import (
 
 	"github.com/amirradjou/rugcheck/internal/chain"
 	"github.com/amirradjou/rugcheck/internal/facts"
+	"github.com/amirradjou/rugcheck/internal/sim"
 )
 
 // Case is one labelled token.
@@ -23,9 +25,18 @@ type Case struct {
 	Address common.Address `json:"address"`
 	Name    string         `json:"name"`
 	Label   string         `json:"label"` // "scam" or "legit"
+	// Kind says what a scam does: "honeypot" (a buyer cannot sell) or "rug" (the deployer pulled the liquidity).
+	Kind string `json:"kind,omitempty"`
 	// Why is the evidence for the label.
 	Why    string `json:"why"`
 	Expect Expect `json:"expect"`
+}
+
+// SimExpect is what the buy-then-sell simulation must conclude.
+type SimExpect struct {
+	Flagged bool `json:"flagged"`
+	// Block forks this block instead of the latest, for a token whose behaviour was observed then.
+	Block uint64 `json:"block,omitempty"`
 }
 
 // Expect lists facts to check; a field left out is not checked.
@@ -49,6 +60,8 @@ type Expect struct {
 	// DeployerTokensMin and DeployerPulledMin are lower bounds: the deployer can launch more after the label.
 	DeployerTokensMin *int `json:"deployer_tokens_min,omitempty"`
 	DeployerPulledMin *int `json:"deployer_pulled_min,omitempty"`
+	// Sim, when set, runs the buy-then-sell simulation (M1).
+	Sim *SimExpect `json:"sim,omitempty"`
 }
 
 // Load reads a JSON list of cases.
@@ -64,6 +77,9 @@ func Load(path string) ([]Case, error) {
 	for i, c := range cases {
 		if c.Label != "scam" && c.Label != "legit" {
 			return nil, fmt.Errorf("%s: case %d (%s): label %q, want scam or legit", path, i, c.Name, c.Label)
+		}
+		if c.Label == "scam" && c.Kind != "honeypot" && c.Kind != "rug" {
+			return nil, fmt.Errorf("%s: case %d (%s): scam kind %q, want honeypot or rug", path, i, c.Name, c.Kind)
 		}
 	}
 	return cases, nil
@@ -195,6 +211,16 @@ func shareOrUnknown(v float64, ok bool) string {
 		return "unknown"
 	}
 	return fmt.Sprintf("%.4f", v)
+}
+
+// CheckSim compares a simulation with what was expected of it.
+func CheckSim(e SimExpect, r *sim.Result) []Check {
+	return []Check{{
+		Field: "sim_flagged",
+		Want:  fmt.Sprint(e.Flagged),
+		Got:   fmt.Sprintf("%v (%s)", r.Flagged(), r.Verdict),
+		OK:    r.Flagged() == e.Flagged,
+	}}
 }
 
 // Summary formats failed checks, or "ok".

@@ -59,7 +59,7 @@ func DialURLs(ctx context.Context, net Network, latest, archive string, archiveR
 func dialChecked(ctx context.Context, net Network, endpoint string) (*rpc.Client, error) {
 	r, err := rpc.DialContext(ctx, endpoint)
 	if err != nil {
-		return nil, fmt.Errorf("dial %s: %w", Host(endpoint), stripURL(err))
+		return nil, fmt.Errorf("dial %s: %w", Host(endpoint), StripURL(err))
 	}
 	var id hexutil.Big
 	if err := retry(ctx, func() error { return r.CallContext(ctx, &id, "eth_chainId") }); err != nil {
@@ -331,20 +331,20 @@ func retry(ctx context.Context, fn func() error) error {
 	for attempt := 0; ; attempt++ {
 		err := fn()
 		if err == nil || !isTransient(err) || attempt == 5 {
-			return stripURL(err)
+			return StripURL(err)
 		}
 		select {
 		case <-ctx.Done():
-			return stripURL(errors.Join(err, ctx.Err()))
+			return StripURL(errors.Join(err, ctx.Err()))
 		case <-time.After(delay):
 		}
 		delay *= 2
 	}
 }
 
-// stripURL rewrites a transport error so it names the endpoint's host only. net/http quotes the full URL, and
+// StripURL rewrites a transport error so it names the endpoint's host only. net/http quotes the full URL, and
 // keyed providers (Alchemy, Infura) put the API key in the path; these errors end up in reports.
-func stripURL(err error) error {
+func StripURL(err error) error {
 	var ue *url.Error
 	if err == nil || !errors.As(err, &ue) {
 		return err

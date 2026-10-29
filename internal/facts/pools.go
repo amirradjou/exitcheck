@@ -20,8 +20,10 @@ type Pool struct {
 	DEX     string         `json:"dex"` // uniswap-v2, uniswap-v3, aerodrome
 	Address common.Address `json:"address"`
 	Quote   string         `json:"quote"`
-	Fee     uint32         `json:"fee,omitempty"` // v3 fee tier, in hundredths of a basis point
-	Stable  bool           `json:"stable,omitempty"`
+	// QuoteToken is the quote token's address.
+	QuoteToken common.Address `json:"quote_token"`
+	Fee        uint32         `json:"fee,omitempty"` // v3 fee tier, in hundredths of a basis point
+	Stable     bool           `json:"stable,omitempty"`
 	// QuoteAmount is the quote token the pool holds, in whole units; USD values it.
 	QuoteAmount float64  `json:"quote_amount"`
 	USD         float64  `json:"usd"`
@@ -42,7 +44,28 @@ type poolKey struct {
 
 // pools finds every pool pairing the token with a quote token, and values each one.
 func (g *gatherer) pools(ctx context.Context) {
-	net, t := g.c.Net, g.f.Address
+	found, feeTo, err := findPools(ctx, g.c, g.f.Address)
+	g.feeTo = feeTo
+	if err != nil {
+		g.gap("pools: %v", err)
+		return
+	}
+	g.f.Pools = found
+	if len(found) == 0 {
+		g.gap("pools: no pool against %s on the DEXes rugcheck knows", quoteSymbols(g.c.Net))
+	}
+}
+
+// Pools lists every pool that trades token against a quote token (WETH, USDC, USDT) on the DEXes rugcheck knows,
+// most valuable first.
+func Pools(ctx context.Context, c *chain.Client, token common.Address) ([]Pool, error) {
+	found, _, err := findPools(ctx, c, token)
+	return found, err
+}
+
+// findPools does the work of Pools and also returns each v2 DEX's protocol fee collector.
+func findPools(ctx context.Context, c *chain.Client, t common.Address) ([]Pool, map[string]common.Address, error) {
+	net := c.Net
 	var keys []poolKey
 	var calls []chain.Call
 	for _, q := range net.Quotes {
@@ -74,22 +97,21 @@ func (g *gatherer) pools(ctx context.Context) {
 		calls = append(calls, chain.Call{To: d.Factory, Data: pack(v2FactoryABI, "feeTo")})
 	}
 
-	res, err := g.c.Multicall(ctx, calls)
+	res, err := c.Multicall(ctx, calls)
 	if err != nil {
-		g.gap("pools: %v", err)
-		return
+		return nil, nil, err
 	}
-	g.feeTo = map[string]common.Address{}
+	feeTo := map[string]common.Address{}
 	for i, d := range net.V2 {
 		if a, ok := addressOf(res[feeToAt+i]); ok && a != (common.Address{}) {
-			g.feeTo[d.Name] = a
+			feeTo[d.Name] = a
 		}
 	}
 	var found []Pool
 	var foundKeys []poolKey
 	for i, k := range keys {
 		if a, ok := addressOf(res[i]); ok && a != (common.Address{}) {
-			found = append(found, Pool{DEX: k.dex, Address: a, Quote: k.quote.Symbol, Fee: k.fee, Stable: k.stable})
+			found = append(found, Pool{DEX: k.dex, Address: a, Quote: k.quote.Symbol, QuoteToken: k.quote.Address, Fee: k.fee, Stable: k.stable})
 			foundKeys = append(foundKeys, k)
 		}
 	}
@@ -100,10 +122,9 @@ func (g *gatherer) pools(ctx context.Context) {
 		calls = append(calls, balanceOfCall(foundKeys[i].quote.Address, p.Address), balanceOfCall(t, p.Address))
 	}
 	calls = append(calls, balanceOfCall(weth.Address, ethPair), balanceOfCall(usdc.Address, ethPair))
-	res, err = g.c.Multicall(ctx, calls)
+	res, err = c.Multicall(ctx, calls)
 	if err != nil {
-		g.gap("pool reserves: %v", err)
-		return
+		return nil, feeTo, fmt.Errorf("reserves: %w", err)
 	}
 	ethUSD := 0.0
 	if w, ok := word(res[2*len(found)]); ok && w.Sign() > 0 {
@@ -124,10 +145,7 @@ func (g *gatherer) pools(ctx context.Context) {
 		}
 	}
 	sort.SliceStable(found, func(i, j int) bool { return found[i].USD > found[j].USD })
-	g.f.Pools = found
-	if len(found) == 0 {
-		g.gap("pools: no pool against %s on the DEXes rugcheck knows", quoteSymbols(net))
-	}
+	return found, feeTo, nil
 }
 
 func quoteSymbols(net chain.Network) string {

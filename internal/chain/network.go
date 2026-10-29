@@ -26,7 +26,7 @@ type V2DEX struct {
 }
 
 // Network is a chain rugcheck can analyse. Every address here was checked on chain (factory.getPair, router.factory,
-// router.WETH, code present) when it was added.
+// router.WETH, quoter.factory, code present) when it was added.
 type Network struct {
 	Name      string
 	ChainID   int64
@@ -42,6 +42,9 @@ type Network struct {
 	// LogWindow is the largest eth_getLogs block range the default archive RPC accepts. The client shrinks it on
 	// errors.
 	LogWindow uint64
+	// ForkFromArchive makes simulations fork the archive RPC even at the latest block: publicnode's Base endpoint
+	// refuses some of anvil's fork requests as archive requests.
+	ForkFromArchive bool
 	// Blockscout is the explorer's base URL, or "" if there is none that answers keyless requests.
 	Blockscout string
 
@@ -49,8 +52,13 @@ type Network struct {
 	Quotes    []Quote
 	V2        []V2DEX
 	V3Factory common.Address
-	// Aerodrome is the Aerodrome pool factory (getPool(a, b, stable)); zero on chains without it.
-	Aerodrome common.Address
+	// V3Router is Uniswap's SwapRouter02 and V3Quoter its QuoterV2 (quotes v3 swaps without a pool-math port).
+	V3Router common.Address
+	V3Quoter common.Address
+	// Aerodrome is the Aerodrome pool factory (getPool(a, b, stable)) and AerodromeRouter its router; zero on
+	// chains without it.
+	Aerodrome       common.Address
+	AerodromeRouter common.Address
 	// Lockers are contracts that hold LP tokens on behalf of their owners until an unlock date.
 	Lockers map[common.Address]string
 }
@@ -88,6 +96,8 @@ var (
 			Router:  common.HexToAddress("0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D"),
 		}},
 		V3Factory: common.HexToAddress("0x1F98431c8aD98523631AE4a59f267346ea31F984"),
+		V3Router:  common.HexToAddress("0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45"),
+		V3Quoter:  common.HexToAddress("0x61fFE014bA17989E743c5F6cB21bF9697530B21e"),
 		Lockers: map[common.Address]string{
 			common.HexToAddress("0x663A5C229c09b049E36dCc11a9B0d4a8Eb9db214"): "UNCX",
 			common.HexToAddress("0xE2fE530C047f2d85298b07D9333C05737f1435fB"): "Team Finance",
@@ -101,8 +111,9 @@ var (
 		RPC:        "https://base-rpc.publicnode.com",
 		ArchiveRPC: "https://base.gateway.tenderly.co",
 		// Tenderly's public gateway answers 429 to bursts (a batch of 16 is one); single requests at 15/s pass.
-		ArchiveRate: 8,
-		LogWindow:   1_000,
+		ArchiveRate:     8,
+		LogWindow:       1_000,
+		ForkFromArchive: true,
 		// base.blockscout.com sits behind a browser challenge for scripted clients; the client tries it and falls
 		// back to the RPC when it answers with HTML.
 		Blockscout: "https://base.blockscout.com",
@@ -116,9 +127,12 @@ var (
 			Factory: common.HexToAddress("0x8909Dc15e40173Ff4699343b6eB8132c65e18eC6"),
 			Router:  common.HexToAddress("0x4752ba5DBc23f44D87826276BF6Fd6b1C372aD24"),
 		}},
-		V3Factory: common.HexToAddress("0x33128a8fC17869897dcE68Ed026d694621f6FDfD"),
-		Aerodrome: common.HexToAddress("0x420DD381b31aEf6683db6B902084cB0FFECe40Da"),
-		Lockers:   map[common.Address]string{},
+		V3Factory:       common.HexToAddress("0x33128a8fC17869897dcE68Ed026d694621f6FDfD"),
+		V3Router:        common.HexToAddress("0x2626664c2603336E57B271c5C0b26F421741e481"),
+		V3Quoter:        common.HexToAddress("0x3d4e44Eb1374240CE5F1B871ab261CD16335B76a"),
+		Aerodrome:       common.HexToAddress("0x420DD381b31aEf6683db6B902084cB0FFECe40Da"),
+		AerodromeRouter: common.HexToAddress("0xcF77a3Ba9A5CA399B7c97c74d54e5b1Beb874E43"),
+		Lockers:         map[common.Address]string{},
 	}
 )
 
