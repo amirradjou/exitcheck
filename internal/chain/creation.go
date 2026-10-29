@@ -20,6 +20,9 @@ type Creation struct {
 	// Factory is the contract the transaction called when the contract was created by another contract (CREATE2
 	// launchpads, factories); nil for a direct deployment.
 	Factory *common.Address
+	// Inferred is set when the creating transaction was recognised by a constructor event rather than proven by a
+	// receipt's contractAddress or a trace.
+	Inferred bool `json:",omitempty"`
 }
 
 // CreationBlock finds the block a contract was deployed in by searching archive state. A contract's nonce becomes 1
@@ -127,10 +130,10 @@ var (
 )
 
 // Creator finds the transaction that deployed addr in block. A direct deployment shows up as the receipt's
-// contractAddress. A contract created by a factory is found through a "birth" event it emitted in that block: a
-// Transfer or OwnershipTransferred from the zero address, which constructors emit. Any later transaction in the
-// same block can also make the new contract log, so a plain log match could name a stranger as the deployer; without
-// a birth event the caller should ask an explorer, which traces internal creations.
+// contractAddress. For a contract created by a factory, receipts cannot prove which transaction created it, so the
+// match is inferred, and only accepted from the first transaction in the block that made the contract log at all,
+// when that log is a "birth" event (Transfer or OwnershipTransferred from the zero address, as constructors emit).
+// A later transaction can make the new contract log too; callers should prefer a traced creator when one exists.
 func (c *Client) Creator(ctx context.Context, addr common.Address, block uint64) (*Creation, error) {
 	var receipts []receiptJSON
 	err := c.archiveDo(ctx, 1, func() error {
@@ -145,11 +148,19 @@ func (c *Client) Creator(ctx context.Context, addr common.Address, block uint64)
 		}
 	}
 	for _, r := range receipts {
+		logged := false
 		for _, l := range r.Logs {
-			if l.Address == addr && len(l.Topics) >= 2 && l.Topics[1] == zeroAddressTopic &&
-				(l.Topics[0] == transferTopic || l.Topics[0] == ownershipTopic) {
-				return &Creation{Block: block, Tx: r.TransactionHash, Deployer: r.From, Factory: r.To}, nil
+			if l.Address != addr {
+				continue
 			}
+			logged = true
+			if len(l.Topics) >= 2 && l.Topics[1] == zeroAddressTopic &&
+				(l.Topics[0] == transferTopic || l.Topics[0] == ownershipTopic) {
+				return &Creation{Block: block, Tx: r.TransactionHash, Deployer: r.From, Factory: r.To, Inferred: true}, nil
+			}
+		}
+		if logged {
+			break // the first transaction to touch the contract did not look like its creation
 		}
 	}
 	return nil, errors.New("no transaction in the creation block shows the contract being created (factory-made without a constructor event)")

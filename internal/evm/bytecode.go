@@ -78,18 +78,13 @@ func (c Code) Merge(o Code) Code {
 	return out
 }
 
-// maxMetadata is the longest metadata trailer solc writes (ipfs hash, solc version and the experimental flag are
-// well under it). A longer "trailer" is code pretending to be metadata.
+// maxMetadata is the longest metadata trailer solc writes (an ipfs hash, the compiler version and the experimental
+// flag fit well under it).
 const maxMetadata = 128
 
-// metadataKeys are the CBOR keys solc's metadata map starts with, each as a CBOR text string.
-var metadataKeys = [][]byte{
-	append([]byte{0x64}, "ipfs"...), append([]byte{0x65}, "bzzr0"...), append([]byte{0x65}, "bzzr1"...),
-	append([]byte{0x64}, "solc"...),
-}
-
-// stripMetadata drops the CBOR metadata solc appends to runtime code; its last two bytes give its length. It only
-// strips a trailer that is short and starts like solc's map (a map header, then one of its known keys).
+// stripMetadata drops the CBOR metadata solc appends to runtime code; its last two bytes give its length. The
+// trailer is only dropped when it decodes completely as solc's metadata map (see solcMetadata): anything else is
+// treated as code, so a contract cannot hide opcodes in a trailer that merely starts like metadata.
 func stripMetadata(code []byte) []byte {
 	if len(code) < 2 {
 		return code
@@ -98,16 +93,67 @@ func stripMetadata(code []byte) []byte {
 	if n < 2 || n > maxMetadata || n+2 > len(code) {
 		return code
 	}
-	meta := code[len(code)-2-n : len(code)-2]
-	if meta[0] < 0xa1 || meta[0] > 0xa5 {
+	if !solcMetadata(code[len(code)-2-n : len(code)-2]) {
 		return code
 	}
-	for _, k := range metadataKeys {
-		if bytes.HasPrefix(meta[1:], k) {
-			return code[:len(code)-2-n]
-		}
+	return code[:len(code)-2-n]
+}
+
+// solcMetadata reports whether b is exactly a CBOR map of solc's metadata entries: "ipfs" (34-byte multihash),
+// "bzzr0"/"bzzr1" (32-byte swarm hash), "solc" (3 version bytes, or a version string) and "experimental" (bool).
+func solcMetadata(b []byte) bool {
+	if len(b) == 0 || b[0] < 0xa1 || b[0] > 0xa5 {
+		return false
 	}
-	return code
+	pairs, i := int(b[0]-0xa0), 1
+	seen := map[string]bool{}
+	for range pairs {
+		// Key: a short text string.
+		if i >= len(b) || b[i] < 0x60 || b[i] > 0x77 {
+			return false
+		}
+		kl := int(b[i] - 0x60)
+		if i+1+kl > len(b) {
+			return false
+		}
+		key := string(b[i+1 : i+1+kl])
+		i += 1 + kl
+		if seen[key] || i >= len(b) {
+			return false
+		}
+		seen[key] = true
+		// Value: the type and length solc writes for that key.
+		var vl int
+		switch key {
+		case "ipfs", "bzzr0", "bzzr1":
+			want := map[string]int{"ipfs": 34, "bzzr0": 32, "bzzr1": 32}[key]
+			if b[i] != 0x58 || i+1 >= len(b) || int(b[i+1]) != want {
+				return false
+			}
+			vl = 2 + want
+		case "solc":
+			switch {
+			case b[i] == 0x43: // 3 bytes: major, minor, patch
+				vl = 4
+			case b[i] >= 0x60 && b[i] <= 0x77: // version string
+				vl = 1 + int(b[i]-0x60)
+			default:
+				return false
+			}
+		case "experimental":
+			if b[i] != 0xf4 && b[i] != 0xf5 {
+				return false
+			}
+			vl = 1
+		default:
+			return false
+		}
+		if i+vl > len(b) {
+			return false
+		}
+		i += vl
+	}
+	return i == len(b)
 }
 
 var (

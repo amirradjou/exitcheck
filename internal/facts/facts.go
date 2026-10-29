@@ -328,12 +328,18 @@ func (g *gatherer) creation(ctx context.Context) {
 		g.f.Contract.CreatedAt = &t
 	}
 	cr, err := g.c.Creator(ctx, g.f.Address, block)
-	if err != nil {
-		var exErr error
-		if cr, exErr = g.creatorFromExplorer(ctx, block); exErr != nil {
+	if err != nil || cr.Inferred {
+		// The explorer traces internal creations, so its answer beats one inferred from a constructor event.
+		traced, exErr := g.creatorFromExplorer(ctx, block)
+		switch {
+		case exErr == nil:
+			cr = traced
+		case err != nil:
 			g.gap("deployer: %v (explorer: %v)", err, exErr)
 			g.f.Contract.Creation = &chain.Creation{Block: block}
 			return
+		default:
+			g.gap("deployer: inferred from a constructor event in a factory transaction, not traced (explorer: %v)", exErr)
 		}
 	}
 	g.f.Contract.Creation = cr

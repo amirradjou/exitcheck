@@ -20,7 +20,8 @@ import (
 )
 
 // Client is a connection to one network: a latest-state RPC for calls and an archive RPC for old blocks and logs.
-// Every call retries when an RPC rate-limits it; the archive RPC is also paced when its provider needs that.
+// Every call retries transient provider errors (rate limits, overloaded gateways); the archive RPC is also paced
+// when its provider needs that.
 type Client struct {
 	Net Network
 	RPC *rpc.Client
@@ -115,7 +116,7 @@ func (c *Client) BlockTime(ctx context.Context, n uint64) (time.Time, error) {
 	return time.Unix(int64(h.Time), 0).UTC(), nil
 }
 
-// archiveDo runs fn against the archive RPC: paced for n requests, retried on rate limits.
+// archiveDo runs fn against the archive RPC: paced for n requests, retried on transient errors.
 func (c *Client) archiveDo(ctx context.Context, n int, fn func() error) error {
 	return retry(ctx, func() error {
 		if err := c.pace.wait(ctx, n); err != nil {
@@ -307,7 +308,7 @@ func (c *Client) batch(ctx context.Context, elems []rpc.BatchElem) error {
 	return retry(ctx, func() error { return batchOnce(ctx, c.RPC, elems) })
 }
 
-// batchOnce sends a batch and reports a rate limit on any element as an error, so retry resends the whole batch.
+// batchOnce sends a batch and reports a transient error on any element as an error, so retry resends the batch.
 func batchOnce(ctx context.Context, r *rpc.Client, elems []rpc.BatchElem) error {
 	for i := range elems {
 		elems[i].Error = nil
@@ -316,20 +317,20 @@ func batchOnce(ctx context.Context, r *rpc.Client, elems []rpc.BatchElem) error 
 		return err
 	}
 	for _, e := range elems {
-		if e.Error != nil && isRateLimit(e.Error) {
+		if e.Error != nil && isTransient(e.Error) {
 			return e.Error
 		}
 	}
 	return nil
 }
 
-// retry runs fn until it succeeds, fails with an error that is not a rate limit, or runs out of attempts.
+// retry runs fn until it succeeds, fails with an error that is not transient, or runs out of attempts.
 // Errors leave it with endpoint URLs cut down to their host (see stripURL).
 func retry(ctx context.Context, fn func() error) error {
 	delay := 500 * time.Millisecond
 	for attempt := 0; ; attempt++ {
 		err := fn()
-		if err == nil || !isRateLimit(err) || attempt == 5 {
+		if err == nil || !isTransient(err) || attempt == 5 {
 			return stripURL(err)
 		}
 		select {
@@ -360,12 +361,25 @@ func Host(endpoint string) string {
 	return u.Scheme + "://" + u.Host
 }
 
-func isRateLimit(err error) bool {
+// isTransient reports whether an error is the provider's momentary trouble (rate limits, overloaded gateways,
+// dropped connections) rather than an answer, so the request is worth sending again.
+func isTransient(err error) bool {
 	var httpErr rpc.HTTPError
-	if errors.As(err, &httpErr) && httpErr.StatusCode == 429 {
-		return true
+	if errors.As(err, &httpErr) {
+		switch httpErr.StatusCode {
+		case 429, 502, 503, 504:
+			return true
+		}
 	}
 	s := strings.ToLower(err.Error())
-	return strings.Contains(s, "429") || strings.Contains(s, "rate limit") || strings.Contains(s, "too many requests") ||
-		strings.Contains(s, "capacity exceeded")
+	for _, sign := range []string{
+		"429", "rate limit", "too many requests", "capacity exceeded",
+		"502", "503", "504", "bad gateway", "gateway time", "service unavailable", "temporarily unavailable",
+		"connection reset", "unexpected eof",
+	} {
+		if strings.Contains(s, sign) {
+			return true
+		}
+	}
+	return false
 }

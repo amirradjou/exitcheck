@@ -19,6 +19,7 @@ import (
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/crypto"
+	"github.com/ethereum/go-ethereum/rpc"
 )
 
 type rpcReq struct {
@@ -190,14 +191,21 @@ func TestPacerSpacesRequests(t *testing.T) {
 	}
 }
 
-func TestIsRateLimit(t *testing.T) {
-	for _, msg := range []string{"429 Too Many Requests", "rate limit exceeded", "Capacity exceeded"} {
-		if !isRateLimit(errors.New(msg)) {
-			t.Errorf("%q not seen as a rate limit", msg)
+func TestIsTransient(t *testing.T) {
+	for _, msg := range []string{
+		"429 Too Many Requests", "rate limit exceeded", "Capacity exceeded",
+		`504 Gateway Timeout: {"title":"Error 504: Gateway time-out"}`, "error code -32603: service temporarily unavailable",
+		"read tcp: connection reset by peer",
+	} {
+		if !isTransient(errors.New(msg)) {
+			t.Errorf("%q not seen as transient", msg)
 		}
 	}
-	if isRateLimit(errors.New("execution reverted")) {
-		t.Error("revert seen as a rate limit")
+	if isTransient(errors.New("execution reverted")) {
+		t.Error("revert seen as transient")
+	}
+	if !isTransient(rpc.HTTPError{StatusCode: 503}) {
+		t.Error("HTTP 503 not seen as transient")
 	}
 }
 
@@ -229,13 +237,18 @@ func TestCreatorNeedsABirthEventForFactoryCreations(t *testing.T) {
 		receipts []map[string]any
 		want     common.Address
 	}{
-		// The factory call minted from the zero address: that is the creation.
+		// The first transaction to make the contract log minted from the zero address: that is the creation.
 		{"birth event", []map[string]any{
-			receipt(1, stranger, approval, common.BytesToHash(stranger[:])),
-			receipt(2, scammer, transferTopic, zeroAddressTopic, common.BytesToHash(scammer[:])),
+			receipt(1, scammer, transferTopic, zeroAddressTopic, common.BytesToHash(scammer[:])),
+			receipt(2, stranger, approval, common.BytesToHash(stranger[:])),
 		}, scammer},
 		// Only a later interaction logged: no deployer rather than the stranger.
 		{"no birth event", []map[string]any{receipt(1, stranger, approval, common.BytesToHash(stranger[:]))}, common.Address{}},
+		// A mint from the zero address after another transaction already touched the contract is not its birth.
+		{"birth-looking event later in the block", []map[string]any{
+			receipt(1, stranger, approval, common.BytesToHash(stranger[:])),
+			receipt(2, stranger, transferTopic, zeroAddressTopic, common.BytesToHash(stranger[:])),
+		}, common.Address{}},
 	} {
 		url := fakeRPC(t, Ethereum, func(method string, _ []json.RawMessage) (any, *rpcErr) { return c.receipts, nil })
 		cl, err := DialURLs(context.Background(), Ethereum, url, url, 0)

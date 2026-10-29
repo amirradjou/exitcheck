@@ -1,6 +1,8 @@
 package evm
 
 import (
+	"fmt"
+	"strings"
 	"testing"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -28,15 +30,32 @@ func TestAnalyzeFindsDispatcherSelectorsAndSkipsPushData(t *testing.T) {
 	}
 }
 
+// solcTrailer is real solc metadata: {"ipfs": <34 bytes>, "solc": 0.8.24}, followed by its length.
+func solcTrailer(hash string) string {
+	meta := "a2" + "6469706673" + "5822" + hash + "64736f6c6343" + "000818"
+	return meta + fmt.Sprintf("%04x", len(meta)/2)
+}
+
 func TestAnalyzeIgnoresMetadata(t *testing.T) {
-	// a2 64 'ipfs' 58 22 ff: a CBOR map whose bytes include 0xff, which must not count as SELFDESTRUCT.
-	meta := "a264697066735822ff" // 9 bytes
-	code := common.FromHex("6000" + meta + "0009")
-	if Analyze(code).Selfdestruct {
-		t.Error("metadata byte 0xff read as SELFDESTRUCT")
+	// The ipfs hash contains 0xff and 0xf4 bytes, which must not count as SELFDESTRUCT or DELEGATECALL.
+	hash := "1220" + strings.Repeat("ff", 16) + strings.Repeat("f4", 16)
+	if c := Analyze(common.FromHex("6000" + solcTrailer(hash))); c.Selfdestruct || c.Delegatecall {
+		t.Errorf("metadata bytes read as opcodes: %+v", c)
 	}
 	if !Analyze(common.FromHex("6000ff")).Selfdestruct {
 		t.Error("real SELFDESTRUCT missed")
+	}
+}
+
+func TestOnlyCompleteSolcMetadataIsSkipped(t *testing.T) {
+	// Starts like solc's map ("ipfs" key) but the value is code: SELFDESTRUCT must be seen.
+	fake := "a2" + "6469706673" + "5b" + "ff" + "00"
+	if !Analyze(common.FromHex("6000" + fake + fmt.Sprintf("%04x", len(fake)/2))).Selfdestruct {
+		t.Error("opcode hidden in a trailer that only starts like metadata")
+	}
+	hash := "1220" + strings.Repeat("ab", 32)
+	if !solcMetadata(common.FromHex(solcTrailer(hash))[:len(common.FromHex(solcTrailer(hash)))-2]) {
+		t.Error("real solc metadata rejected")
 	}
 }
 
