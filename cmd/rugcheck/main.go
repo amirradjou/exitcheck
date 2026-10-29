@@ -30,6 +30,9 @@ commands:
   check <address>   the verdict: facts and simulation together, as the bot answers
   bot               run the Telegram bot (TELEGRAM_BOT_TOKEN, REDIS_URL)
   bench <cases.json> time the bot's answers, cold and cached (needs Redis)
+  watch             follow new pools and publish launches to Kafka (KAFKA_BROKERS, DATABASE_URL)
+  analyze           check launches from Kafka, store verdicts, post alerts
+  report            lag, duplicates and verdicts of the live watch
   eval <cases.json> check facts against hand-labelled tokens (testdata/tokens.json)
   version           print the version
 
@@ -69,6 +72,12 @@ func main() {
 		err = runBot(ctx, os.Args[2:])
 	case "bench":
 		err = runBench(ctx, os.Args[2:])
+	case "watch":
+		err = runWatch(ctx, os.Args[2:])
+	case "analyze":
+		err = runAnalyze(ctx, os.Args[2:])
+	case "report":
+		err = runReport(ctx, os.Args[2:])
 	case "eval":
 		err = runEval(ctx, os.Args[2:])
 	case "-h", "--help", "help":
