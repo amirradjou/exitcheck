@@ -211,7 +211,7 @@ func TestIsTransient(t *testing.T) {
 
 func TestStripURLKeepsOnlyTheHost(t *testing.T) {
 	err := &url.Error{Op: "Post", URL: "https://base-mainnet.g.alchemy.com/v2/SECRETKEY", Err: context.DeadlineExceeded}
-	got := stripURL(fmt.Errorf("holders: %w", err))
+	got := StripURL(fmt.Errorf("holders: %w", err))
 	if s := got.Error(); strings.Contains(s, "SECRETKEY") || !strings.Contains(s, "https://base-mainnet.g.alchemy.com") {
 		t.Errorf("stripURL = %q", s)
 	}

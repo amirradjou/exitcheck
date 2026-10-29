@@ -9,6 +9,7 @@ import (
 	"fmt"
 	"os"
 	"os/signal"
+	"strings"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -18,12 +19,14 @@ import (
 	"github.com/amirradjou/rugcheck/internal/eval"
 	"github.com/amirradjou/rugcheck/internal/explorer"
 	"github.com/amirradjou/rugcheck/internal/facts"
+	"github.com/amirradjou/rugcheck/internal/sim"
 )
 
 const usage = `usage: rugcheck <command> [flags]
 
 commands:
   facts <address>   contract, owner powers, holders and liquidity of a token
+  sim <address>     buy then sell the token on a local fork (needs Foundry's anvil)
   eval <cases.json> check facts against hand-labelled tokens (testdata/tokens.json)
   version           print the version
 
@@ -48,6 +51,8 @@ func main() {
 		fmt.Println(buildinfo.String())
 	case "facts":
 		err = runFacts(ctx, os.Args[2:])
+	case "sim":
+		err = runSim(ctx, os.Args[2:])
 	case "eval":
 		err = runEval(ctx, os.Args[2:])
 	case "-h", "--help", "help":
@@ -112,6 +117,49 @@ func runFacts(ctx context.Context, args []string) error {
 		return enc.Encode(f)
 	}
 	return facts.Render(os.Stdout, f)
+}
+
+func runSim(ctx context.Context, args []string) error {
+	fs := flag.NewFlagSet("sim", flag.ContinueOnError)
+	chainName := fs.String("chain", "ethereum", "chain: ethereum or base")
+	block := fs.Uint64("block", 0, "fork this block instead of the latest (uses the archive RPC)")
+	asJSON := fs.Bool("json", false, "print JSON instead of the text report")
+	timeout := fs.Duration("timeout", 5*time.Minute, "give up after this long")
+	fs.Usage = func() {
+		fmt.Fprintln(fs.Output(), "usage: rugcheck sim [-chain ethereum|base] [-block N] [-json] <token address>")
+		fs.PrintDefaults()
+	}
+	if err := fs.Parse(interleave(args)); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return nil
+		}
+		return usageError{err.Error()}
+	}
+	if fs.NArg() != 1 || !common.IsHexAddress(fs.Arg(0)) {
+		fs.Usage()
+		return usageError{"rugcheck sim: need one token address"}
+	}
+	net, err := chain.ByName(*chainName)
+	if err != nil {
+		return usageError{err.Error()}
+	}
+	ctx, cancel := context.WithTimeout(ctx, *timeout)
+	defer cancel()
+	c, err := chain.Dial(ctx, net)
+	if err != nil {
+		return err
+	}
+	defer c.Close()
+	r, err := sim.Run(ctx, c, common.HexToAddress(fs.Arg(0)), sim.Options{Block: *block})
+	if err != nil {
+		return err
+	}
+	if *asJSON {
+		enc := json.NewEncoder(os.Stdout)
+		enc.SetIndent("", "  ")
+		return enc.Encode(r)
+	}
+	return sim.Render(os.Stdout, r)
 }
 
 func runEval(ctx context.Context, args []string) error {
@@ -206,6 +254,9 @@ func runEval(ctx context.Context, args []string) error {
 	return nil
 }
 
+// valueFlags are the flags that take a value as the next argument.
+var valueFlags = map[string]bool{"chain": true, "timeout": true, "pause": true, "block": true}
+
 // interleave moves flags ahead of positional arguments, so "facts 0xabc -json" works like "facts -json 0xabc".
 func interleave(args []string) []string {
 	var flags, rest []string
@@ -217,7 +268,7 @@ func interleave(args []string) []string {
 			i = len(args)
 		case len(a) > 1 && a[0] == '-':
 			flags = append(flags, a)
-			if (a == "-chain" || a == "--chain" || a == "-timeout" || a == "--timeout" || a == "-pause" || a == "--pause") && i+1 < len(args) {
+			if valueFlags[strings.TrimLeft(a, "-")] && i+1 < len(args) {
 				flags = append(flags, args[i+1])
 				i++
 			}
