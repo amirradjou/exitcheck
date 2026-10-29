@@ -39,6 +39,8 @@ type Network struct {
 	// ArchiveRate paces the default archive RPC, in requests per second (each element of a batch counts); 0 means
 	// no limit.
 	ArchiveRate float64
+	// WS is a WebSocket endpoint for new-block subscriptions (the live watch); RUGCHECK_WS_<NAME> overrides it.
+	WS string
 	// LogWindow is the largest eth_getLogs block range the default archive RPC accepts. The client shrinks it on
 	// errors.
 	LogWindow uint64
@@ -82,6 +84,7 @@ var (
 		BlockTime:  12 * time.Second,
 		RPC:        "https://ethereum-rpc.publicnode.com",
 		ArchiveRPC: "https://rpc.mevblocker.io",
+		WS:         "wss://ethereum-rpc.publicnode.com",
 		LogWindow:  10_000,
 		Blockscout: "https://eth.blockscout.com",
 		WETH:       common.HexToAddress("0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"),
@@ -110,6 +113,7 @@ var (
 		BlockTime:  2 * time.Second,
 		RPC:        "https://base-rpc.publicnode.com",
 		ArchiveRPC: "https://base.gateway.tenderly.co",
+		WS:         "wss://base-rpc.publicnode.com",
 		// Tenderly's public gateway answers 429 to bursts (a batch of 16 is one); single requests at 15/s pass.
 		ArchiveRate:     8,
 		LogWindow:       1_000,
@@ -148,6 +152,14 @@ func ByName(name string) (Network, error) {
 		return Base, nil
 	}
 	return Network{}, fmt.Errorf("unknown chain %q (want ethereum or base)", name)
+}
+
+// WSEndpoint returns the WebSocket URL after its environment override.
+func (n Network) WSEndpoint() string {
+	if u := os.Getenv("RUGCHECK_WS_" + strings.ToUpper(n.Name)); u != "" {
+		return u
+	}
+	return n.WS
 }
 
 // Endpoints returns the latest-state and archive RPC URLs after environment overrides, and the archive pacing that
