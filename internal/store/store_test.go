@@ -105,7 +105,7 @@ func TestAlertsAreClaimedOncePerToken(t *testing.T) {
 	if ok, _ := s.ClaimAlert(ctx, c, tok, c+":p2", "scam"); !ok {
 		t.Error("a released claim could not be taken again")
 	}
-	if err := s.AlertSent(ctx, c, tok); err != nil {
+	if err := s.AlertSent(ctx, c, tok, true); err != nil {
 		t.Fatal(err)
 	}
 	if err := s.ReleaseAlert(ctx, c, tok); err != nil {

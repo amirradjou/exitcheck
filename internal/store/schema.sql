@@ -57,3 +57,5 @@ CREATE TABLE IF NOT EXISTS alerts (
     sent_at    timestamptz,
     PRIMARY KEY (chain, token)
 );
+-- sent_at settles a claim; posted says whether it reached a channel (none is configured until TELEGRAM_ALERTS_CHAT).
+ALTER TABLE alerts ADD COLUMN IF NOT EXISTS posted boolean NOT NULL DEFAULT false;

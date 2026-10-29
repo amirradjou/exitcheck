@@ -60,7 +60,7 @@ func (m *memStore) ClaimAlert(_ context.Context, chain string, token common.Addr
 	return true, nil
 }
 
-func (m *memStore) AlertSent(_ context.Context, chain string, token common.Address) error {
+func (m *memStore) AlertSent(_ context.Context, chain string, token common.Address, _ bool) error {
 	m.mu.Lock()
 	defer m.mu.Unlock()
 	m.alerts[chain+token.Hex()] = true

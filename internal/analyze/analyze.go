@@ -26,7 +26,7 @@ type Store interface {
 	Receive(ctx context.Context, l launch.Launch) (store.Prior, error)
 	Finish(ctx context.Context, id string, r store.Result) error
 	ClaimAlert(ctx context.Context, chain string, token common.Address, launchID, level string) (bool, error)
-	AlertSent(ctx context.Context, chain string, token common.Address) error
+	AlertSent(ctx context.Context, chain string, token common.Address, posted bool) error
 	ReleaseAlert(ctx context.Context, chain string, token common.Address) error
 }
 
@@ -143,7 +143,7 @@ func (a *Analyzer) raise(ctx context.Context, l launch.Launch, level verdict.Lev
 		}
 	}
 	a.log.Info("alert", "id", l.ID(), "token", l.Token, "level", level, "posted", a.alert != nil)
-	return a.store.AlertSent(ctx, l.Chain, l.Token)
+	return a.store.AlertSent(ctx, l.Chain, l.Token, a.alert != nil)
 }
 
 func sleep(ctx context.Context, d time.Duration) {

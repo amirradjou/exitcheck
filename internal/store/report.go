@@ -56,7 +56,7 @@ func (s *Store) Report(ctx context.Context, since time.Time) (Report, error) {
 			(SELECT count(*) FROM (SELECT chain, pool FROM launches WHERE funded_at >= $1 GROUP BY 1, 2 HAVING count(*) > 1) d),
 			(SELECT count(*) FROM (SELECT chain, token FROM alerts WHERE claimed_at >= $1 GROUP BY 1, 2 HAVING count(*) > 1) d),
 			(SELECT count(*) FROM alerts WHERE claimed_at >= $1),
-			(SELECT count(sent_at) FROM alerts WHERE claimed_at >= $1)`, since).
+			(SELECT count(*) FILTER (WHERE posted) FROM alerts WHERE claimed_at >= $1)`, since).
 		Scan(&r.DuplicateResults, &r.DuplicateAlerts, &r.Alerts, &r.AlertsSent); err != nil {
 		return r, err
 	}

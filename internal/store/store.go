@@ -172,9 +172,10 @@ func (s *Store) ReleaseAlert(ctx context.Context, chain string, token common.Add
 	return err
 }
 
-// AlertSent marks a claimed alert as delivered.
-func (s *Store) AlertSent(ctx context.Context, chain string, token common.Address) error {
-	_, err := s.db.Exec(ctx, `UPDATE alerts SET sent_at = now() WHERE chain = $1 AND token = $2`, chain, hex(token))
+// AlertSent settles a claimed alert; posted says whether it went to a channel or was only recorded.
+func (s *Store) AlertSent(ctx context.Context, chain string, token common.Address, posted bool) error {
+	_, err := s.db.Exec(ctx, `UPDATE alerts SET sent_at = now(), posted = $3 WHERE chain = $1 AND token = $2`,
+		chain, hex(token), posted)
 	return err
 }
 
