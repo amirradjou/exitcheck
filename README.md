@@ -3,7 +3,8 @@
 Paste a token address, get a straight answer: is this token built to take your money? A Telegram bot that gives a
 risk verdict with the reasons behind it, plus a live watch of new token launches.
 
-> **Status: M0 (contract facts) built.** This README is the spec. The milestones at the end track what is built.
+> **Status: M0 (contract facts) and M1 (buy-then-sell simulation) built.** This README is the spec. The milestones at
+> the end track what is built.
 
 ## Try it
 
@@ -12,6 +13,8 @@ make build
 ./bin/rugcheck facts 0x6982508145454Ce325dDbE47a25d4ec3d2311933            # PEPE on Ethereum
 ./bin/rugcheck facts -chain base 0x532f27101965dd16442E59d40670FaF5eBB142E4  # BRETT on Base
 ./bin/rugcheck facts -json <address>                                        # machine-readable
+./bin/rugcheck sim 0x6982508145454Ce325dDbE47a25d4ec3d2311933              # buy then sell on a fork
+./bin/rugcheck sim -chain base 0x940181a94A35A4569E4529A3CDfB74e38FD98631  # AERO, through Aerodrome
 ./bin/rugcheck eval testdata/tokens.json                                    # the labelled set
 ```
 
@@ -19,6 +22,9 @@ No keys needed: it runs on free public RPCs. `ETHERSCAN_API_KEY` is optional (se
 the contract (verified, proxy, owner, deployment), every privileged function and who can use it right now, current
 fee and limit settings, holder concentration, every pool and whether its liquidity is burned, locked or pulled, and
 the deployer's other tokens. Whatever could not be checked is listed under NOT CHECKED with the reason.
+
+`sim` needs Foundry's `anvil` (on PATH or in `~/.foundry/bin`; see [getfoundry.sh](https://getfoundry.sh)). It
+reports the venue, each step's outcome and tax, and a verdict.
 
 ## Why
 
@@ -96,6 +102,43 @@ lock state is not checked; deployer history misses tokens launched through facto
 older than a few days are skipped (Base's explorer blocks scripted clients and replaying years of logs through a
 free RPC is too slow).
 
+## How the simulation works (M1)
+
+`rugcheck sim` starts Anvil on a fork of the latest block and trades the token the way a new buyer would:
+
+1. **Pool**: the deepest pool against WETH, USDC or USDT. A Uniswap v2 or Aerodrome pool beats a v3 one if it holds
+   at least a twentieth of the deepest pool's value. v3's router rejects tokens that take a fee as they move, which
+   would read as a honeypot when it is only a tax. USDC and USDT pools are reached through WETH.
+2. **Buy** from a fresh random wallet with 0.5% of the pool's reserve, at most 0.05 ETH. That is small enough to
+   stay under per-wallet and per-transaction limits.
+3. **Wait** one minute and three blocks, so cooldowns and same-block anti-bot rules pass as they would for a real
+   buyer.
+4. **Transfer** half to a second wallet, then undo it, to catch tokens that block wallet-to-wallet moves.
+5. **Sell** everything back through the same router; if that reverts, sell half.
+
+A step's tax is 1 − received / expected, where expected is the DEX's quote for a swap and the amount sent for a
+transfer. Under 0.5% counts as rounding.
+
+| verdict | when | flagged |
+|---|---|---|
+| honeypot | selling reverts, whole and half; a sale keeps less than half its value; or a buy delivers no tokens | yes |
+| sell-limited | the whole position cannot be sold, half can | yes |
+| transfer-blocked | tokens cannot be sent to another wallet | yes |
+| high-tax | a buy, sell or transfer tax of 10% or more | yes |
+| ok | none of the above | no |
+| cannot-buy | buying reverts (trading not open yet, or new buyers blocked): nobody can be trapped right now | no |
+| no-pool | no pool with liquidity, or the DEX cannot quote a buy | no |
+
+If the fork itself fails (the RPC it forks from refuses or times out), the run ends with an error, not a verdict.
+Otherwise a failed state fetch would look like a reverting sell. On Base, forks come from Tenderly's gateway at a
+capped rate, because publicnode's Base endpoint refuses the historical-state requests a fork makes. On the eval set a
+run took 3.6–12.4 s (median 5.0 s).
+
+**Blind spot**, printed with every result: a contract can treat later buyers differently. It may flip trading
+switches after launch, use allowlists or time- and block-gated rules, or change its limits. A clean run is not a
+guarantee: it answers "could a buyer sell right now". The contract facts cover what can still change (who can set
+fees, blacklist or pause).
+
 ## Stack
 
 - Go: RPC and explorer clients, Anvil fork simulation, analyzer workers, Telegram bot, HTTP API
@@ -108,7 +151,7 @@ free RPC is too slow).
 | | Milestone | Done when |
 |---|---|---|
 | M0 ✅ | `rugcheck facts <address>`: contract, owner powers, holders, LP state | correct on 20 hand-picked tokens (10 known scams, 10 legitimate) — **20/20, see [M0 results](#m0-results)** |
-| M1 | Buy-then-sell simulation on an Anvil fork | every known honeypot in the set flagged; no legitimate token flagged |
+| M1 ✅ | Buy-then-sell simulation on an Anvil fork | every known honeypot in the set flagged; no legitimate token flagged — **6/6 flagged, 0/10 legitimate flagged, see [M1 results](#m1-results)** |
 | M2 | Telegram bot: verdict + reasons, cached in Redis | median answer under 10 s cold, instant when cached |
 | M3 | Live watch: factory events → Kafka → analyzers → alerts channel | a day of launches processed with lag under a minute and no duplicates |
 | M4 | Labelled dataset, features, model, MLflow | time-split precision/recall published; beats the hard rules alone |
@@ -157,9 +200,67 @@ modifiers, and, for unverified contracts, by calling them as the owner on an Anv
 
 What this set showed:
 
-- GTA6 and FREEDOM250 look clean on paper (ownership renounced, LP burned) and are honeypots anyway. Facts cannot
-  catch them; the buy-then-sell simulation (M1) has to.
+- FREEDOM250 looks clean on paper (ownership renounced, LP burned) and is a honeypot anyway. Facts cannot catch it;
+  the buy-then-sell simulation (M1) does. GTA6 was dropped from the set in M1: a fresh buyer can sell it (see
+  [M1 results](#m1-results)).
 - Uniswap v2's protocol fee switch is on: trading mints LP to the fee collector, so a pulled pool's LP supply stays
   above the 1000-wei minimum. Counted correctly, 3,511 of the 4,264 WETH pairs created in the 45 days before the
   run had their liquidity withdrawn after trading started.
-- All ten scams are on Ethereum; Base scams join the set with M1.
+- All ten scams in this run were on Ethereum; M1 added a Base honeypot (ZiG).
+
+## M1 results
+
+`rugcheck eval testdata/tokens.json`, run 2026-10-29 on the default public RPCs with Anvil 1.8.6: **6/6 honeypots
+flagged, 0/10 legitimate tokens flagged**. The facts still hold: 20/20 tokens, 148/148 checks. A simulation took a
+median of 5.0 s.
+
+Every honeypot label now rests on a test that does not use rugcheck: `cast`, on an Anvil fork of the current chain,
+buys with a fresh wallet, waits, and sells. Adding that test to the labels changed the set:
+
+- **GTA6 was dropped.** A fresh buyer sells it without trouble. The buyers who never sold were launch-block sniper
+  bots, so "only the deployer ever sold" did not prove a trap.
+- **DREAM and USA are rugs, not honeypots.** On forks of blocks from their trading days, a buyer could sell. Buyers
+  lost their money when the deployer removed the liquidity. Rugs carry no simulation expectation: once the pool is
+  pulled there is nothing to trade, and M0 already reports the pull.
+- **ZiG is the first Base scam.** It came from a scan of 30 days of new Base pools against WETH (Uniswap v2 and
+  Aerodrome). Of the 34 pools that still held liquidity, the simulation called 2 honeypots. The other one (DEPH) stays
+  out: its nine buyers all came within seven minutes of launch, more likely the deployer's own wallets than victims.
+  The same scan over 30 days of Ethereum pairs found no honeypot whose pool still held 0.05 WETH or more.
+
+| kind | chain | token | address | facts | facts time | simulation | sim time |
+|---|---|---|---|---|---|---|---|
+| legit | ethereum | USDT | `0xdAC17F958D2ee523a2206206994597C13D831ec7` | correct | 12.5 s | ok | 4.5 s |
+| legit | ethereum | USDC | `0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48` | correct | 17.4 s | ok | 4.2 s |
+| legit | ethereum | DAI | `0x6B175474E89094C44Da98b954EedeAC495271d0F` | correct | 6.1 s | ok | 5.7 s |
+| legit | ethereum | PEPE | `0x6982508145454Ce325dDbE47a25d4ec3d2311933` | correct | 69.7 s | ok | 5.1 s |
+| legit | ethereum | UNI | `0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984` | correct | 4.7 s | ok | 5.0 s |
+| legit | ethereum | LINK | `0x514910771AF9Ca656af840dff83E8264EcF986CA` | correct | 8.1 s | ok | 5.0 s |
+| legit | ethereum | SHIB | `0x95aD61b0a150d79219dCF64E1E6Cc01f0B64C4cE` | correct | 6.0 s | ok | 5.3 s |
+| legit | base | BRETT | `0x532f27101965dd16442E59d40670FaF5eBB142E4` | correct | 7.5 s | ok | 7.1 s |
+| legit | base | AERO | `0x940181a94A35A4569E4529A3CDfB74e38FD98631` | correct | 7.6 s | ok | 7.3 s |
+| legit | base | DEGEN | `0x4ed4E862860beD51a9570b96d89aF5E1B0Efefed` | correct | 16.3 s | ok | 12.4 s |
+| honeypot | ethereum | ASN | `0xBe2ab177599C6381C70725FEEE6663F9bCfF2197` | correct | 66.8 s | honeypot | 3.9 s |
+| honeypot | ethereum | QTC | `0x541E9505Aaf0a7D2d26fe0123d0f2419cDbb3ad7` | correct | 8.0 s | honeypot | 3.6 s |
+| honeypot | ethereum | FREEDOM250 | `0xD2Ab2Bf8C6e9e8070C8D9C24001d9a579620CaB2` | correct | 7.1 s | honeypot | 3.8 s |
+| honeypot | ethereum | AMERICA250 | `0x5e82442d47b2e14b6F621a256DfB115DBd9f83ee` | correct | 8.1 s | honeypot | 4.8 s |
+| rug | ethereum | DREAM | `0x809010Db55F12eF7E082d6e58461C58e27F1Aa9B` | correct | 6.1 s | - | - |
+| rug | ethereum | ARC | `0x42Bf9A7D31534096CA80f68D811C83c603C3d850` | correct | 8.2 s | - | - |
+| rug | ethereum | EWL | `0x752b6569279C353766EB7CB3058dcaCC3032c565` | correct | 6.5 s | - | - |
+| honeypot | ethereum | Indy | `0x8F3bD752439caB48A383BFD284Cf165A019e5285` | correct | 8.7 s | honeypot | 5.0 s |
+| honeypot | base | ZiG | `0xEF77fB35d6e0503faf3cbe9565193195Aa4c6eF8` | correct | 7.7 s | honeypot | 9.7 s |
+| rug | ethereum | USA | `0x1761177dfE78996D81aa0B1b0004F3E06Ce7170d` | correct | 5.1 s | - | - |
+
+What the honeypots show:
+
+- **The traps differ.**
+  - ASN's `sellTax()` reads 100. Nothing reaches the pool, so the router reverts.
+  - QTC and Indy revert inside the token's transfer.
+  - FREEDOM250 and AMERICA250 pay their fee wallet on every sale. That wallet is the deployer's own account,
+    delegated by EIP-7702 to code that reverts on payment. The token's code, its renounced ownership and its burned LP all look clean: the
+    trap lives in another account.
+  - ZiG's verified source lets only seven hard-coded wallets sell. The three wallets that ever sold are on that list.
+- **Names and owners can be faked; a sale cannot.** The function that arms ZiG's trap, `actionPair`, has a
+  non-standard name and checks a hard-coded address instead of the owner. So M0 reports no privileged functions and a
+  renounced owner. The simulation sees the effect however the cause is hidden.
+- **Sniper bots look like victims.** Most buyers of FREEDOM250, AMERICA250 and Indy bought within two blocks of
+  launch. The buys of ASN, QTC and ZiG were spread over 52, 90 and 109 blocks.
