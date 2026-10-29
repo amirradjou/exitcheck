@@ -15,8 +15,10 @@ import (
 	"time"
 
 	"github.com/ethereum/go-ethereum"
+	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
 	"github.com/ethereum/go-ethereum/core/types"
+	"github.com/ethereum/go-ethereum/crypto"
 )
 
 type rpcReq struct {
@@ -207,5 +209,47 @@ func TestStripURLKeepsOnlyTheHost(t *testing.T) {
 	}
 	if !errors.Is(got, context.DeadlineExceeded) {
 		t.Error("stripURL lost the underlying error")
+	}
+}
+
+func TestCreatorNeedsABirthEventForFactoryCreations(t *testing.T) {
+	token := common.HexToAddress("0x00000000000000000000000000000000000000c0")
+	factory := common.HexToAddress("0x00000000000000000000000000000000000000fa")
+	scammer := common.HexToAddress("0x00000000000000000000000000000000000000aa")
+	stranger := common.HexToAddress("0x00000000000000000000000000000000000000bb")
+	approval := crypto.Keccak256Hash([]byte("Approval(address,address,uint256)"))
+	receipt := func(tx byte, from common.Address, topics ...common.Hash) map[string]any {
+		return map[string]any{
+			"transactionHash": common.Hash{tx}, "from": from, "to": factory, "contractAddress": nil,
+			"logs": []map[string]any{{"address": token, "topics": topics}},
+		}
+	}
+	for _, c := range []struct {
+		name     string
+		receipts []map[string]any
+		want     common.Address
+	}{
+		// The factory call minted from the zero address: that is the creation.
+		{"birth event", []map[string]any{
+			receipt(1, stranger, approval, common.BytesToHash(stranger[:])),
+			receipt(2, scammer, transferTopic, zeroAddressTopic, common.BytesToHash(scammer[:])),
+		}, scammer},
+		// Only a later interaction logged: no deployer rather than the stranger.
+		{"no birth event", []map[string]any{receipt(1, stranger, approval, common.BytesToHash(stranger[:]))}, common.Address{}},
+	} {
+		url := fakeRPC(t, Ethereum, func(method string, _ []json.RawMessage) (any, *rpcErr) { return c.receipts, nil })
+		cl, err := DialURLs(context.Background(), Ethereum, url, url, 0)
+		if err != nil {
+			t.Fatal(err)
+		}
+		cr, err := cl.Creator(context.Background(), token, 1)
+		cl.Close()
+		got := common.Address{}
+		if err == nil {
+			got = cr.Deployer
+		}
+		if got != c.want {
+			t.Errorf("%s: deployer = %s (err %v), want %s", c.name, got, err, c.want)
+		}
 	}
 }

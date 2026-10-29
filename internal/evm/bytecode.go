@@ -32,10 +32,12 @@ type Code struct {
 	Callcode     bool
 }
 
-// Analyze walks the opcodes of runtime code, skipping push data and the trailing Solidity metadata.
+// Analyze walks the opcodes of runtime code, skipping push data. Selectors come from the whole code: a contract
+// cannot hide a second dispatcher behind a fake metadata trailer. Opcode flags skip the Solidity metadata, whose bytes
+// would otherwise read as opcodes.
 func Analyze(code []byte) Code {
-	code = stripMetadata(code)
 	c := Code{Selectors: map[Selector]bool{}}
+	body := len(stripMetadata(code))
 	for pc := 0; pc < len(code); pc++ {
 		op := code[pc]
 		switch {
@@ -43,6 +45,7 @@ func Analyze(code []byte) Code {
 			c.Selectors[Selector(code[pc+1:pc+5])] = true
 		case op == opPush3 && pc+3 < len(code):
 			c.Selectors[Selector{0, code[pc+1], code[pc+2], code[pc+3]}] = true
+		case pc >= body:
 		case op == opDelegatecall:
 			c.Delegatecall = true
 		case op == opSelfdestruct:
@@ -75,22 +78,36 @@ func (c Code) Merge(o Code) Code {
 	return out
 }
 
-// stripMetadata drops the CBOR metadata solc appends to runtime code; its last two bytes give its length. Without
-// this, metadata bytes would be read as opcodes.
+// maxMetadata is the longest metadata trailer solc writes (ipfs hash, solc version and the experimental flag are
+// well under it). A longer "trailer" is code pretending to be metadata.
+const maxMetadata = 128
+
+// metadataKeys are the CBOR keys solc's metadata map starts with, each as a CBOR text string.
+var metadataKeys = [][]byte{
+	append([]byte{0x64}, "ipfs"...), append([]byte{0x65}, "bzzr0"...), append([]byte{0x65}, "bzzr1"...),
+	append([]byte{0x64}, "solc"...),
+}
+
+// stripMetadata drops the CBOR metadata solc appends to runtime code; its last two bytes give its length. It only
+// strips a trailer that is short and starts like solc's map (a map header, then one of its known keys).
 func stripMetadata(code []byte) []byte {
 	if len(code) < 2 {
 		return code
 	}
 	n := int(code[len(code)-2])<<8 | int(code[len(code)-1])
-	if n == 0 || n+2 > len(code) {
+	if n < 2 || n > maxMetadata || n+2 > len(code) {
 		return code
 	}
 	meta := code[len(code)-2-n : len(code)-2]
-	// CBOR map header (0xa1..0xa5) followed by a text key: "ipfs", "bzzr0", "bzzr1" or "solc".
-	if meta[0] < 0xa1 || meta[0] > 0xa5 || len(meta) < 2 || meta[1]&0xe0 != 0x60 {
+	if meta[0] < 0xa1 || meta[0] > 0xa5 {
 		return code
 	}
-	return code[:len(code)-2-n]
+	for _, k := range metadataKeys {
+		if bytes.HasPrefix(meta[1:], k) {
+			return code[:len(code)-2-n]
+		}
+	}
+	return code
 }
 
 var (

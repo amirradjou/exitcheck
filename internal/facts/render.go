@@ -15,7 +15,15 @@ import (
 // Render writes a plain-text report.
 func Render(w io.Writer, f *Facts) error {
 	tw := tabwriter.NewWriter(w, 0, 0, 2, ' ', 0)
-	p := func(format string, args ...any) { fmt.Fprintf(tw, format+"\n", args...) }
+	// Names, file paths and error texts can come from the token's author: print none of their control characters.
+	p := func(format string, args ...any) {
+		for i, a := range args {
+			if s, ok := a.(string); ok {
+				args[i] = printable(s, 400)
+			}
+		}
+		fmt.Fprintf(tw, format+"\n", args...)
+	}
 
 	name := f.Token.Symbol
 	if f.Token.Name != "" && f.Token.Name != f.Token.Symbol {

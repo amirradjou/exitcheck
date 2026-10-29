@@ -3,6 +3,7 @@ package facts
 import (
 	"math/big"
 	"strings"
+	"unicode"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
@@ -59,16 +60,38 @@ func addressOf(r chain.Result) (common.Address, bool) {
 	return common.BytesToAddress(r.Data[12:32]), true
 }
 
-// text decodes a string return value. Some old tokens (MKR, SAI) return bytes32 instead.
+// text decodes a string return value (name, symbol). Some old tokens (MKR, SAI) return bytes32 instead. The
+// result is made printable: the contract's author chooses it, and a name with terminal escape codes could rewrite
+// the report it appears in.
 func text(r chain.Result) string {
 	if !r.OK {
 		return ""
 	}
 	if vals, err := erc20ABI.Methods["name"].Outputs.Unpack(r.Data); err == nil {
-		return vals[0].(string)
+		return printable(vals[0].(string), maxNameRunes)
 	}
 	if len(r.Data) == 32 {
-		return strings.TrimRight(string(r.Data), "\x00")
+		return printable(strings.TrimRight(string(r.Data), "\x00"), maxNameRunes)
 	}
 	return ""
+}
+
+const maxNameRunes = 64
+
+// printable replaces control and other non-printing characters with U+FFFD and cuts s to max runes.
+func printable(s string, max int) string {
+	var b strings.Builder
+	n := 0
+	for _, r := range s {
+		if n == max {
+			b.WriteString("…")
+			break
+		}
+		if !unicode.IsPrint(r) {
+			r = unicode.ReplacementChar
+		}
+		b.WriteRune(r)
+		n++
+	}
+	return b.String()
 }

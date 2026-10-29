@@ -29,7 +29,7 @@ func TestAnalyzeFindsDispatcherSelectorsAndSkipsPushData(t *testing.T) {
 }
 
 func TestAnalyzeIgnoresMetadata(t *testing.T) {
-	// a2 64 'ipfs' ... 0x00 0x06-length tail; contains 0xff which must not count as SELFDESTRUCT.
+	// a2 64 'ipfs' 58 22 ff: a CBOR map whose bytes include 0xff, which must not count as SELFDESTRUCT.
 	meta := "a264697066735822ff" // 9 bytes
 	code := common.FromHex("6000" + meta + "0009")
 	if Analyze(code).Selfdestruct {
@@ -59,5 +59,19 @@ func TestDelegatedWalletIsNotAContract(t *testing.T) {
 	}
 	if IsContract(code) || IsContract(nil) || !IsContract(common.FromHex("6000")) {
 		t.Error("IsContract misclassifies wallets or contracts")
+	}
+}
+
+func TestFakeMetadataCannotHideSelectors(t *testing.T) {
+	// A "trailer" that does not start like solc's metadata map is code, and is scanned.
+	hidden := "63" + "40c10f19"                                    // PUSH4 mint(address,uint256)
+	code := common.FromHex("6000" + "a2" + "5b" + hidden + "0007") // map header, JUMPDEST, PUSH4 …
+	if !Analyze(code).Has(Selector{0x40, 0xc1, 0x0f, 0x19}) {
+		t.Error("selector inside a fake metadata trailer was hidden")
+	}
+	// Even inside a well-formed trailer, selectors are still collected.
+	code = common.FromHex("6000" + "a264697066735822" + hidden + "000d")
+	if !Analyze(code).Has(Selector{0x40, 0xc1, 0x0f, 0x19}) {
+		t.Error("selector inside a metadata-shaped trailer was hidden")
 	}
 }

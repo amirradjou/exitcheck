@@ -128,3 +128,26 @@ func TestPinkLockUnlocksRoundTrip(t *testing.T) {
 		t.Errorf("unlocks = %v, want [2000000000]", got)
 	}
 }
+
+func TestTokenNamesCannotCarryTerminalEscapes(t *testing.T) {
+	data, err := erc20ABI.Methods["name"].Outputs.Pack("SAFE\x1b[2K\x1b[1A\rlegit token")
+	if err != nil {
+		t.Fatal(err)
+	}
+	got := text(chain.Result{OK: true, Data: data})
+	if strings.ContainsAny(got, "\x1b\r") {
+		t.Errorf("text kept control characters: %q", got)
+	}
+	long, _ := erc20ABI.Methods["name"].Outputs.Pack(strings.Repeat("x", 500))
+	if n := len([]rune(text(chain.Result{OK: true, Data: long}))); n > maxNameRunes+1 {
+		t.Errorf("name not capped: %d runes", n)
+	}
+	var buf bytes.Buffer
+	f := &Facts{Token: Token{Symbol: "X"}, Contract: Contract{OwnerStatus: "none"}, Gaps: []string{"evil\x1b]0;title\x07gap"}}
+	if err := Render(&buf, f); err != nil {
+		t.Fatal(err)
+	}
+	if strings.ContainsAny(buf.String(), "\x1b\x07") {
+		t.Errorf("report kept control characters: %q", buf.String())
+	}
+}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/common/hexutil"
+	"github.com/ethereum/go-ethereum/crypto"
 	"github.com/ethereum/go-ethereum/rpc"
 )
 
@@ -114,12 +115,22 @@ type receiptJSON struct {
 	ContractAddress *common.Address `json:"contractAddress"`
 	Logs            []struct {
 		Address common.Address `json:"address"`
+		Topics  []common.Hash  `json:"topics"`
 	} `json:"logs"`
 }
 
+// Events a contract emits from its constructor: an ERC-20 mint and an Ownable handover, both from the zero address.
+var (
+	transferTopic    = crypto.Keccak256Hash([]byte("Transfer(address,address,uint256)"))
+	ownershipTopic   = crypto.Keccak256Hash([]byte("OwnershipTransferred(address,address)"))
+	zeroAddressTopic = common.Hash{}
+)
+
 // Creator finds the transaction that deployed addr in block. A direct deployment shows up as the receipt's
-// contractAddress; a contract created by a factory is found through the first log it emitted in that block (tokens
-// almost always emit a Transfer from their constructor).
+// contractAddress. A contract created by a factory is found through a "birth" event it emitted in that block: a
+// Transfer or OwnershipTransferred from the zero address, which constructors emit. Any later transaction in the
+// same block can also make the new contract log, so a plain log match could name a stranger as the deployer; without
+// a birth event the caller should ask an explorer, which traces internal creations.
 func (c *Client) Creator(ctx context.Context, addr common.Address, block uint64) (*Creation, error) {
 	var receipts []receiptJSON
 	err := c.archiveDo(ctx, 1, func() error {
@@ -135,12 +146,13 @@ func (c *Client) Creator(ctx context.Context, addr common.Address, block uint64)
 	}
 	for _, r := range receipts {
 		for _, l := range r.Logs {
-			if l.Address == addr {
+			if l.Address == addr && len(l.Topics) >= 2 && l.Topics[1] == zeroAddressTopic &&
+				(l.Topics[0] == transferTopic || l.Topics[0] == ownershipTopic) {
 				return &Creation{Block: block, Tx: r.TransactionHash, Deployer: r.From, Factory: r.To}, nil
 			}
 		}
 	}
-	return nil, errors.New("creating transaction not found in its block (created by a contract without emitting a log)")
+	return nil, errors.New("no transaction in the creation block shows the contract being created (factory-made without a constructor event)")
 }
 
 // TxSender returns the sender and block of a mined transaction.
