@@ -65,7 +65,7 @@ sentence in a check or a line of code, the sentence is dropped.
 
 ### 5. Live watch (event-driven)
 
-An event-driven pipeline: new-pool events from the Uniswap v2/v3 factories (and Base's main DEXes) stream from a WebSocket RPC into Kafka;
+An event-driven pipeline: new-pool events from the Uniswap v2/v3 factories (and Base's main DEXes), followed over a WebSocket RPC until each pool's first liquidity, stream into Kafka;
 analyzer workers check each new token and post high-risk launches to an alerts channel. Analyzers are independent consumers in one Kafka consumer group, so adding
 workers scales the watch and a crashed worker's partitions move to the others; results land in Postgres. Caching:
 Redis holds recent verdicts so a repeated address answers instantly.
@@ -177,6 +177,49 @@ The bot:
   - Answers are plain text. Names and revert reasons come from the token's author, so they lose control characters
     and can't carry formatting.
   - The bot token is part of every Telegram API URL, so no error message carries a URL.
+
+## How the live watch works (M3)
+
+```sh
+docker compose up -d --build      # Kafka, Postgres, Redis, the watcher, two analyzers and the bot
+./bin/rugcheck report -since 24h  # lag, duplicates and verdicts so far
+```
+
+```
+WebSocket newHeads ─▶ watcher ──(launches, keyed by token)──▶ Kafka ──▶ analyzers (consumer group) ──▶ Postgres
+                        │  cursor + pending pools in Postgres            │  same check and Redis cache as the bot
+                        └─ per block: creation logs + one Multicall3      └─▶ alerts channel (one per token)
+```
+
+- **A launch is a pool's first liquidity.** The watcher follows new blocks over a WebSocket subscription. Per block
+  range it makes two calls, however many pools are waiting:
+  - the factories' creation logs (Uniswap v2 and v3, and Aerodrome on Base) for pools against WETH, USDC or USDT;
+  - one Multicall3 of the waiting pools' balances.
+
+  Funding is read from state, not from Mint logs, for two reasons. Free RPCs refuse log queries without an address
+  and cap an address list at ten. And state can't be missed when a subscription drops. A funded pool is dated by its
+  first Mint log, so lag is measured from when trading became possible. Pools never funded cost nothing downstream;
+  they expire after a day.
+- **Nothing is lost.** The watcher saves its block cursor and waiting pools to Postgres after each range, and
+  publishes before moving the cursor. A crash re-publishes; it never skips. The analyzers commit Kafka offsets only
+  after a launch is stored, so a crashed analyzer's partitions are replayed by the others.
+- **Nothing is doubled.**
+  - The producer is idempotent.
+  - A launch is one Postgres row per pool, so a redelivery only increments a counter.
+  - An alert is one row per token, claimed before it is sent. If posting fails, the claim is released and the stream
+    retries until the alert is posted.
+  - Launches are keyed by token, so a token's pools stay on one partition, in order.
+  - `rugcheck report` counts duplicates rather than assuming there are none.
+- **Analyzers scale by partition.** The topic has six partitions; `--scale analyzer=N` adds workers up to that, and
+  Kafka moves a stopped worker's partitions to the rest. Each check runs the bot's own rules through the same Redis
+  cache, so a token someone asks the bot about right after launch is answered from it.
+- **Alerts** go to the Telegram channel in `TELEGRAM_ALERTS_CHAT` (the bot must be an admin there): every launch
+  judged high risk or scam, once per token.
+
+Limits:
+- Uniswap v4 pools are not watched.
+- A v3 pool funded with the token alone counts as launched, though the simulation needs quote liquidity to trade.
+- Reorgs are not undone; a launch in a dropped block keeps its row.
 
 ## Stack
 
