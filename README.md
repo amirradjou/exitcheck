@@ -197,9 +197,11 @@ WebSocket newHeads ─▶ watcher ──(launches, keyed by token)──▶ Kafk
   - one Multicall3 of the waiting pools' balances.
 
   Funding is read from state, not from Mint logs, for two reasons. Free RPCs refuse log queries without an address
-  and cap an address list at ten. And state can't be missed when a subscription drops. A funded pool is dated by its
-  first Mint log, so lag is measured from when trading became possible. Pools never funded cost nothing downstream;
-  they expire after a day.
+  and cap an address list at ten. And state can't be missed when a subscription drops. Balances are read at the
+  processed block, not "latest": behind a load balancer, "latest" can come from a node a block behind. A funded pool
+  is dated by the first Mint after the last block it was seen unfunded. So lag runs from when trading became
+  possible, and a pool that first got only a quote-side position isn't dated from that. Pools never funded cost
+  nothing downstream; they expire after a day.
 - **Nothing is lost.** The watcher saves its block cursor and waiting pools to Postgres after each range, and
   publishes before moving the cursor. A crash re-publishes; it never skips. The analyzers commit Kafka offsets only
   after a launch is stored, so a crashed analyzer's partitions are replayed by the others.
