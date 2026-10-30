@@ -26,8 +26,9 @@ type Source interface {
 	Head(ctx context.Context) (uint64, error)
 	// Created returns the pools created in blocks from..to.
 	Created(ctx context.Context, from, to uint64) ([]launch.Pool, error)
-	// Funded reports, for each pool, whether it now holds liquidity.
-	Funded(ctx context.Context, pools []launch.Pool) ([]bool, error)
+	// Funded reports, for each pool, whether it held liquidity at block. The answer must be for that block: an
+	// "unfunded" read from a node that is behind would date the launch late.
+	Funded(ctx context.Context, pools []launch.Pool, block uint64) ([]bool, error)
 	// FirstMint finds the block of a pool's first liquidity in from..to; ok is false when no Mint log is found.
 	FirstMint(ctx context.Context, pool launch.Pool, from, to uint64) (block uint64, ok bool, err error)
 	BlockTime(ctx context.Context, n uint64) (time.Time, error)
@@ -64,7 +65,11 @@ type Watcher struct {
 	Poll time.Duration
 
 	pending map[common.Address]launch.Pool
-	cursor  uint64
+	// unfunded is the last block at which each pending pool was seen without liquidity. A pool's first Mint can come
+	// long before it is tradeable (a v3 position holding only the quote token), so its launch is dated by the first
+	// Mint after that block, not the first Mint ever. Kept in memory: after a restart the search starts at creation.
+	unfunded map[common.Address]uint64
+	cursor   uint64
 }
 
 // New returns a watcher for one chain.
@@ -72,7 +77,7 @@ func New(chainName string, src Source, state State, pub Publisher, log *slog.Log
 	return &Watcher{
 		Chain: chainName, src: src, state: state, pub: pub, log: log.With("chain", chainName), now: time.Now,
 		MaxRange: 500, Expire: 24 * time.Hour, Poll: 30 * time.Second,
-		pending: map[common.Address]launch.Pool{},
+		pending: map[common.Address]launch.Pool{}, unfunded: map[common.Address]uint64{},
 	}
 }
 
@@ -199,7 +204,7 @@ func (w *Watcher) Step(ctx context.Context, from, to uint64) error {
 	if len(candidates) == 0 {
 		return w.commit(ctx, to, nil, nil)
 	}
-	funded, err := w.src.Funded(ctx, candidates)
+	funded, err := w.src.Funded(ctx, candidates, to)
 	if err != nil {
 		return fmt.Errorf("pool balances: %w", err)
 	}
@@ -207,7 +212,11 @@ func (w *Watcher) Step(ctx context.Context, from, to uint64) error {
 	var launches []launch.Launch
 	var added []launch.Pool
 	var removed []common.Address
+	var unfundedNow []common.Address
 	for i, p := range candidates {
+		if !funded[i] {
+			unfundedNow = append(unfundedNow, p.Pool)
+		}
 		switch {
 		case funded[i]:
 			l, err := w.launch(ctx, p, to)
@@ -235,7 +244,15 @@ func (w *Watcher) Step(ctx context.Context, from, to uint64) error {
 				"detect_s", l.DetectedAt.Sub(l.FundedAt).Seconds())
 		}
 	}
-	return w.commit(ctx, to, added, removed)
+	if err := w.commit(ctx, to, added, removed); err != nil {
+		return err
+	}
+	for _, a := range unfundedNow {
+		if _, still := w.pending[a]; still {
+			w.unfunded[a] = to
+		}
+	}
+	return nil
 }
 
 func (w *Watcher) commit(ctx context.Context, to uint64, added []launch.Pool, removed []common.Address) error {
@@ -248,6 +265,7 @@ func (w *Watcher) commit(ctx context.Context, to uint64, added []launch.Pool, re
 	}
 	for _, a := range removed {
 		delete(w.pending, a)
+		delete(w.unfunded, a)
 	}
 	return nil
 }
@@ -256,7 +274,11 @@ func (w *Watcher) commit(ctx context.Context, to uint64, added []launch.Pool, re
 // when the watcher noticed.
 func (w *Watcher) launch(ctx context.Context, p launch.Pool, to uint64) (launch.Launch, error) {
 	l := launch.Launch{Pool: p, FundedBlock: to, DetectedAt: w.now()}
-	if b, ok, err := w.src.FirstMint(ctx, p, p.Block, to); err != nil {
+	from := p.Block
+	if b, seen := w.unfunded[p.Pool]; seen {
+		from = b + 1
+	}
+	if b, ok, err := w.src.FirstMint(ctx, p, from, to); err != nil {
 		w.log.Warn("dating first liquidity; using the current block", "pool", p.Pool, "err", err)
 	} else if ok {
 		l.FundedBlock = b

@@ -49,7 +49,11 @@ func TestLiveRPCSource(t *testing.T) {
 
 	pepe := launch.Pool{DEX: "uniswap-v2", Pool: common.HexToAddress("0xA43fe16908251ee70EF74718545e4FE6C5cCEc9f"),
 		Token: common.HexToAddress("0x6982508145454Ce325dDbE47a25d4ec3d2311933"), Quote: chain.Ethereum.WETH}
-	funded, err := src.Funded(ctx, []launch.Pool{pepe})
+	head, err := src.Head(ctx)
+	if err != nil {
+		t.Fatal(err)
+	}
+	funded, err := src.Funded(ctx, []launch.Pool{pepe}, head)
 	if err != nil || !funded[0] {
 		t.Errorf("PEPE's pair funded: %v, %v", funded, err)
 	}

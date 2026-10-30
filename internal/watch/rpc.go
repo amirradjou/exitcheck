@@ -133,10 +133,11 @@ func (r *RPC) logs(ctx context.Context, q ethereum.FilterQuery, from, to uint64,
 
 var balanceOf = common.FromHex("0x70a08231")
 
-// Funded reads, in one Multicall3, how much of the token and of the quote each pool holds. A v2 or Aerodrome pair
-// needs both sides; a v3 pool can be funded with the token alone (single-sided liquidity) and is tradeable once it
-// holds the token.
-func (r *RPC) Funded(ctx context.Context, pools []launch.Pool) ([]bool, error) {
+// Funded reads, in one Multicall3 at block, how much of the token and of the quote each pool holds. A v2 or Aerodrome
+// pair needs both sides; a v3 pool can be funded with the token alone (single-sided liquidity) and is tradeable once
+// it holds the token. A node that does not have the block yet usually does a second later, so the read is retried
+// briefly before the step gives up until the next head.
+func (r *RPC) Funded(ctx context.Context, pools []launch.Pool, block uint64) ([]bool, error) {
 	calls := make([]chain.Call, 0, 2*len(pools))
 	for _, p := range pools {
 		arg := common.LeftPadBytes(p.Pool.Bytes(), 32)
@@ -144,7 +145,16 @@ func (r *RPC) Funded(ctx context.Context, pools []launch.Pool) ([]bool, error) {
 			chain.Call{To: p.Token, Data: append(append([]byte{}, balanceOf...), arg...)},
 			chain.Call{To: p.Quote, Data: append(append([]byte{}, balanceOf...), arg...)})
 	}
-	res, err := r.c.Multicall(ctx, calls)
+	var res []chain.Result
+	var err error
+	for attempt := range 4 {
+		if res, err = r.c.MulticallAt(ctx, calls, block); err == nil || ctx.Err() != nil {
+			break
+		}
+		if attempt < 3 {
+			time.Sleep(time.Second)
+		}
+	}
 	if err != nil {
 		return nil, chain.StripURL(err)
 	}

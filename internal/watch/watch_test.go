@@ -23,7 +23,7 @@ type fakeSource struct {
 	head    uint64
 	created map[uint64][]launch.Pool // by block
 	funded  map[common.Address]bool
-	mint    map[common.Address]uint64
+	mint    map[common.Address][]uint64 // Mint blocks, ascending
 	heads   chan uint64
 	ranges  [][2]uint64
 }
@@ -48,7 +48,7 @@ func (f *fakeSource) Created(_ context.Context, from, to uint64) ([]launch.Pool,
 	return out, nil
 }
 
-func (f *fakeSource) Funded(_ context.Context, pools []launch.Pool) ([]bool, error) {
+func (f *fakeSource) Funded(_ context.Context, pools []launch.Pool, _ uint64) ([]bool, error) {
 	out := make([]bool, len(pools))
 	for i, p := range pools {
 		out[i] = f.funded[p.Pool]
@@ -56,9 +56,13 @@ func (f *fakeSource) Funded(_ context.Context, pools []launch.Pool) ([]bool, err
 	return out, nil
 }
 
-func (f *fakeSource) FirstMint(_ context.Context, p launch.Pool, _, _ uint64) (uint64, bool, error) {
-	b, ok := f.mint[p.Pool]
-	return b, ok, nil
+func (f *fakeSource) FirstMint(_ context.Context, p launch.Pool, from, to uint64) (uint64, bool, error) {
+	for _, b := range f.mint[p.Pool] {
+		if b >= from && b <= to {
+			return b, true, nil
+		}
+	}
+	return 0, false, nil
 }
 
 func (f *fakeSource) BlockTime(_ context.Context, n uint64) (time.Time, error) {
@@ -123,7 +127,7 @@ func newWatcher(src *fakeSource, st *memState, pub *fakePub) *Watcher {
 
 func TestCreatedAndFundedInOneStep(t *testing.T) {
 	p := pool(1, 101)
-	src := &fakeSource{created: map[uint64][]launch.Pool{101: {p}}, funded: map[common.Address]bool{p.Pool: true}, mint: map[common.Address]uint64{p.Pool: 101}}
+	src := &fakeSource{created: map[uint64][]launch.Pool{101: {p}}, funded: map[common.Address]bool{p.Pool: true}, mint: map[common.Address][]uint64{p.Pool: {101}}}
 	st, pub := newState(), &fakePub{}
 	w := newWatcher(src, st, pub)
 	if err := w.Step(context.Background(), 100, 102); err != nil {
@@ -139,7 +143,7 @@ func TestCreatedAndFundedInOneStep(t *testing.T) {
 
 func TestFundedLaterIsDatedFromItsFirstMint(t *testing.T) {
 	p := pool(2, 101)
-	src := &fakeSource{created: map[uint64][]launch.Pool{101: {p}}, funded: map[common.Address]bool{}, mint: map[common.Address]uint64{}}
+	src := &fakeSource{created: map[uint64][]launch.Pool{101: {p}}, funded: map[common.Address]bool{}, mint: map[common.Address][]uint64{}}
 	st, pub := newState(), &fakePub{}
 	w := newWatcher(src, st, pub)
 	ctx := context.Background()
@@ -149,7 +153,7 @@ func TestFundedLaterIsDatedFromItsFirstMint(t *testing.T) {
 	if len(pub.got) != 0 || len(st.pending) != 1 {
 		t.Fatalf("unfunded pool: published %d, pending %d", len(pub.got), len(st.pending))
 	}
-	src.funded[p.Pool], src.mint[p.Pool] = true, 108
+	src.funded[p.Pool], src.mint[p.Pool] = true, []uint64{108}
 	if err := w.Step(ctx, 106, 110); err != nil {
 		t.Fatal(err)
 	}
@@ -163,7 +167,7 @@ func TestFundedLaterIsDatedFromItsFirstMint(t *testing.T) {
 
 func TestFailedPublishChangesNothing(t *testing.T) {
 	p := pool(3, 101)
-	src := &fakeSource{created: map[uint64][]launch.Pool{101: {p}}, funded: map[common.Address]bool{p.Pool: true}, mint: map[common.Address]uint64{}}
+	src := &fakeSource{created: map[uint64][]launch.Pool{101: {p}}, funded: map[common.Address]bool{p.Pool: true}, mint: map[common.Address][]uint64{}}
 	st, pub := newState(), &fakePub{fail: true}
 	st.cursor["base"] = 100
 	w := newWatcher(src, st, pub)
@@ -238,7 +242,7 @@ func TestLongGapsAreReadInSteps(t *testing.T) {
 func TestRunFollowsHeadsAndSurvivesAClosedSubscription(t *testing.T) {
 	p := pool(6, 21)
 	src := &fakeSource{head: 20, heads: make(chan uint64, 4), created: map[uint64][]launch.Pool{21: {p}},
-		funded: map[common.Address]bool{p.Pool: true}, mint: map[common.Address]uint64{p.Pool: 21}}
+		funded: map[common.Address]bool{p.Pool: true}, mint: map[common.Address][]uint64{p.Pool: {21}}}
 	st, pub := newState(), &fakePub{}
 	w := newWatcher(src, st, pub)
 	ctx, cancel := context.WithCancel(context.Background())
@@ -263,5 +267,30 @@ func TestRunFollowsHeadsAndSurvivesAClosedSubscription(t *testing.T) {
 	cancel()
 	if err := <-done; !errors.Is(err, context.Canceled) {
 		t.Errorf("Run returned %v", err)
+	}
+}
+
+// The live outlier: a v3 pool created with a quote-only position (a Mint, but nothing to buy) got the token 23 minutes
+// later. Its launch is the Mint that made it tradeable, not its first Mint.
+func TestLaunchIsDatedByTheMintThatFundedIt(t *testing.T) {
+	p := pool(7, 101)
+	p.DEX = "uniswap-v3"
+	src := &fakeSource{created: map[uint64][]launch.Pool{101: {p}}, funded: map[common.Address]bool{},
+		mint: map[common.Address][]uint64{p.Pool: {101, 125}}}
+	st, pub := newState(), &fakePub{}
+	w := newWatcher(src, st, pub)
+	ctx := context.Background()
+	if err := w.Step(ctx, 100, 120); err != nil { // the quote-only Mint at 101 leaves it unfunded
+		t.Fatal(err)
+	}
+	src.funded[p.Pool] = true
+	if err := w.Step(ctx, 121, 126); err != nil {
+		t.Fatal(err)
+	}
+	if len(pub.got) != 1 || pub.got[0].FundedBlock != 125 {
+		t.Fatalf("launch dated at %+v, want block 125 (the Mint after the last unfunded check)", pub.got)
+	}
+	if _, left := w.unfunded[p.Pool]; left {
+		t.Error("a launched pool's unfunded mark was kept")
 	}
 }

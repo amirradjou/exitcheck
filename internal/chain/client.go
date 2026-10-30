@@ -238,6 +238,14 @@ func (c *Client) Balance(ctx context.Context, addr common.Address) (*big.Int, er
 
 // CallFrom runs eth_call as from (the zero address means no sender) against the latest block. A revert comes back
 // as an error.
+// callAt is an eth_call from the zero address at block (nil: latest), retried on transient errors.
+func (c *Client) callAt(ctx context.Context, to common.Address, data []byte, block *big.Int) ([]byte, error) {
+	msg := ethereum.CallMsg{To: &to, Data: data}
+	var out []byte
+	err := retry(ctx, func() (err error) { out, err = c.Eth.CallContract(ctx, msg, block); return err })
+	return out, err
+}
+
 func (c *Client) CallFrom(ctx context.Context, from, to common.Address, data []byte) ([]byte, error) {
 	msg := ethereum.CallMsg{From: from, To: &to, Data: data}
 	var out []byte
