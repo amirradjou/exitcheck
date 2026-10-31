@@ -63,6 +63,9 @@ type Watcher struct {
 	Expire time.Duration
 	// Poll reads the head over HTTP when the subscription has been quiet this long.
 	Poll time.Duration
+	// Retry is the wait before a failed step is tried again (twice) before it is left for the next head: a
+	// load-balanced RPC's node often trails the head announcement by a moment.
+	Retry time.Duration
 
 	pending map[common.Address]launch.Pool
 	// unfunded is the last block at which each pending pool was seen without liquidity. A pool's first Mint can come
@@ -76,7 +79,7 @@ type Watcher struct {
 func New(chainName string, src Source, state State, pub Publisher, log *slog.Logger) *Watcher {
 	return &Watcher{
 		Chain: chainName, src: src, state: state, pub: pub, log: log.With("chain", chainName), now: time.Now,
-		MaxRange: 500, Expire: 24 * time.Hour, Poll: 30 * time.Second,
+		MaxRange: 500, Expire: 24 * time.Hour, Poll: 30 * time.Second, Retry: time.Second,
 		pending: map[common.Address]launch.Pool{}, unfunded: map[common.Address]uint64{},
 	}
 }
@@ -169,11 +172,21 @@ func (w *Watcher) catchUp(ctx context.Context) {
 	w.advanceTo(ctx, head)
 }
 
-// advanceTo processes every block up to head, in steps; a failed step is retried at the next head.
+// advanceTo processes every block up to head, in steps. A failed step is tried again after Retry, twice, then left
+// for the next head.
 func (w *Watcher) advanceTo(ctx context.Context, head uint64) {
 	for w.cursor < head && ctx.Err() == nil {
 		to := min(head, w.cursor+w.MaxRange)
-		if err := w.Step(ctx, w.cursor+1, to); err != nil {
+		var err error
+		for attempt := range 3 {
+			if attempt > 0 {
+				sleep(ctx, w.Retry)
+			}
+			if err = w.Step(ctx, w.cursor+1, to); err == nil || ctx.Err() != nil {
+				break
+			}
+		}
+		if err != nil {
 			w.log.Warn("processing blocks", "from", w.cursor+1, "to", to, "err", err)
 			return
 		}

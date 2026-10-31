@@ -77,7 +77,8 @@ func (r *RPC) Head(ctx context.Context) (uint64, error) {
 	return r.c.Head(ctx)
 }
 
-// liveRange is the widest range read from the latest-state RPC; wider gaps go to the archive RPC's windowed scan.
+// liveRange is how many of a range's most recent blocks are read from the latest-state RPC; older blocks go to the
+// archive RPC's windowed scan.
 const liveRange = 100
 
 // Created reads the factories' creation logs.
@@ -103,32 +104,37 @@ func (r *RPC) Created(ctx context.Context, from, to uint64) ([]launch.Pool, erro
 	return pools, nil
 }
 
-// logs reads logs from the latest-state RPC for a short range, falling back to the archive RPC's windowed scan for
-// long ranges or when the latest-state RPC refuses. limit stops after that many logs (0: no limit).
+// logs reads a range's logs in block order. The most recent liveRange blocks come from the latest-state RPC alone:
+// it errors for a block it does not have yet, and the step is retried at the next head. The archive RPC is only
+// asked for older blocks: it may answer an empty list instead of an error for a block it has not reached (mevblocker
+// does), and a creation log lost that way is a launch lost for good, the cursor having moved past it. limit stops
+// after that many logs (0: no limit).
 func (r *RPC) logs(ctx context.Context, q ethereum.FilterQuery, from, to uint64, limit int) ([]types.Log, error) {
-	if to-from < liveRange {
-		q.FromBlock, q.ToBlock = new(big.Int).SetUint64(from), new(big.Int).SetUint64(to)
-		logs, err := r.c.Eth.FilterLogs(ctx, q)
-		if err == nil {
-			return logs, nil
+	var out []types.Log
+	recent := from
+	if to-from >= liveRange {
+		recent = to - liveRange + 1
+		errEnough := errors.New("enough")
+		err := r.c.ScanLogs(ctx, chain.LogScan{Query: q, From: from, To: recent - 1, MaxRequests: 100}, func(logs []types.Log) error {
+			out = append(out, logs...)
+			if limit > 0 && len(out) >= limit {
+				return errEnough
+			}
+			return nil
+		})
+		if errors.Is(err, errEnough) {
+			return out, nil
 		}
-		if ctx.Err() != nil {
-			return nil, ctx.Err()
+		if err != nil {
+			return nil, chain.StripURL(err)
 		}
 	}
-	var out []types.Log
-	errEnough := errors.New("enough")
-	err := r.c.ScanLogs(ctx, chain.LogScan{Query: q, From: from, To: to, MaxRequests: 100}, func(logs []types.Log) error {
-		out = append(out, logs...)
-		if limit > 0 && len(out) >= limit {
-			return errEnough
-		}
-		return nil
-	})
-	if err != nil && !errors.Is(err, errEnough) {
+	q.FromBlock, q.ToBlock = new(big.Int).SetUint64(recent), new(big.Int).SetUint64(to)
+	logs, err := r.c.Eth.FilterLogs(ctx, q)
+	if err != nil {
 		return nil, chain.StripURL(err)
 	}
-	return out, nil
+	return append(out, logs...), nil
 }
 
 var balanceOf = common.FromHex("0x70a08231")
