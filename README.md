@@ -226,6 +226,50 @@ Limits:
 - A v3 pool funded with the token alone counts as launched, though the simulation needs quote liquidity to trade.
 - Reorgs are not undone; a launch in a dropped block keeps its row.
 
+## How the dataset and model work (M4)
+
+```sh
+./bin/rugcheck backfill -watch -from 2026-10-16 -to 2026-10-29T23:20:00Z  # past launches, checked as they stood
+./bin/rugcheck label                                                      # what happened in the day after each
+./bin/rugcheck dataset                                                    # ml/data/dataset.csv
+cd ml && uv run train.py                                                  # time split, model vs rules, MLflow
+```
+
+- **A label is what the chain did, not a list of scams.** `rugcheck label` reads each launch's pool logs, from the
+  pool's creation to 24 h after its first liquidity.
+  - A Uniswap v2 or Aerodrome pool is its own LP token. Its Transfer logs give the LP supply and the fee collector's
+    share at every point, and the pool counts as pulled under the rule facts use: LP outside the fee collector and
+    the permanent minimum is under 1% of supply.
+  - A v3 pool's positions are NFTs, so its liquidity is summed from Mint and Burn instead.
+  - Pulled means the liquidity fell under the threshold at any point within the day. A deployer who empties a pool
+    and refills it later has still taken buyers' money once.
+  - Buys and sells before the pull are counted. A pull before any trade is bait: nobody lost money.
+- **Features are what the check saw at the launch's block.**
+  - The live watch keeps each check's full report (`launches.report`).
+  - Launches from before that, and older ones, are checked again by `rugcheck backfill`. The unchanged check runs
+    against an Anvil fork of the launch's block, where that block is the latest state, so facts and simulation see
+    it as it stood then. Ages are measured from the checked block's timestamp, and explorers are offline: they only
+    know the present.
+  - Re-checked this way, 331 of the 338 launches the live watch had already judged got the same verdict (97.9%).
+    One of the seven others was a false honeypot that the live check got wrong (a simulation cut off by its budget).
+- **The same features, live or backfilled.** `internal/features` turns a report into 65 numbers: contract and owner,
+  privileged functions found in the bytecode and who can use them now, holdings, pools and LP shares, the deployer's
+  history, the simulation's steps and taxes. Explorer answers are left out (verified source, powers found only in
+  source, Blockscout's holder list): a backfill cannot have them, and a live launch is usually too new to be indexed.
+  A value the check could not read stays missing.
+- **Time split.** `ml/train.py` (XGBoost, tracked in a local MLflow store) trains on the oldest launches, picks the
+  alert threshold on the next ones and tests on the newest, so the model is judged on launches it could not have
+  seen. The threshold is set at the rules' own precision on the threshold launches; the test then compares how many
+  pulls each catches. Results are also split by venue: the rules catch nearly every v2 pull (the deployer holds the
+  LP tokens) and miss most v3 ones (positions are NFTs, so who holds them is not checked).
+
+Limits:
+- The label is liquidity pulled within a day. A honeypot that keeps its liquidity, with buyers unable to sell, is not
+  counted as one.
+- Backfill takes launches funded in the block that created their pool, which is most of them (206 of 210 on Base and
+  42 of 55 on Ethereum on M3's measured day). Pools funded later are only in the live data.
+- A few weeks of launches teach the model those weeks' scam templates.
+
 ## Stack
 
 - Go: RPC and explorer clients, Anvil fork simulation, analyzer workers, Telegram bot, HTTP API
