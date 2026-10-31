@@ -122,10 +122,23 @@ func Run(ctx context.Context, c *chain.Client, token common.Address, opts Option
 	if err := trade(ctx, f, token, v, spend, r); err != nil {
 		return nil, err
 	}
-	if f.broken != nil {
-		return nil, fmt.Errorf("the fork could not fetch chain state, so the result would say nothing about the token: %w", chain.StripURL(f.broken))
+	if err := unreliable(ctx, f.broken); err != nil {
+		return nil, err
 	}
 	return r, nil
+}
+
+// unreliable says why a finished simulation tells nothing about the token: the fork could not fetch chain state, or
+// the budget ran out while it traded. Either way a step failed for the simulation's own reason, and a timed-out
+// approve reads exactly like a sale that reverts: such a result must never become a verdict.
+func unreliable(ctx context.Context, broken error) error {
+	if broken != nil {
+		return fmt.Errorf("the fork could not fetch chain state, so the result would say nothing about the token: %w", chain.StripURL(broken))
+	}
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("the simulation ran out of time before it finished, so the result would say nothing about the token: %w", err)
+	}
+	return nil
 }
 
 // pickPool chooses the pool to trade. Pools whose routers handle fee-on-transfer tokens (v2, Aerodrome) come

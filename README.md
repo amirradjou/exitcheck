@@ -470,8 +470,11 @@ What the numbers show:
   - Uniswap v3 had 76 launches, 57 judged caution. Of those, 51 were seeded with the token alone, so there was
     nothing to sell into yet and the simulation could not run (the limit noted above). An unfinished decisive check
     is never called clear.
-  - 2 scams: one honeypot (the test buy worked, the sale did not) and one pool whose liquidity was already gone
-    when the check ran. 1 clear.
+  - 2 scams: one pool whose liquidity was already gone when the check ran, and one false honeypot. Sentient (SENT)
+    on Ethereum, 03:47 UTC, right after the DNS outage: the simulation's 30 s budget ran out while it approved the
+    sale, and the timeout read as a sale that reverts. Checked again on a fork of the same block (M4's backfill), the
+    buy, transfer and sale all work. Its alert was posted. A simulation cut off by its budget is now reported as not
+    checked, never as a verdict. 1 clear.
 - **What happened next, a first look.** This is not M3's measure; M4's labelled set is. Right after the day, each
   Uniswap v2 pool was read again: its LP supply, the fee collector's share and its Burn and Swap logs.
   - Of the 177 v2 launches flagged because the deployer held the LP, 168 had their liquidity pulled by then.

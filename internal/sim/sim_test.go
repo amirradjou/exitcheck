@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -103,6 +104,22 @@ func TestForkFailuresAreNotVerdicts(t *testing.T) {
 	}
 	if isForkFailure(errors.New("execution reverted: TransferHelper: TRANSFER_FROM_FAILED")) {
 		t.Error("a revert read as a fork failure")
+	}
+}
+
+func TestTimeoutsAreNotVerdicts(t *testing.T) {
+	// Sentient (SENT), 2026-10-30: the budget ran out while the simulation approved the sale, and the timeout came
+	// back as "approve reverted: … context deadline exceeded", which read as a honeypot.
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := unreliable(ctx, nil); err == nil || !strings.Contains(err.Error(), "ran out of time") {
+		t.Errorf("a simulation cut off by its deadline: %v, want an error", err)
+	}
+	if err := unreliable(context.Background(), errors.New("Fork Error: Transport(…)")); err == nil {
+		t.Error("a broken fork was not an error")
+	}
+	if err := unreliable(context.Background(), nil); err != nil {
+		t.Errorf("a finished simulation: %v", err)
 	}
 }
 
