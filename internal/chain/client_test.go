@@ -308,3 +308,31 @@ func TestBlockAtFindsTheLastBlockBeforeATime(t *testing.T) {
 		t.Errorf("a time after the head: ok %v, err %v", ok, err)
 	}
 }
+
+func TestBlockTimeAsksTheUnpacedRPCFirst(t *testing.T) {
+	header := func(n uint64) *types.Header {
+		return &types.Header{Number: new(big.Int).SetUint64(n), Time: 1_700_000_000 + n, Difficulty: new(big.Int)}
+	}
+	var archiveReads int
+	latest := fakeRPC(t, Base, func(method string, params []json.RawMessage) (any, *rpcErr) {
+		if n := blockParam(t, params[0]); n < 100 {
+			return header(n), nil
+		}
+		return nil, nil // a block the node has not seen yet
+	})
+	archive := fakeRPC(t, Base, func(method string, params []json.RawMessage) (any, *rpcErr) {
+		archiveReads++
+		return header(blockParam(t, params[0])), nil
+	})
+	c, err := DialURLs(context.Background(), Base, latest, archive, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	if got, err := c.BlockTime(context.Background(), 42); err != nil || got.Unix() != 1_700_000_042 || archiveReads != 0 {
+		t.Errorf("block 42: %v, %v, %d archive reads", got, err, archiveReads)
+	}
+	if got, err := c.BlockTime(context.Background(), 150); err != nil || got.Unix() != 1_700_000_150 || archiveReads != 1 {
+		t.Errorf("block 150: %v, %v, %d archive reads", got, err, archiveReads)
+	}
+}
