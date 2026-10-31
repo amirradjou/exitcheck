@@ -26,6 +26,8 @@ type fakeSource struct {
 	mint    map[common.Address][]uint64 // Mint blocks, ascending
 	heads   chan uint64
 	ranges  [][2]uint64
+	// refuse makes the next Created calls fail, as an RPC node a moment behind the head does.
+	refuse int
 }
 
 func (f *fakeSource) Heads(context.Context) (<-chan uint64, error) {
@@ -41,6 +43,10 @@ func (f *fakeSource) Created(_ context.Context, from, to uint64) ([]launch.Pool,
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.ranges = append(f.ranges, [2]uint64{from, to})
+	if f.refuse > 0 {
+		f.refuse--
+		return nil, errors.New("block range extends beyond current head block")
+	}
 	var out []launch.Pool
 	for b := from; b <= to; b++ {
 		out = append(out, f.created[b]...)
@@ -122,6 +128,7 @@ func pool(n byte, block uint64) launch.Pool {
 func newWatcher(src *fakeSource, st *memState, pub *fakePub) *Watcher {
 	w := New("base", src, st, pub, slog.New(slog.NewTextHandler(io.Discard, nil)))
 	w.now = func() time.Time { return t0.Add(time.Hour) }
+	w.Retry = time.Millisecond
 	return w
 }
 
@@ -292,5 +299,19 @@ func TestLaunchIsDatedByTheMintThatFundedIt(t *testing.T) {
 	}
 	if _, left := w.unfunded[p.Pool]; left {
 		t.Error("a launched pool's unfunded mark was kept")
+	}
+}
+
+func TestAStepRefusedForAMomentIsTriedAgainAtOnce(t *testing.T) {
+	p := pool(9, 101)
+	src := &fakeSource{created: map[uint64][]launch.Pool{101: {p}}, funded: map[common.Address]bool{p.Pool: true},
+		mint: map[common.Address][]uint64{}, refuse: 1}
+	st, pub := newState(), &fakePub{}
+	st.cursor["base"] = 100
+	w := newWatcher(src, st, pub)
+	w.cursor = 100
+	w.advanceTo(context.Background(), 101)
+	if w.cursor != 101 || len(pub.got) != 1 {
+		t.Errorf("after one refusal: cursor %d, %d launches published; want the block read on the retry", w.cursor, len(pub.got))
 	}
 }
