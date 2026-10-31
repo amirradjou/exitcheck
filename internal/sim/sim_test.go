@@ -123,6 +123,40 @@ func TestTimeoutsAreNotVerdicts(t *testing.T) {
 	}
 }
 
+// dataErr is how go-ethereum's RPC client returns a revert that carries data.
+type dataErr struct{ data string }
+
+func (e dataErr) Error() string          { return "execution reverted" }
+func (e dataErr) ErrorData() interface{} { return e.data }
+
+func TestOnlyEVMFailuresAreTheTokens(t *testing.T) {
+	for _, c := range []struct {
+		err   error
+		token bool
+	}{
+		{dataErr{"0x08c379a0"}, true},
+		{errors.New("execution reverted"), true},
+		{errors.New("execution reverted: TransferHelper: TRANSFER_FROM_FAILED"), true},
+		{errors.New("EVM error OutOfGas"), true},
+		{errors.New("EVM error InvalidFEOpcode"), true},
+		{errors.New(`Post "http://127.0.0.1:42681": context deadline exceeded`), false},
+		{errors.New("dial tcp 127.0.0.1:42681: connect: connection refused"), false},
+		{errors.New("transaction 0xabc was not mined"), false},
+		{errors.New("EVM error Database(Fork Error: Transport(…))"), false}, // anvil could not fetch state
+	} {
+		f := &fork{}
+		f.blame(c.err)
+		if got := f.broken == nil; got != c.token {
+			t.Errorf("%q: counted as the token's = %v, want %v", c.err, got, c.token)
+		}
+	}
+	f := &fork{}
+	f.blame(nil)
+	if f.broken != nil {
+		t.Error("no error was blamed on the simulation")
+	}
+}
+
 // Live: forks Ethereum through the default public RPCs and needs anvil; run with RUGCHECK_LIVE=1.
 func TestLiveSimulation(t *testing.T) {
 	if os.Getenv("RUGCHECK_LIVE") == "" {
