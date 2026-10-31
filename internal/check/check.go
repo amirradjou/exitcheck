@@ -74,7 +74,7 @@ func Run(ctx context.Context, c *chain.Client, ex *explorer.Client, token common
 	r := &Report{
 		Chain: c.Net.Name, Address: token, Name: f.Token.Name, Symbol: f.Token.Symbol, Block: f.Block,
 		CheckedAt: f.CheckedAt, Facts: f, Sim: s,
-		Verdict: verdict.Judge(f, s, sErr, time.Now()),
+		Verdict: verdict.Judge(f, s, sErr, f.AsOf()),
 	}
 	if sErr != nil {
 		r.SimError = sErr.Error()

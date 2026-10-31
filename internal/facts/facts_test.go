@@ -87,6 +87,29 @@ func TestRenderReportsWhatMatters(t *testing.T) {
 	}
 }
 
+func TestAgesAreMeasuredFromTheCheckedBlock(t *testing.T) {
+	// A check run today on a fork of a block from yesterday: the pool was a minute old then.
+	block := time.Date(2026, 10, 30, 12, 0, 0, 0, time.UTC)
+	created := block.Add(-time.Minute)
+	f := &Facts{
+		Chain: "base", Address: common.HexToAddress("0x01"), Block: 1, CheckedAt: block.Add(20 * time.Hour), BlockTime: block,
+		Liquidity: &Liquidity{Pool: common.HexToAddress("0x02"), DEX: "uniswap-v2", CreatedAt: &created},
+	}
+	if !f.AsOf().Equal(block) {
+		t.Errorf("AsOf = %v, want the block's time %v", f.AsOf(), block)
+	}
+	var buf bytes.Buffer
+	if err := Render(&buf, f); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(buf.String(), "(1 min ago)") {
+		t.Errorf("pool age not measured from the block:\n%s", buf.String())
+	}
+	if f.BlockTime = (time.Time{}); !f.AsOf().Equal(f.CheckedAt) {
+		t.Errorf("without a block time, AsOf = %v, want the check's start", f.AsOf())
+	}
+}
+
 func TestLPPulledIgnoresTheProtocolFeeShare(t *testing.T) {
 	e18 := new(big.Int).Exp(big.NewInt(10), big.NewInt(18), nil)
 	cases := []struct {

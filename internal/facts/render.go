@@ -64,7 +64,7 @@ func Render(w io.Writer, f *Facts) error {
 	if cr := c.Creation; cr != nil {
 		line := fmt.Sprintf("block %d", cr.Block)
 		if c.CreatedAt != nil {
-			line = fmt.Sprintf("%s (%s ago), %s", c.CreatedAt.Format("2006-01-02"), age(f.CheckedAt.Sub(*c.CreatedAt)), line)
+			line = fmt.Sprintf("%s (%s ago), %s", c.CreatedAt.Format("2006-01-02"), age(f.AsOf().Sub(*c.CreatedAt)), line)
 		}
 		if cr.Deployer != (common.Address{}) {
 			line += fmt.Sprintf(", by %s in tx %s", short(cr.Deployer), shortHash(cr.Tx))
@@ -146,7 +146,7 @@ func Render(w io.Writer, f *Facts) error {
 	if l := f.Liquidity; l != nil {
 		line := fmt.Sprintf("%s %s", l.DEX, short(l.Pool))
 		if l.CreatedAt != nil {
-			line += fmt.Sprintf(", created %s (%s ago)", l.CreatedAt.Format("2006-01-02 15:04"), age(f.CheckedAt.Sub(*l.CreatedAt)))
+			line += fmt.Sprintf(", created %s (%s ago)", l.CreatedAt.Format("2006-01-02 15:04"), age(f.AsOf().Sub(*l.CreatedAt)))
 		}
 		p("  main pool\t%s", line)
 		if l.Pulled {
@@ -159,7 +159,7 @@ func Render(w io.Writer, f *Facts) error {
 				until := "unlock date unknown"
 				if lk.Unlock != nil {
 					until = "until " + lk.Unlock.Format("2006-01-02")
-					if lk.Unlock.Before(f.CheckedAt) {
+					if lk.Unlock.Before(f.AsOf()) {
 						until = "unlocked since " + lk.Unlock.Format("2006-01-02")
 					}
 				}
