@@ -237,7 +237,7 @@ Limits:
 | M0 ✅ | `rugcheck facts <address>`: contract, owner powers, holders, LP state | correct on 20 hand-picked tokens (10 known scams, 10 legitimate) — **20/20, see [M0 results](#m0-results)** |
 | M1 ✅ | Buy-then-sell simulation on an Anvil fork | every known honeypot in the set flagged; no legitimate token flagged — **6/6 flagged, 0/10 legitimate flagged, see [M1 results](#m1-results)** |
 | M2 ✅ | Telegram bot: verdict + reasons, cached in Redis | median answer under 10 s cold, instant when cached — **9.1 s cold, 0.5 ms cached, see [M2 results](#m2-results)** |
-| M3 | Live watch: factory events → Kafka → analyzers → alerts channel | a day of launches processed with lag under a minute and no duplicates |
+| M3 ✅ | Live watch: factory events → Kafka → analyzers → alerts channel | a day of launches processed with lag under a minute and no duplicates — **262 of 264 under a minute (median 8.9 s), 0 duplicate results or alerts, see [M3 results](#m3-results)** |
 | M4 | Labelled dataset, features, model, MLflow | time-split precision/recall published; beats the hard rules alone |
 | M5 | Grounded "why" explanations | on a review set, every sentence cites a check or a source line |
 | M6 | Public demo and results | README shows tokens analysed, precision at the alert threshold, median time to verdict |
@@ -410,3 +410,76 @@ What the numbers show:
   - PEPE again: 128 ms cached. That is mostly one round trip to Telegram's API, which the bench stubs out.
 - **The verdict rules are also tested offline.** `internal/verdict/testdata` holds the recorded facts and
   simulations of all 20 tokens, so CI checks every rule change against real tokens without a network.
+
+## M3 results
+
+`docker compose up -d --build` ran the whole live watch on a laptop, on the default public RPCs: the watcher, two
+analyzers, the bot, Kafka, Postgres and Redis. The measured day ran from 2026-10-30 01:31 to 2026-10-31 01:31 UTC,
+and `rugcheck report -since 24h` read it at the end. Results: **264 launches, all analyzed; median lag 8.9 s, p95
+13.3 s, 2 over a minute; 0 duplicate results and 0 duplicate alerts; 199 alerts, all posted** to the public channel
+[@rugcheckApp](https://t.me/rugcheckApp).
+
+| | |
+|---|---|
+| window | 2026-10-30 01:31 to 2026-10-31 01:31 UTC (24h0m0s) |
+| launches | 264 (base 209, ethereum 55) |
+| analyzed / failed / waiting | 264 / 0 / 0 |
+| lag, liquidity → verdict | median 8.9 s, p95 13.3 s, max 70.9 s; 2 over a minute |
+| of which detection | median 0.2 s, p95 3.5 s |
+| check | median 8.5 s |
+| redelivered by Kafka | 1 launches, 1 extra deliveries (counted, not re-analyzed) |
+| duplicate results / alerts | 0 / 0 |
+| verdicts | high-risk 198, caution 63, scam 2, clear 1 |
+| alerts | 199 (199 posted) |
+
+Lag runs from the block timestamp of a pool's first liquidity to its verdict stored in Postgres. Detection is the
+watcher's share: up to the launch being published to Kafka. The day started after the last watcher fix (dating a
+launch by the Mint that made it tradeable), so it measures the code in this repo.
+
+What the numbers show:
+
+- **The lag is the check.** The check's median, 8.5 s, is the bot's cold answer from M2. Base launches were detected
+  within 0.3 s of their block at p95. Ethereum's took a median 2.7 s and p95 4.0 s, as Ethereum blocks are announced
+  a few seconds after their slot's timestamp. Kafka, Postgres and the alert add a fraction of a second.
+- **Two launches went over a minute, both waiting on a free RPC:**
+  - 70.9 s (Base, 03:48 UTC). The first check attempt failed on a timeout from Tenderly's Base gateway. The retry,
+    5 s later, finished within its budgets but without the simulation, which the verdict (high risk) lists as not
+    checked.
+  - 69.4 s (Ethereum, 23:43 UTC). The check took 5 s, but the watcher saw the pool 64 s after its block. The pool
+    was created and funded in that same block, so the step that read the block finished a minute late. Nothing was
+    logged, and steps are not timed, so which call was slow is not known. The watcher's RPC calls retry transient
+    errors silently, and log reads fall back to the archive RPC's windowed scan when the latest-state RPC refuses.
+    One other Ethereum launch came close the same way: 52.5 s to detection, 57.4 s of lag (08:28 UTC).
+  - One more check failed its first attempt (a mevblocker timeout) and finished in 32.9 s.
+- **The day's faults lost and doubled nothing:**
+  - Docker's DNS stopped answering for about five minutes (03:41–03:47 UTC). The watcher could not reach Postgres to
+    save its cursor, so 11 steps failed; each changed nothing and was run again at the next block. One pool was
+    created during the outage (Ethereum v3, block 26302968). It was read from the backlog when the database came
+    back, and its launch was detected 3 s after it was funded. Factory logs for those blocks show no other pool
+    against a quote token.
+  - The WebSocket subscriptions dropped 21 times (11 on Base, 10 on Ethereum), eight of them between 17:35 and
+    17:46 UTC. Each was resubscribed, and the blocks in between were read by range from the saved cursor.
+  - The one redelivery: Telegram reset the connection while an alert was being posted (00:15 UTC). The alert's claim
+    was released and the stream handed the launch over again a second later. The analyzer found it already analyzed,
+    did not check it again, and the alert was posted once.
+- **The verdicts follow the venue.**
+  - A deployer still holding the pool's LP tokens, and so able to withdraw the liquidity, accounts for 179 of the
+    198 high-risk verdicts: 177 of the 184 Uniswap v2 launches, and 2 on Aerodrome. The other 19 rest on the deployer
+    holding a large share of the supply (13), an owner who can mint (12), an upgradeable proxy (4) or a tax in the
+    test trade (3), several with more than one.
+  - Uniswap v3 had 76 launches, 57 judged caution. Of those, 51 were seeded with the token alone, so there was
+    nothing to sell into yet and the simulation could not run (the limit noted above). An unfinished decisive check
+    is never called clear.
+  - 2 scams: one honeypot (the test buy worked, the sale did not) and one pool whose liquidity was already gone
+    when the check ran. 1 clear.
+- **What happened next, a first look.** This is not M3's measure; M4's labelled set is. Right after the day, each
+  Uniswap v2 pool was read again: its LP supply, the fee collector's share and its Burn and Swap logs.
+  - Of the 177 v2 launches flagged because the deployer held the LP, 168 had their liquidity pulled by then.
+  - 167 of those traded first. The median pool lasted 13.3 minutes from first liquidity to first removal (p25 10.1,
+    p75 33.1), after a median 46 swaps.
+  - All 167 alerts were posted before the removal, a median 13.1 minutes ahead.
+  - Of the 7 other v2 launches, 3 were pulled.
+  - Limits: v2 pools only, since v3 positions are NFTs and were not read. The swaps before a pull may be the
+    deployer's own wallets, so they show that the pool traded, not how many people lost money.
+- **Small footprint.** Idle at the end of the day, the seven containers used 814 MiB, 738 MiB of it Kafka. Each
+  check's Anvil fork starts and stops inside an analyzer.
