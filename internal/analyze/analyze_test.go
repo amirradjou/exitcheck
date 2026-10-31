@@ -159,6 +159,13 @@ func TestSecondPoolOfATokenUsesTheCacheAndDoesNotRealert(t *testing.T) {
 	if h.checks != 1 || !h.store.launches[second.ID()].FromCache {
 		t.Errorf("%d checks; second pool from cache: %v", h.checks, h.store.launches[second.ID()].FromCache)
 	}
+	// The check that ran keeps its full report; the cached answer has none to keep.
+	if r := h.store.launches[lnch(1, 7).ID()].Report; !strings.Contains(string(r), `"name":"Tok"`) {
+		t.Errorf("first pool's report = %s", r)
+	}
+	if r := h.store.launches[second.ID()].Report; r != nil {
+		t.Errorf("cached pool's report = %s, want none", r)
+	}
 	if len(h.posts) != 1 {
 		t.Errorf("%d alerts for one token", len(h.posts))
 	}

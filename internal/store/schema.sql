@@ -46,6 +46,9 @@ CREATE TABLE IF NOT EXISTS launches (
     deliveries    integer NOT NULL DEFAULT 1
 );
 CREATE INDEX IF NOT EXISTS launches_funded_at ON launches (funded_at);
+-- report is the check's full JSON report (facts, simulation, verdict): the model's features as they stood at the
+-- checked block. NULL for launches analyzed before it was kept, and for answers served from the cache.
+ALTER TABLE launches ADD COLUMN IF NOT EXISTS report jsonb;
 
 -- One alert per token, claimed before it is sent.
 CREATE TABLE IF NOT EXISTS alerts (

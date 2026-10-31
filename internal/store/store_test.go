@@ -76,8 +76,14 @@ func TestLaunchRowsCountRedeliveries(t *testing.T) {
 	if p, err := s.Receive(ctx, l); err != nil || p.Done {
 		t.Fatalf("first delivery: %+v, %v", p, err)
 	}
-	if err := s.Finish(ctx, l.ID(), Result{Level: "scam", Headline: "Honeypot", Answer: "text", Complete: true, CheckSeconds: 8.5}); err != nil {
+	report := []byte(`{"verdict":{"level":"scam"},"facts":{"block":8}}`)
+	if err := s.Finish(ctx, l.ID(), Result{Level: "scam", Headline: "Honeypot", Answer: "text", Complete: true, CheckSeconds: 8.5,
+		Report: report}); err != nil {
 		t.Fatal(err)
+	}
+	var block int
+	if err := s.db.QueryRow(ctx, `SELECT (report->'facts'->>'block')::int FROM launches WHERE id = $1`, l.ID()).Scan(&block); err != nil || block != 8 {
+		t.Errorf("stored report: facts.block = %d (%v)", block, err)
 	}
 	p, err := s.Receive(ctx, l)
 	if err != nil || !p.Done || p.Level != "scam" || p.Text != "text" {

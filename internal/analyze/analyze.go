@@ -5,6 +5,7 @@ package analyze
 
 import (
 	"context"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"log/slog"
@@ -92,6 +93,7 @@ func (a *Analyzer) Handle(ctx context.Context, l launch.Launch) error {
 func (a *Analyzer) run(ctx context.Context, l launch.Launch) (store.Result, bot.Answer) {
 	start := time.Now()
 	var ans bot.Answer
+	var report *check.Report // set only when this call ran the check, not when the cache answered
 	var hit bool
 	var err error
 	for attempt := 1; attempt <= a.Attempts; attempt++ {
@@ -100,6 +102,7 @@ func (a *Analyzer) run(ctx context.Context, l launch.Launch) (store.Result, bot.
 			if err != nil {
 				return bot.Answer{}, 0, err
 			}
+			report = r
 			ans := bot.NewAnswer(r)
 			return ans, ans.TTL(), nil
 		})
@@ -118,6 +121,11 @@ func (a *Analyzer) run(ctx context.Context, l launch.Launch) (store.Result, bot.
 	}
 	res.Level, res.Answer, res.Complete = ans.Level.String(), ans.Text, ans.Complete
 	res.Headline, _, _ = strings.Cut(ans.Text, "\n")
+	if report != nil {
+		if res.Report, err = json.Marshal(report); err != nil {
+			a.log.Warn("encoding the report; storing the verdict without it", "id", l.ID(), "err", err)
+		}
+	}
 	return res, ans
 }
 
