@@ -99,33 +99,52 @@ func Run(ctx context.Context, c *chain.Client, token common.Address, opts Option
 	defer f.close()
 	r := &Result{Chain: c.Net.Name, Token: token, Block: block, BlindSpot: BlindSpot, Reasons: []string{}}
 	defer func() { r.Elapsed = time.Since(start) }()
+	if err := simulate(ctx, c, f, token, r); err != nil {
+		return nil, err
+	}
+	// Every verdict, the early "no pool" ones included, passes this gate.
+	if err := unreliable(ctx, f.broken); err != nil {
+		return nil, err
+	}
+	return r, nil
+}
 
+// simulate picks the pool and trades through it, filling r.
+func simulate(ctx context.Context, c *chain.Client, f *fork, token common.Address, r *Result) error {
 	pools, err := facts.Pools(ctx, f.client, token)
 	if err != nil {
-		return nil, fmt.Errorf("pools on the fork: %w", err)
+		return fmt.Errorf("pools on the fork: %w", err)
 	}
 	pool, ok := pickPool(pools)
 	if !ok {
 		r.Verdict = NoPool
 		r.Reasons = append(r.Reasons, "no pool against WETH, USDC or USDT has liquidity")
-		return r, nil
+		return nil
 	}
 	v, err := newVenue(c.Net, token, pool)
 	if err != nil {
 		r.Verdict = NoPool
 		r.Reasons = append(r.Reasons, err.Error())
-		return r, nil
+		return nil
 	}
 	r.Venue = v.describe()
 	spend := spendFor(ctx, f, c.Net, pool)
 	r.SpentETH = weiToETH(spend)
-	if err := trade(ctx, f, token, v, spend, r); err != nil {
-		return nil, err
+	return trade(ctx, f, token, v, spend, r)
+}
+
+// unreliable says why a finished simulation tells nothing about the token: a call failed outside the EVM (the fork
+// could not fetch state, a connection dropped), or the budget ran out while it traded. Either way a step failed for
+// the simulation's own reason, and a timed-out approve reads exactly like a sale that reverts: such a result must
+// never become a verdict.
+func unreliable(ctx context.Context, broken error) error {
+	if broken != nil {
+		return fmt.Errorf("a call failed outside the EVM, so the result would say nothing about the token: %w", chain.StripURL(broken))
 	}
-	if f.broken != nil {
-		return nil, fmt.Errorf("the fork could not fetch chain state, so the result would say nothing about the token: %w", chain.StripURL(f.broken))
+	if err := ctx.Err(); err != nil {
+		return fmt.Errorf("the simulation ran out of time before it finished, so the result would say nothing about the token: %w", err)
 	}
-	return r, nil
+	return nil
 }
 
 // pickPool chooses the pool to trade. Pools whose routers handle fee-on-transfer tokens (v2, Aerodrome) come
@@ -205,6 +224,7 @@ func trade(ctx context.Context, f *fork, token common.Address, v venue, spend *b
 
 	// Buy.
 	expected, err := v.quoteBuy(ctx, f, spend)
+	f.blame(err)
 	if err != nil || expected.Sign() == 0 {
 		r.Verdict = NoPool
 		r.Reasons = append(r.Reasons, "the DEX cannot quote a buy: "+errText(err))
@@ -322,9 +342,35 @@ func taxOf(got, want *big.Int) *float64 {
 type fork struct {
 	node   *anvil.Node
 	client *chain.Client
-	// broken is the first failure of the fork itself (it could not fetch state from the RPC it forks). A step that
-	// failed that way says nothing about the token, so the run ends with this error instead of a verdict.
+	// broken is the first call that failed outside the EVM (see blame). A step that failed that way says nothing
+	// about the token, so the run ends with this error instead of a verdict.
 	broken error
+}
+
+// blame records err as the simulation's own failure unless the EVM itself failed: only a revert, running out of gas
+// or a bad opcode is the token's doing. A timeout, a dropped connection or a fork that cannot fetch state says
+// nothing about the token, so it must not become a step's verdict.
+func (f *fork) blame(err error) {
+	if err != nil && f.broken == nil && (isForkFailure(err) || !isEVMFailure(err)) {
+		f.broken = err
+	}
+}
+
+// isEVMFailure reports whether a call failed inside the EVM: a revert (with or without a reason or custom error),
+// out of gas, or an invalid instruction.
+func isEVMFailure(err error) bool {
+	var de rpc.DataError
+	if errors.As(err, &de) && de.ErrorData() != nil {
+		return true
+	}
+	s := strings.ToLower(err.Error())
+	for _, k := range []string{"revert", "out of gas", "outofgas", "invalid opcode", "opcodenotfound", "invalidfeopcode",
+		"stack underflow", "stack overflow", "invalid jump"} {
+		if strings.Contains(s, k) {
+			return true
+		}
+	}
+	return false
 }
 
 // isForkFailure reports whether an error comes from anvil failing to reach its upstream RPC.
@@ -394,12 +440,14 @@ func (f *fork) tokenBalance(ctx context.Context, token, holder common.Address) (
 func (f *fork) sell(ctx context.Context, token common.Address, v venue, seller common.Address, tokens *big.Int) *Step {
 	expected, err := v.quoteSell(ctx, f, tokens)
 	if err != nil {
+		f.blame(err)
 		return &Step{Error: "the DEX cannot quote the sale: " + errText(err)}
 	}
 	weth := f.client.Net.WETH
 	ethBefore, err1 := f.client.Balance(ctx, seller)
 	wethBefore, err2 := f.tokenBalance(ctx, weth, seller)
 	if err := errors.Join(err1, err2); err != nil {
+		f.blame(err)
 		return &Step{Error: err.Error()}
 	}
 	s := f.send(ctx, seller, v.spender(), nil, v.sell(seller, tokens))
@@ -409,6 +457,7 @@ func (f *fork) sell(ctx context.Context, token common.Address, v venue, seller c
 	ethAfter, err1 := f.client.Balance(ctx, seller)
 	wethAfter, err2 := f.tokenBalance(ctx, weth, seller)
 	if err := errors.Join(err1, err2); err != nil {
+		f.blame(err)
 		return &Step{Error: err.Error()}
 	}
 	got := new(big.Int).Sub(ethAfter, ethBefore)
@@ -430,9 +479,7 @@ type sent struct {
 // returns the revert reason when it fails; only a call that would succeed is mined.
 func (f *fork) send(ctx context.Context, from, to common.Address, value *big.Int, data []byte) sent {
 	fail := func(err error) sent {
-		if f.broken == nil && isForkFailure(err) {
-			f.broken = err
-		}
+		f.blame(err)
 		return sent{Step: &Step{Error: revertReason(err)}, feePaid: new(big.Int)}
 	}
 	msg := ethereum.CallMsg{From: from, To: &to, Value: value, Data: data}

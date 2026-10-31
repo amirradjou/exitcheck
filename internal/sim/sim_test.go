@@ -6,6 +6,7 @@ import (
 	"errors"
 	"math/big"
 	"os"
+	"strings"
 	"testing"
 	"time"
 
@@ -103,6 +104,56 @@ func TestForkFailuresAreNotVerdicts(t *testing.T) {
 	}
 	if isForkFailure(errors.New("execution reverted: TransferHelper: TRANSFER_FROM_FAILED")) {
 		t.Error("a revert read as a fork failure")
+	}
+}
+
+func TestTimeoutsAreNotVerdicts(t *testing.T) {
+	// Sentient (SENT), 2026-10-30: the budget ran out while the simulation approved the sale, and the timeout came
+	// back as "approve reverted: … context deadline exceeded", which read as a honeypot.
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel()
+	if err := unreliable(ctx, nil); err == nil || !strings.Contains(err.Error(), "ran out of time") {
+		t.Errorf("a simulation cut off by its deadline: %v, want an error", err)
+	}
+	if err := unreliable(context.Background(), errors.New("Fork Error: Transport(…)")); err == nil {
+		t.Error("a broken fork was not an error")
+	}
+	if err := unreliable(context.Background(), nil); err != nil {
+		t.Errorf("a finished simulation: %v", err)
+	}
+}
+
+// dataErr is how go-ethereum's RPC client returns a revert that carries data.
+type dataErr struct{ data string }
+
+func (e dataErr) Error() string          { return "execution reverted" }
+func (e dataErr) ErrorData() interface{} { return e.data }
+
+func TestOnlyEVMFailuresAreTheTokens(t *testing.T) {
+	for _, c := range []struct {
+		err   error
+		token bool
+	}{
+		{dataErr{"0x08c379a0"}, true},
+		{errors.New("execution reverted"), true},
+		{errors.New("execution reverted: TransferHelper: TRANSFER_FROM_FAILED"), true},
+		{errors.New("EVM error OutOfGas"), true},
+		{errors.New("EVM error InvalidFEOpcode"), true},
+		{errors.New(`Post "http://127.0.0.1:42681": context deadline exceeded`), false},
+		{errors.New("dial tcp 127.0.0.1:42681: connect: connection refused"), false},
+		{errors.New("transaction 0xabc was not mined"), false},
+		{errors.New("EVM error Database(Fork Error: Transport(…))"), false}, // anvil could not fetch state
+	} {
+		f := &fork{}
+		f.blame(c.err)
+		if got := f.broken == nil; got != c.token {
+			t.Errorf("%q: counted as the token's = %v, want %v", c.err, got, c.token)
+		}
+	}
+	f := &fork{}
+	f.blame(nil)
+	if f.broken != nil {
+		t.Error("no error was blamed on the simulation")
 	}
 }
 
