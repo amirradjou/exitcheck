@@ -120,3 +120,16 @@ func TestErrorsNeverCarryTheEtherscanKey(t *testing.T) {
 		t.Fatalf("err = %v, want an error without the key", err)
 	}
 }
+
+func TestOfflineAnswersNothing(t *testing.T) {
+	ex, ctx, a := Offline(), context.Background(), common.Address{1}
+	if src, err := ex.Source(ctx, chain.Ethereum, a); err == nil || errors.Is(err, ErrNotVerified) {
+		t.Errorf("Source = %v, %v; want an unknown, not an answer", src, err)
+	}
+	if _, _, err := ex.Creation(ctx, chain.Ethereum, a); err == nil {
+		t.Error("Creation answered offline")
+	}
+	if list, _, err := ex.TopHolders(ctx, chain.Ethereum, a); err == nil && len(list) > 0 {
+		t.Errorf("TopHolders = %v offline", list)
+	}
+}
