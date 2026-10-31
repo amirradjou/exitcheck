@@ -285,7 +285,7 @@ Limits:
 | M0 ✅ | `rugcheck facts <address>`: contract, owner powers, holders, LP state | correct on 20 hand-picked tokens (10 known scams, 10 legitimate) — **20/20, see [M0 results](#m0-results)** |
 | M1 ✅ | Buy-then-sell simulation on an Anvil fork | every known honeypot in the set flagged; no legitimate token flagged — **6/6 flagged, 0/10 legitimate flagged, see [M1 results](#m1-results)** |
 | M2 ✅ | Telegram bot: verdict + reasons, cached in Redis | median answer under 10 s cold, instant when cached — **9.1 s cold, 0.5 ms cached, see [M2 results](#m2-results)** |
-| M3 | Live watch: factory events → Kafka → analyzers → alerts channel | a day of launches processed with lag under a minute and no duplicates — **the measured day: 262 of 264 under a minute (median 8.9 s), 0 duplicates, but 43 of Ethereum's 97 launches never seen (since fixed); being measured again, see [M3 results](#m3-results)** |
+| M3 | Live watch: factory events → Kafka → analyzers → alerts channel | a day of launches processed with lag under a minute and no duplicates — **the measured day: 262 of 264 under a minute (median 8.9 s), 0 duplicates, but 36 of Ethereum's 91 launches never seen (since fixed); being measured again, see [M3 results](#m3-results)** |
 | M4 | Labelled dataset, features, model, MLflow | time-split precision/recall published; beats the hard rules alone |
 | M5 | Grounded "why" explanations | on a review set, every sentence cites a check or a source line |
 | M6 | Public demo and results | README shows tokens analysed, precision at the alert threshold, median time to verdict |
@@ -465,9 +465,9 @@ What the numbers show:
 analyzers, the bot, Kafka, Postgres and Redis. The measured day ran from 2026-10-30 01:31 to 2026-10-31 01:31 UTC,
 and `rugcheck report -since 24h` read it at the end. Results: **264 launches, all analyzed; median lag 8.9 s, p95
 13.3 s, 2 over a minute; 0 duplicate results and 0 duplicate alerts; 199 alerts, all posted** to the public channel
-[@rugcheckApp](https://t.me/rugcheckApp). **But the watch did not see every launch:** the factories' logs show 306
-launches funded that day, and it missed 43 of Ethereum's 97 (none of Base's 209). The cause is fixed; the day is being
-measured again, with completeness counted.
+[@rugcheckApp](https://t.me/rugcheckApp). **But the watch did not see every launch:** `rugcheck audit` counts 300
+launches that day from the factories' logs, and the watch missed 36 of Ethereum's 91 (none of Base's 209). The cause
+is fixed; the day is being measured again, with completeness counted.
 
 | | |
 |---|---|
@@ -488,10 +488,12 @@ launch by the Mint that made it tradeable), so it measures the code in this repo
 
 What the numbers show:
 
-- **The watch missed 43 of Ethereum's 97 launches, and none of Base's 209.** Counted afterwards from the factories'
-  logs: every pool against a quote token created that day that got liquidity, set against the watch's launches. Of
-  the missed ones, 22 were Uniswap v2 and 20 v3 pools funded in the block that created them, and one v3 pool funded
-  later; every missed v2 pool still held its liquidity at the end of that block.
+- **The watch missed 36 of Ethereum's 91 launches, and none of Base's 209.** Counted afterwards by
+  `rugcheck audit -until 2026-10-31T01:31:00Z`: every pool created that day against a quote token that became
+  tradeable by the watch's own rule (it held the token, and the quote too for a v2 pair), set against the watch's
+  launches. The missed ones were 22 of 59 Uniswap v2 launches and 14 of 32 v3 ones; every missed v2 pool still held
+  its liquidity at the end of the block that created it. (A first count by hand said 43 of 97: it also took in seven
+  v3 positions of the quote token alone, which nobody could buy from and the watch rightly left pending.)
   - The cause: for the newest block, the watcher asked the latest-state RPC for the factories' creation logs and, when
     that node was a moment behind the head (it says so with an error), fell back to the archive RPC. On Ethereum
     that is mevblocker, which answers an empty list, not an error, for a block it has not reached. The cursor then
