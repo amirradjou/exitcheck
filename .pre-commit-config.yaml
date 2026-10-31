@@ -8,6 +8,7 @@ repos:
       - id: check-yaml
       - id: check-json
       - id: check-added-large-files
+        exclude: ^ml/uv\.lock$ # the model's pinned dependencies
       - id: check-merge-conflict
       - id: detect-private-key
 # Language-specific hooks are appended by /new-project (ruff, prettier, gofmt, rustfmt…)

@@ -1,0 +1,16 @@
+[project]
+name = "rugcheck-model"
+version = "0.1.0"
+requires-python = ">=3.12"
+dependencies = [
+    "mlflow>=3.17.2",
+    "pandas>=3.1.0",
+    "scikit-learn>=1.9.1",
+    "xgboost>=3.4.1",
+]
+
+[dependency-groups]
+dev = [
+    "pytest>=9.2.0",
+    "ruff>=0.17.3",
+]

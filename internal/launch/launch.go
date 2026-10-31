@@ -78,6 +78,13 @@ func Factories(net chain.Network) map[common.Address]string {
 	return f
 }
 
+// Tradeable reports whether a pool can be bought from, given whether it holds the token and the quote: a v2 or
+// Aerodrome pair needs both sides; a v3 pool can be seeded with the token alone (single-sided liquidity), and one
+// holding only the quote has nothing to sell.
+func Tradeable(dex string, holdsToken, holdsQuote bool) bool {
+	return holdsToken && (holdsQuote || dex == "uniswap-v3")
+}
+
 // Decode reads a pool-creation log. ok is false for logs that are not one, and for pools that do not pair exactly
 // one quote token with another token (two quote tokens, or none, is not a token launch).
 func Decode(net chain.Network, l types.Log) (p Pool, ok bool, err error) {

@@ -34,7 +34,11 @@ commands:
   watch             follow new pools and publish launches to Kafka (KAFKA_BROKERS, DATABASE_URL)
   analyze           check launches from Kafka, store verdicts, post alerts
   report            lag, duplicates and verdicts of the live watch
+  audit             launches the live watch missed, from the factories' logs
   eval <cases.json> check facts against hand-labelled tokens (testdata/tokens.json)
+  backfill          check past launches as they stood at their block, on a fork (M4's training set)
+  label             read what happened to each launch's liquidity in the day after it (M4's labels)
+  dataset           write the labelled launches and their features as CSV, for the model
   version           print the version
 
 Run "rugcheck <command> -h" for a command's flags.
@@ -81,8 +85,16 @@ func main() {
 		err = runAnalyze(ctx, os.Args[2:])
 	case "report":
 		err = runReport(ctx, os.Args[2:])
+	case "audit":
+		err = runAudit(ctx, os.Args[2:])
 	case "eval":
 		err = runEval(ctx, os.Args[2:])
+	case "label":
+		err = runLabel(ctx, os.Args[2:])
+	case "backfill":
+		err = runBackfill(ctx, os.Args[2:])
+	case "dataset":
+		err = runDataset(ctx, os.Args[2:])
 	case "-h", "--help", "help":
 		fmt.Print(usage)
 	default:

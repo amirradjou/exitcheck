@@ -69,3 +69,20 @@ jobs:
         env:
           RUGCHECK_INTEGRATION: "1"
         run: go test -race -count=1 ./internal/store/ ./internal/stream/
+
+  # The classifier's training code (ml/): lint and unit tests. Training itself needs the dataset, which is built
+  # locally from the live watch's Postgres by `rugcheck dataset`.
+  model:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ml
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          persist-credentials: false
+      - uses: astral-sh/setup-uv@v6
+      - name: Lint
+        run: uv run ruff check . && uv run ruff format --check .
+      - name: Test
+        run: uv run pytest -q

@@ -103,8 +103,14 @@ func (c *Client) SafeHead(ctx context.Context) (uint64, error) {
 	return min(latest, archive), nil
 }
 
-// BlockTime returns the timestamp of block n.
+// BlockTime returns the timestamp of block n. Every node keeps headers, pruned or not, so the latest-state RPC is
+// asked first (it is not paced); the archive RPC answers when it cannot, such as a block too new for the node.
 func (c *Client) BlockTime(ctx context.Context, n uint64) (time.Time, error) {
+	if c.archive != c.RPC {
+		if h, err := c.Eth.HeaderByNumber(ctx, new(big.Int).SetUint64(n)); err == nil && h != nil && h.Number.Uint64() == n {
+			return time.Unix(int64(h.Time), 0).UTC(), nil
+		}
+	}
 	var h *types.Header
 	err := c.archiveDo(ctx, 1, func() (err error) {
 		h, err = c.archiveEth.HeaderByNumber(ctx, new(big.Int).SetUint64(n))
@@ -390,4 +396,56 @@ func isTransient(err error) bool {
 		}
 	}
 	return false
+}
+
+// BlockAt finds the last block at or before t, searching from after (a block known to be earlier; 0 if none). ok is
+// false when the head is still before t. Interpolation lands close in one or two header reads, block times being
+// nearly constant; alternating it with bisection bounds the worst case.
+func (c *Client) BlockAt(ctx context.Context, t time.Time, after uint64) (block uint64, ok bool, err error) {
+	hi, err := c.SafeHead(ctx)
+	if err != nil {
+		return 0, false, err
+	}
+	hiT, err := c.BlockTime(ctx, hi)
+	if err != nil {
+		return 0, false, err
+	}
+	if hiT.Before(t) {
+		return 0, false, nil
+	}
+	lo := min(after, hi)
+	loT, err := c.BlockTime(ctx, lo)
+	if err != nil {
+		return 0, false, err
+	}
+	for span := uint64(10_000); loT.After(t) && lo > 0; span *= 4 {
+		lo -= min(span, lo)
+		if loT, err = c.BlockTime(ctx, lo); err != nil {
+			return 0, false, err
+		}
+	}
+	if loT.After(t) {
+		return 0, false, fmt.Errorf("block 0 is after %s", t)
+	}
+	for i := 0; hi-lo > 1; i++ {
+		guess := lo + (hi-lo)/2
+		if i%2 == 0 && hiT.After(loT) {
+			frac := t.Sub(loT).Seconds() / hiT.Sub(loT).Seconds()
+			guess = lo + uint64(frac*float64(hi-lo))
+		}
+		guess = min(max(guess, lo+1), hi-1)
+		gt, err := c.BlockTime(ctx, guess)
+		if err != nil {
+			return 0, false, err
+		}
+		if gt.After(t) {
+			hi, hiT = guess, gt
+		} else {
+			lo, loT = guess, gt
+		}
+	}
+	if !hiT.After(t) {
+		return hi, true, nil
+	}
+	return lo, true, nil
 }

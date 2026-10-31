@@ -169,8 +169,7 @@ func (r *RPC) Funded(ctx context.Context, pools []launch.Pool, block uint64) ([]
 	}
 	out := make([]bool, len(pools))
 	for i, p := range pools {
-		tok, quote := positive(res[2*i]), positive(res[2*i+1])
-		out[i] = tok && (quote || p.DEX == "uniswap-v3")
+		out[i] = launch.Tradeable(p.DEX, positive(res[2*i]), positive(res[2*i+1]))
 	}
 	return out, nil
 }

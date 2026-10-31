@@ -21,10 +21,13 @@ import (
 
 // Facts is everything rugcheck found out about one token.
 type Facts struct {
-	Chain     string           `json:"chain"`
-	Address   common.Address   `json:"address"`
-	Block     uint64           `json:"block"`
-	CheckedAt time.Time        `json:"checked_at"`
+	Chain     string         `json:"chain"`
+	Address   common.Address `json:"address"`
+	Block     uint64         `json:"block"`
+	CheckedAt time.Time      `json:"checked_at"`
+	// BlockTime is Block's timestamp. Ages are measured from it, so a check run on a fork of a past block reads as it
+	// would have then. Zero when it could not be read.
+	BlockTime time.Time        `json:"block_time"`
 	Token     Token            `json:"token"`
 	Contract  Contract         `json:"contract"`
 	Powers    []Power          `json:"powers"`
@@ -97,6 +100,7 @@ func Gather(ctx context.Context, c *chain.Client, ex *explorer.Client, token com
 	var src *explorer.Source
 	g.parallel(
 		g.timed("basics", func() { g.basics(ctx) }),
+		g.timed("block", func() { g.blockTime(ctx) }),
 		g.timed("creation", func() { g.creation(ctx) }),
 		g.timed("source", func() { src = g.source(ctx) }),
 		g.timed("pools", func() { g.pools(ctx) }),
@@ -115,6 +119,22 @@ func Gather(ctx context.Context, c *chain.Client, ex *explorer.Client, token com
 	)
 	g.f.Elapsed = time.Since(start)
 	return g.f, nil
+}
+
+// AsOf is the moment the facts describe: the checked block's time, or the check's start when that is unknown (the
+// same thing, within seconds, for a check of the latest block).
+func (f *Facts) AsOf() time.Time {
+	if f.BlockTime.IsZero() {
+		return f.CheckedAt
+	}
+	return f.BlockTime
+}
+
+// blockTime reads the checked block's timestamp. A failure is not a gap: ages fall back to the wall clock.
+func (g *gatherer) blockTime(ctx context.Context) {
+	if t, err := g.c.BlockTime(ctx, g.f.Block); err == nil {
+		g.f.BlockTime = t
+	}
 }
 
 type gatherer struct {

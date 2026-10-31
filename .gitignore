@@ -36,3 +36,9 @@ CLAUDE.md
 
 # build output
 bin/
+
+# model training outputs (ml/): the dataset is rebuilt from Postgres by `rugcheck dataset`
+ml/data/
+ml/out/
+ml/mlflow.db
+ml/mlruns/

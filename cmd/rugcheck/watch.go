@@ -6,6 +6,7 @@ import (
 	"flag"
 	"fmt"
 	"log/slog"
+	"maps"
 	"os"
 	"slices"
 	"strings"
@@ -13,6 +14,7 @@ import (
 	"time"
 
 	"github.com/amirradjou/rugcheck/internal/analyze"
+	"github.com/amirradjou/rugcheck/internal/backfill"
 	"github.com/amirradjou/rugcheck/internal/chain"
 	"github.com/amirradjou/rugcheck/internal/explorer"
 	"github.com/amirradjou/rugcheck/internal/store"
@@ -234,4 +236,130 @@ func counts(m map[string]int) string {
 		return "none"
 	}
 	return strings.Join(parts, ", ")
+}
+
+// runAudit counts the launches the live watch missed: every pool created against a quote token in the window that
+// received liquidity, from the factories' logs, set against the launches the watch recorded.
+func runAudit(ctx context.Context, args []string) error {
+	fs := flag.NewFlagSet("audit", flag.ContinueOnError)
+	since := fs.Duration("since", 24*time.Hour, "window to audit, ending at -until")
+	until := fs.String("until", "", "end of the window, RFC 3339 (default: now)")
+	chains := fs.String("chains", "ethereum,base", "comma-separated chains")
+	markdown := fs.Bool("markdown", false, "print a Markdown table")
+	fs.Usage = func() {
+		fmt.Fprintln(fs.Output(), "usage: rugcheck audit [-since 24h] [-until 2026-11-01T17:13:00Z] [-markdown]   (DATABASE_URL)")
+		fs.PrintDefaults()
+	}
+	if err := parse(fs, args); err != nil {
+		if errors.Is(err, flag.ErrHelp) {
+			return nil
+		}
+		return err
+	}
+	end := time.Now()
+	if *until != "" {
+		var err error
+		if end, err = time.Parse(time.RFC3339, *until); err != nil {
+			return usageError{"-until: " + err.Error()}
+		}
+	}
+	start := end.Add(-*since)
+	st, err := store.Open(ctx, env("DATABASE_URL", defaultDatabase))
+	if err != nil {
+		return err
+	}
+	defer st.Close()
+
+	type row struct {
+		chain, dex           string
+		launches, seen, miss int
+	}
+	var rows []row
+	var missed []string
+	for name := range strings.SplitSeq(*chains, ",") {
+		net, err := chain.ByName(strings.TrimSpace(name))
+		if err != nil {
+			return usageError{err.Error()}
+		}
+		c, err := chain.Dial(ctx, net)
+		if err != nil {
+			return err
+		}
+		from, to, err := auditRange(ctx, c, start, end)
+		if err != nil {
+			c.Close()
+			return fmt.Errorf("%s: %w", net.Name, err)
+		}
+		funded, err := backfill.FundedPools(ctx, c, from, to)
+		c.Close()
+		if err != nil {
+			return fmt.Errorf("%s: %w", net.Name, err)
+		}
+		seen, err := st.LaunchPools(ctx, net.Name)
+		if err != nil {
+			return err
+		}
+		byDEX := map[string]*row{}
+		for _, f := range funded {
+			r := byDEX[f.DEX]
+			if r == nil {
+				r = &row{chain: net.Name, dex: f.DEX}
+				byDEX[f.DEX] = r
+			}
+			r.launches++
+			if seen[f.Pool.Pool] {
+				r.seen++
+			} else {
+				r.miss++
+			}
+		}
+		for _, f := range backfill.Missed(funded, seen) {
+			missed = append(missed, fmt.Sprintf("%s:%s (%s, created in block %d, first liquidity in block %d)",
+				net.Name, strings.ToLower(f.Pool.Pool.Hex()), f.DEX, f.Block, f.FirstMint))
+		}
+		dexes := slices.Sorted(maps.Keys(byDEX))
+		for _, d := range dexes {
+			rows = append(rows, *byDEX[d])
+		}
+		fmt.Fprintf(os.Stderr, "%s: blocks %d to %d\n", net.Name, from, to)
+	}
+	window := fmt.Sprintf("%s to %s UTC", start.UTC().Format("2006-01-02 15:04"), end.UTC().Format("2006-01-02 15:04"))
+	if *markdown {
+		fmt.Printf("Launches %s: pools created against a quote token that received liquidity, from the factories' logs.\n\n", window)
+		fmt.Println("| chain | venue | launches | seen by the watch | missed |\n|---|---|---|---|---|")
+		for _, r := range rows {
+			fmt.Printf("| %s | %s | %d | %d | %d |\n", r.chain, r.dex, r.launches, r.seen, r.miss)
+		}
+	} else {
+		fmt.Printf("launches %s (from the factories' logs)\n", window)
+		for _, r := range rows {
+			fmt.Printf("%-9s %-11s %4d launches, %4d seen by the watch, %3d missed\n", r.chain, r.dex, r.launches, r.seen, r.miss)
+		}
+	}
+	for _, m := range missed {
+		fmt.Println("missed:", m)
+	}
+	return nil
+}
+
+// auditRange turns a window into blocks, ending far enough behind the head for the archive RPC to have every block:
+// an archive RPC can answer "no logs" for a block it has not reached.
+func auditRange(ctx context.Context, c *chain.Client, start, end time.Time) (uint64, uint64, error) {
+	from, ok, err := c.BlockAt(ctx, start, 0)
+	if err != nil || !ok {
+		return 0, 0, fmt.Errorf("block at %s: %v", start, err)
+	}
+	safe, err := c.SafeHead(ctx)
+	if err != nil {
+		return 0, 0, err
+	}
+	to, ok, err := c.BlockAt(ctx, end, from)
+	if err != nil {
+		return 0, 0, err
+	}
+	const margin = 100
+	if !ok || to+margin > safe {
+		return 0, 0, fmt.Errorf("the window ends too close to the head (block %d); audit it a little later", safe)
+	}
+	return from + 1, to, nil
 }
