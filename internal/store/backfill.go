@@ -46,10 +46,11 @@ func (s *Store) AddBackfill(ctx context.Context, bs []Backfill) (int, error) {
 	return n, nil
 }
 
-// PendingBackfill lists a chain's queued launches not yet checked, oldest first. limit 0 means all.
+// PendingBackfill lists a chain's queued launches not yet checked, newest first, so that a backfill stopped part way
+// leaves an unbroken stretch of launches up to the present. limit 0 means all.
 func (s *Store) PendingBackfill(ctx context.Context, chain string, limit int) ([]Backfill, error) {
 	q := `SELECT id, dex, pool, token, quote, created_block, funded_block, funded_at, check_block, source
-		FROM backfill WHERE chain = $1 AND checked_at IS NULL ORDER BY funded_at`
+		FROM backfill WHERE chain = $1 AND checked_at IS NULL ORDER BY funded_at DESC`
 	args := []any{chain}
 	if limit > 0 {
 		q += ` LIMIT $2`
