@@ -103,8 +103,14 @@ func (c *Client) SafeHead(ctx context.Context) (uint64, error) {
 	return min(latest, archive), nil
 }
 
-// BlockTime returns the timestamp of block n.
+// BlockTime returns the timestamp of block n. Every node keeps headers, pruned or not, so the latest-state RPC is
+// asked first (it is not paced); the archive RPC answers when it cannot, such as a block too new for the node.
 func (c *Client) BlockTime(ctx context.Context, n uint64) (time.Time, error) {
+	if c.archive != c.RPC {
+		if h, err := c.Eth.HeaderByNumber(ctx, new(big.Int).SetUint64(n)); err == nil && h != nil && h.Number.Uint64() == n {
+			return time.Unix(int64(h.Time), 0).UTC(), nil
+		}
+	}
 	var h *types.Header
 	err := c.archiveDo(ctx, 1, func() (err error) {
 		h, err = c.archiveEth.HeaderByNumber(ctx, new(big.Int).SetUint64(n))
