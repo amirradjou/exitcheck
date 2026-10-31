@@ -3,6 +3,7 @@ package chain
 import (
 	"context"
 	"fmt"
+	"math/big"
 	"strings"
 
 	"github.com/ethereum/go-ethereum/accounts/abi"
@@ -41,6 +42,16 @@ type mcResult struct {
 // Multicall runs many reads in one eth_call through Multicall3. A reverting call does not fail the batch; it comes
 // back with OK false. Large batches are split so a single eth_call stays under RPC gas caps.
 func (c *Client) Multicall(ctx context.Context, calls []Call) ([]Result, error) {
+	return c.multicall(ctx, calls, nil)
+}
+
+// MulticallAt is Multicall at a given block. Behind a load balancer, "latest" can come from a node a block behind
+// the one that announced the head; pinning the block makes such a node fail instead of answering for older state.
+func (c *Client) MulticallAt(ctx context.Context, calls []Call, block uint64) ([]Result, error) {
+	return c.multicall(ctx, calls, new(big.Int).SetUint64(block))
+}
+
+func (c *Client) multicall(ctx context.Context, calls []Call, block *big.Int) ([]Result, error) {
 	out := make([]Result, 0, len(calls))
 	const batch = 150
 	for start := 0; start < len(calls); start += batch {
@@ -53,7 +64,7 @@ func (c *Client) Multicall(ctx context.Context, calls []Call) ([]Result, error) 
 		if err != nil {
 			return nil, err
 		}
-		raw, err := c.CallFrom(ctx, common.Address{}, Multicall3, data)
+		raw, err := c.callAt(ctx, Multicall3, data, block)
 		if err != nil {
 			return nil, fmt.Errorf("multicall: %w", err)
 		}

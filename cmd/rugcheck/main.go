@@ -10,6 +10,7 @@ import (
 	"os"
 	"os/signal"
 	"strings"
+	"syscall"
 	"time"
 
 	"github.com/ethereum/go-ethereum/common"
@@ -30,6 +31,9 @@ commands:
   check <address>   the verdict: facts and simulation together, as the bot answers
   bot               run the Telegram bot (TELEGRAM_BOT_TOKEN, REDIS_URL)
   bench <cases.json> time the bot's answers, cold and cached (needs Redis)
+  watch             follow new pools and publish launches to Kafka (KAFKA_BROKERS, DATABASE_URL)
+  analyze           check launches from Kafka, store verdicts, post alerts
+  report            lag, duplicates and verdicts of the live watch
   eval <cases.json> check facts against hand-labelled tokens (testdata/tokens.json)
   version           print the version
 
@@ -47,7 +51,9 @@ func main() {
 		fmt.Fprint(os.Stderr, usage)
 		os.Exit(2)
 	}
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt)
+	// SIGTERM is how docker stop (and any orchestrator) asks a service to shut down; without it an analyzer is
+	// killed mid-batch and its partitions wait out the group's session timeout.
+	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	// The first Ctrl-C cancels work in flight; once it has, a second one exits at once.
 	go func() {
@@ -69,6 +75,12 @@ func main() {
 		err = runBot(ctx, os.Args[2:])
 	case "bench":
 		err = runBench(ctx, os.Args[2:])
+	case "watch":
+		err = runWatch(ctx, os.Args[2:])
+	case "analyze":
+		err = runAnalyze(ctx, os.Args[2:])
+	case "report":
+		err = runReport(ctx, os.Args[2:])
 	case "eval":
 		err = runEval(ctx, os.Args[2:])
 	case "-h", "--help", "help":

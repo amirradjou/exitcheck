@@ -100,6 +100,16 @@ func (c *Client) Send(ctx context.Context, chat int64, text string, replyTo int6
 	return m.ID, nil
 }
 
+// Post sends text to a chat named as Telegram accepts it in chat_id: a numeric ID ("-100…") or a public channel's
+// "@username". Alerts go to a channel this way.
+func (c *Client) Post(ctx context.Context, chat, text string) error {
+	return c.call(ctx, "sendMessage", map[string]any{
+		"chat_id":              chat,
+		"text":                 clip(text),
+		"link_preview_options": map[string]bool{"is_disabled": true},
+	}, nil)
+}
+
 // Edit replaces the text of a message the bot sent.
 func (c *Client) Edit(ctx context.Context, chat, message int64, text string) error {
 	return c.call(ctx, "editMessageText", map[string]any{
