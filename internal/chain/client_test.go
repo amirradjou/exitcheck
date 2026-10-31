@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"math/big"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -264,5 +265,46 @@ func TestCreatorNeedsABirthEventForFactoryCreations(t *testing.T) {
 		if got != c.want {
 			t.Errorf("%s: deployer = %s (err %v), want %s", c.name, got, err, c.want)
 		}
+	}
+}
+
+func TestBlockAtFindsTheLastBlockBeforeATime(t *testing.T) {
+	// 12 s slots with every 37th one missed: block n's time drifts from a straight line.
+	const head = 2_000_000
+	genesis := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
+	timeOf := func(n uint64) time.Time { return genesis.Add(time.Duration(12*(n+n/37)) * time.Second) }
+	var reads int
+	url := fakeRPC(t, Ethereum, func(method string, params []json.RawMessage) (any, *rpcErr) {
+		switch method {
+		case "eth_blockNumber":
+			return hexutil.EncodeUint64(head), nil
+		case "eth_getBlockByNumber":
+			reads++
+			n := blockParam(t, params[0])
+			return &types.Header{Number: new(big.Int).SetUint64(n), Time: uint64(timeOf(n).Unix()), Difficulty: new(big.Int)}, nil
+		}
+		return nil, &rpcErr{-32601, "unexpected " + method}
+	})
+	c, err := DialURLs(context.Background(), Ethereum, url, url, 0)
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer c.Close()
+	for _, c2 := range []struct {
+		target uint64
+		after  uint64
+	}{{1_234_567, 1_234_000}, {1_999_998, 0}, {37 * 1000, 900_000}, {1_500_000, 1_500_000}} {
+		reads = 0
+		// A moment just after the target block, before the next one.
+		got, ok, err := c.BlockAt(context.Background(), timeOf(c2.target).Add(5*time.Second), c2.after)
+		if err != nil || !ok || got != c2.target {
+			t.Errorf("BlockAt(time of %d +5s, after %d) = %d, %v, %v", c2.target, c2.after, got, ok, err)
+		}
+		if reads > 60 {
+			t.Errorf("BlockAt(%d) took %d header reads", c2.target, reads)
+		}
+	}
+	if _, ok, err := c.BlockAt(context.Background(), timeOf(head).Add(time.Hour), 0); ok || err != nil {
+		t.Errorf("a time after the head: ok %v, err %v", ok, err)
 	}
 }
