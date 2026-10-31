@@ -77,3 +77,20 @@ func (s *Store) FinishBackfill(ctx context.Context, id, level string, report []b
 		id, nullString(level), nullString(string(report)), nullString(checkErr), time.Now())
 	return err
 }
+
+// LaunchPools lists the pools of a chain's launches, as the live watch recorded them.
+func (s *Store) LaunchPools(ctx context.Context, chain string) (map[common.Address]bool, error) {
+	rows, err := s.db.Query(ctx, `SELECT pool FROM launches WHERE chain = $1`, chain)
+	if err != nil {
+		return nil, err
+	}
+	pools, err := pgx.CollectRows(rows, pgx.RowTo[string])
+	if err != nil {
+		return nil, err
+	}
+	out := make(map[common.Address]bool, len(pools))
+	for _, p := range pools {
+		out[common.HexToAddress(p)] = true
+	}
+	return out, nil
+}

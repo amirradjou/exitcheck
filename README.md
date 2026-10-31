@@ -183,6 +183,7 @@ The bot:
 ```sh
 docker compose up -d --build      # Kafka, Postgres, Redis, the watcher, two analyzers and the bot
 ./bin/rugcheck report -since 24h  # lag, duplicates and verdicts so far
+./bin/rugcheck audit -since 24h   # launches the watch missed, counted from the factories' logs
 ```
 
 ```

@@ -5,6 +5,7 @@ package backfill
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"os"
 	"strings"
@@ -55,31 +56,14 @@ func CheckAt(ctx context.Context, net chain.Network, upstream string, computeUni
 // them) that got their first liquidity in the block that created them. That is how most launches happen (206 of the
 // 210 Base launches and 42 of the 55 Ethereum ones on the live watch's measured day); pools funded later are left out.
 func Scan(ctx context.Context, c *chain.Client, from, to uint64) ([]store.Backfill, error) {
-	factories := launch.Factories(c.Net)
-	q := ethereum.FilterQuery{Topics: [][]common.Hash{{launch.TopicV2, launch.TopicV3, launch.TopicAerodrome}}}
-	for a := range factories {
-		q.Addresses = append(q.Addresses, a)
-	}
-	var pools []launch.Pool
-	err := c.ScanLogs(ctx, chain.LogScan{Query: q, From: from, To: to}, func(logs []types.Log) error {
-		for _, l := range logs {
-			p, ok, err := launch.Decode(c.Net, l)
-			if err != nil {
-				return err
-			}
-			if ok && !l.Removed {
-				pools = append(pools, p)
-			}
-		}
-		return nil
-	})
+	pools, err := created(ctx, c, from, to)
 	if err != nil {
-		return nil, fmt.Errorf("creation logs: %w", chain.StripURL(err))
+		return nil, err
 	}
 	times := map[uint64]time.Time{}
 	var out []store.Backfill
 	for _, p := range pools {
-		funded, err := mintedIn(ctx, c, p)
+		_, funded, err := firstMint(ctx, c, p, p.Block, p.Block)
 		if err != nil {
 			return nil, err
 		}
@@ -101,16 +85,45 @@ func Scan(ctx context.Context, c *chain.Client, from, to uint64) ([]store.Backfi
 	return out, nil
 }
 
-// mintedIn reports whether a pool received liquidity in the block that created it.
-func mintedIn(ctx context.Context, c *chain.Client, p launch.Pool) (bool, error) {
-	q := ethereum.FilterQuery{Addresses: []common.Address{p.Pool}, Topics: [][]common.Hash{{launch.TopicMintV2, launch.TopicMintV3}}}
-	found := false
-	err := c.ScanLogs(ctx, chain.LogScan{Query: q, From: p.Block, To: p.Block}, func(logs []types.Log) error {
-		found = found || len(logs) > 0
+// created lists the pools created against a quote token between two blocks, as the live watch takes them.
+func created(ctx context.Context, c *chain.Client, from, to uint64) ([]launch.Pool, error) {
+	q := ethereum.FilterQuery{Topics: [][]common.Hash{{launch.TopicV2, launch.TopicV3, launch.TopicAerodrome}}}
+	for a := range launch.Factories(c.Net) {
+		q.Addresses = append(q.Addresses, a)
+	}
+	var pools []launch.Pool
+	err := c.ScanLogs(ctx, chain.LogScan{Query: q, From: from, To: to}, func(logs []types.Log) error {
+		for _, l := range logs {
+			p, ok, err := launch.Decode(c.Net, l)
+			if err != nil {
+				return err
+			}
+			if ok && !l.Removed {
+				pools = append(pools, p)
+			}
+		}
 		return nil
 	})
 	if err != nil {
-		return false, fmt.Errorf("mint logs of %s: %w", p.Pool, chain.StripURL(err))
+		return nil, fmt.Errorf("creation logs: %w", chain.StripURL(err))
 	}
-	return found, nil
+	return pools, nil
+}
+
+var errFound = errors.New("found")
+
+// firstMint finds a pool's first Mint log between two blocks; ok is false if there is none.
+func firstMint(ctx context.Context, c *chain.Client, p launch.Pool, from, to uint64) (block uint64, ok bool, err error) {
+	q := ethereum.FilterQuery{Addresses: []common.Address{p.Pool}, Topics: [][]common.Hash{{launch.TopicMintV2, launch.TopicMintV3}}}
+	err = c.ScanLogs(ctx, chain.LogScan{Query: q, From: from, To: to}, func(logs []types.Log) error {
+		if len(logs) > 0 {
+			block, ok = logs[0].BlockNumber, true
+			return errFound
+		}
+		return nil
+	})
+	if err != nil && !errors.Is(err, errFound) {
+		return 0, false, fmt.Errorf("mint logs of %s: %w", p.Pool, chain.StripURL(err))
+	}
+	return block, ok, nil
 }
