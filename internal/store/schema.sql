@@ -62,3 +62,38 @@ CREATE TABLE IF NOT EXISTS alerts (
 );
 -- sent_at settles a claim; posted says whether it reached a channel (none is configured until TELEGRAM_ALERTS_CHAT).
 ALTER TABLE alerts ADD COLUMN IF NOT EXISTS posted boolean NOT NULL DEFAULT false;
+
+-- What happened to each launch's liquidity within a horizon after its first liquidity, read from the pool's logs:
+-- M4's labels. launch_id is a launch's id (chain:pool).
+CREATE TABLE IF NOT EXISTS outcomes (
+    launch_id    text PRIMARY KEY,
+    horizon_s    integer NOT NULL,
+    end_block    bigint NOT NULL,
+    pulled       boolean NOT NULL,
+    pulled_block bigint,
+    pulled_at    timestamptz,
+    buys         integer NOT NULL,
+    sells        integer NOT NULL,
+    bait         boolean NOT NULL,
+    labelled_at  timestamptz NOT NULL DEFAULT now()
+);
+
+-- Launches checked again at their block on a fork, for M4's training set: the live watch's launches from before
+-- launches.report was kept, and older ones found in the factories' logs. id is chain:pool, as in launches.
+CREATE TABLE IF NOT EXISTS backfill (
+    id            text PRIMARY KEY,
+    chain         text NOT NULL,
+    dex           text NOT NULL,
+    pool          text NOT NULL,
+    token         text NOT NULL,
+    quote         text NOT NULL,
+    created_block bigint NOT NULL,
+    funded_block  bigint NOT NULL,
+    funded_at     timestamptz NOT NULL,
+    check_block   bigint NOT NULL,
+    source        text NOT NULL, -- watch or scan
+    level         text,
+    report        jsonb,
+    error         text,
+    checked_at    timestamptz
+);
