@@ -142,13 +142,17 @@ type Result struct {
 	Complete, FromCache     bool
 	Error                   string
 	CheckSeconds            float64
+	// Report is the check's full report as JSON (facts, simulation, verdict): the features as they stood at the
+	// checked block. Nil when the answer came from the cache.
+	Report []byte
 }
 
 // Finish stores a launch's result.
 func (s *Store) Finish(ctx context.Context, id string, r Result) error {
 	_, err := s.db.Exec(ctx, `UPDATE launches SET analyzed_at = now(), level = $2, headline = $3, answer = $4,
-		complete = $5, from_cache = $6, error = $7, check_seconds = $8 WHERE id = $1`,
-		id, nullString(r.Level), nullString(r.Headline), nullString(r.Answer), r.Complete, r.FromCache, nullString(r.Error), r.CheckSeconds)
+		complete = $5, from_cache = $6, error = $7, check_seconds = $8, report = $9 WHERE id = $1`,
+		id, nullString(r.Level), nullString(r.Headline), nullString(r.Answer), r.Complete, r.FromCache, nullString(r.Error),
+		r.CheckSeconds, nullString(string(r.Report)))
 	return err
 }
 
