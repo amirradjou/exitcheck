@@ -50,6 +50,19 @@ func New() *Client {
 	}
 }
 
+// Offline returns a client whose every lookup fails, as for a contract no explorer has indexed yet. A check of a past
+// block uses it: explorers only know the present (today's holders, source verified since), which would leak the
+// future into the check.
+func Offline() *Client {
+	return &Client{HTTP: &http.Client{Transport: offline{}}}
+}
+
+type offline struct{}
+
+func (offline) RoundTrip(*http.Request) (*http.Response, error) {
+	return nil, errors.New("explorer offline for a check of a past block")
+}
+
 // Source finds verified source for addr. It returns ErrNotVerified only when Etherscan (where most tokens are
 // verified) was consulted; without a key, "not on Sourcify or Blockscout" is reported as an unknown, not a no.
 func (c *Client) Source(ctx context.Context, net chain.Network, addr common.Address) (*Source, error) {
