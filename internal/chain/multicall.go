@@ -6,6 +6,7 @@ import (
 	"math/big"
 	"strings"
 
+	"github.com/ethereum/go-ethereum"
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 )
@@ -51,7 +52,24 @@ func (c *Client) MulticallAt(ctx context.Context, calls []Call, block uint64) ([
 	return c.multicall(ctx, calls, new(big.Int).SetUint64(block))
 }
 
+// ArchiveMulticallAt is MulticallAt on the archive RPC, at its pace: for blocks the latest-state RPC no longer keeps.
+func (c *Client) ArchiveMulticallAt(ctx context.Context, calls []Call, block uint64) ([]Result, error) {
+	at := new(big.Int).SetUint64(block)
+	return c.multicallWith(ctx, calls, func(data []byte) ([]byte, error) {
+		var out []byte
+		err := c.archiveDo(ctx, 1, func() (err error) {
+			out, err = c.archiveEth.CallContract(ctx, ethereum.CallMsg{To: &Multicall3, Data: data}, at)
+			return err
+		})
+		return out, err
+	})
+}
+
 func (c *Client) multicall(ctx context.Context, calls []Call, block *big.Int) ([]Result, error) {
+	return c.multicallWith(ctx, calls, func(data []byte) ([]byte, error) { return c.callAt(ctx, Multicall3, data, block) })
+}
+
+func (c *Client) multicallWith(ctx context.Context, calls []Call, call func(data []byte) ([]byte, error)) ([]Result, error) {
 	out := make([]Result, 0, len(calls))
 	const batch = 150
 	for start := 0; start < len(calls); start += batch {
@@ -64,7 +82,7 @@ func (c *Client) multicall(ctx context.Context, calls []Call, block *big.Int) ([
 		if err != nil {
 			return nil, err
 		}
-		raw, err := c.callAt(ctx, Multicall3, data, block)
+		raw, err := call(data)
 		if err != nil {
 			return nil, fmt.Errorf("multicall: %w", err)
 		}
