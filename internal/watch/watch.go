@@ -72,6 +72,8 @@ type Watcher struct {
 	StepTimeout time.Duration
 	// SlowCall is how long an RPC call may take before it is logged.
 	SlowCall time.Duration
+	// BehindWarn is how many blocks behind the head the watcher may be before it says so.
+	BehindWarn int64
 
 	pending map[common.Address]launch.Pool
 	// unfunded is the last block at which each pending pool was seen without liquidity. A pool's first Mint can come
@@ -88,7 +90,7 @@ func New(chainName string, src Source, state State, pub Publisher, log *slog.Log
 	return &Watcher{
 		Chain: chainName, src: timedSource{Source: src, limit: slow, log: log}, state: state, pub: pub, log: log, now: time.Now,
 		MaxRange: 500, Expire: 24 * time.Hour, Poll: 30 * time.Second, Retry: time.Second,
-		StepTimeout: 20 * time.Second, SlowCall: slow,
+		StepTimeout: 20 * time.Second, SlowCall: slow, BehindWarn: 10,
 		pending: map[common.Address]launch.Pool{}, unfunded: map[common.Address]uint64{},
 	}
 }
@@ -155,7 +157,7 @@ func (w *Watcher) load(ctx context.Context) error {
 	return nil
 }
 
-// follow processes heads until the subscription ends, polling over HTTP if it goes quiet.
+// follow processes the newest head until the subscription ends, polling over HTTP if it goes quiet.
 func (w *Watcher) follow(ctx context.Context, heads <-chan uint64) {
 	quiet := time.NewTimer(w.Poll)
 	defer quiet.Stop()
@@ -164,16 +166,42 @@ func (w *Watcher) follow(ctx context.Context, heads <-chan uint64) {
 		case <-ctx.Done():
 			return
 		case h, open := <-heads:
+			if open {
+				h, open = newest(heads, h)
+			}
+			if h > 0 {
+				if behind := int64(h) - int64(w.cursor); behind > w.BehindWarn {
+					w.log.Warn("behind the head", "blocks", behind)
+				}
+				w.advanceTo(ctx, h)
+			}
 			if !open {
 				w.log.Warn("new-block subscription ended; resubscribing")
 				return
 			}
-			w.advanceTo(ctx, h)
 		case <-quiet.C:
 			w.log.Warn("no new block over the subscription", "for", w.Poll)
 			w.catchUp(ctx)
 		}
 		quiet.Reset(w.Poll)
+	}
+}
+
+// newest drains the heads already waiting and returns the latest, and whether the subscription is still open. Only the
+// newest matters, as a step reads a whole range. Processed one by one, a watcher whose steps take just over a block time
+// falls further behind with every block and never recovers, however little work there is: on Base, with a block every
+// 2 s, that once put detection 65 s behind and rising with no single call slow.
+func newest(heads <-chan uint64, h uint64) (uint64, bool) {
+	for {
+		select {
+		case n, open := <-heads:
+			if !open {
+				return h, false
+			}
+			h = max(h, n)
+		default:
+			return h, true
+		}
 	}
 }
 

@@ -211,6 +211,8 @@ WebSocket newHeads ─▶ watcher ──(launches, keyed by token)──▶ Kafk
   lost launches during M3's measured day (see [M3 results](#m3-results)). A step has a time budget: a stalled RPC
   connection otherwise holds up every launch behind it. A step that overruns is tried again on a new connection, and
   the last attempt's budget is long enough for a catch-up that honestly needs the time. Slow steps and calls are logged by name.
+  A late watcher goes straight to the newest head, reading the whole range in one step: taken one at a time, heads arrive
+  faster than a slow step clears them, and the watcher never gets back to the present.
 - **Nothing is doubled.**
   - The producer is idempotent.
   - A launch is one Postgres row per pool, so a redelivery only increments a counter.

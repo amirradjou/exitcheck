@@ -411,3 +411,44 @@ func TestSlowCallsAreLoggedByName(t *testing.T) {
 		t.Errorf("a fast call was logged: %s", logged.String())
 	}
 }
+
+func TestAWatcherBehindCatchesUpInOneStep(t *testing.T) {
+	// Twenty heads queued while a step ran. Read one by one they cost twenty steps, and a watcher whose steps take just
+	// over a block time never gets back to the head.
+	heads := make(chan uint64, 32)
+	for b := uint64(101); b <= 120; b++ {
+		heads <- b
+	}
+	close(heads)
+	src := &fakeSource{created: map[uint64][]launch.Pool{}, funded: map[common.Address]bool{}, mint: map[common.Address][]uint64{}}
+	st, pub := newState(), &fakePub{}
+	st.cursor["base"] = 100
+	w := newWatcher(src, st, pub)
+	w.cursor = 100
+	w.follow(context.Background(), heads)
+	if w.cursor != 120 {
+		t.Errorf("cursor %d, want the newest head", w.cursor)
+	}
+	if len(src.ranges) != 1 || src.ranges[0] != [2]uint64{101, 120} {
+		t.Errorf("read %v, want one range up to the newest head", src.ranges)
+	}
+}
+
+func TestNoLaunchIsSkippedWhenCatchingUp(t *testing.T) {
+	// Skipping heads must not skip blocks: a pool created in a head never processed on its own is still found.
+	p := pool(9, 105)
+	heads := make(chan uint64, 32)
+	for b := uint64(101); b <= 110; b++ {
+		heads <- b
+	}
+	close(heads)
+	src := &fakeSource{created: map[uint64][]launch.Pool{105: {p}}, funded: map[common.Address]bool{p.Pool: true}, mint: map[common.Address][]uint64{}}
+	st, pub := newState(), &fakePub{}
+	st.cursor["base"] = 100
+	w := newWatcher(src, st, pub)
+	w.cursor = 100
+	w.follow(context.Background(), heads)
+	if len(pub.got) != 1 || pub.got[0].Pool.Pool != p.Pool {
+		t.Errorf("published %+v, want the pool from a skipped head", pub.got)
+	}
+}
