@@ -68,15 +68,19 @@ var (
 	claimNumberRE = regexp.MustCompile(`(?:^|[^\w.-])(\d[\d,]*(?:\.\d+)?)`)
 	// orphanRE is a sentence that leans on the one before it. That one may have been dropped, and "That can collapse the
 	// price" says nothing on its own.
-	orphanRE = regexp.MustCompile(`^(?:(?:This|That|These|Those)\s+(?:is|are|was|were|can|could|may|might|will|would|means?|makes?|shows?|leaves?|gives?|lets?|has|have)\b|(?:It|They|Such|Which|Its|Their|Both)\b)`)
+	orphanRE = regexp.MustCompile(`^(?:(?:This|That|These|Those)\s+|It\b|They\b|Such\b|Which\b|Its\b|Their\b|Both\b)`)
+	// ownSubjectRE is the exception: "This token" and "That wallet" name what they talk about.
+	ownSubjectRE = regexp.MustCompile(`^(?:This|That|These|Those)\s+(?:token|contract|pool|wallet|owner|deployer|function|sale|buy|tax|proxy)s?\b`)
 	// assuranceRE is what an explanation of a verdict must never say, whatever it cites: the verdict is not the
 	// model's to soften, and rugcheck does not give advice. A contract's text can ask for exactly this.
 	assuranceRE = regexp.MustCompile(`(?i)\b(?:safe|safely|legit|legitimate|trustworthy|trusted|guarantee[ds]?|no risk|risk[- ]free|` +
 		`not a scam|isn'?t a scam|good investment|should (?:buy|sell|invest|avoid|hold)|financial advice|recommend\w*|` +
 		`no (?:obvious|immediate|apparent|major) \w+|no (?:security )?(?:issues?|problems?|concerns?)|as expected|` +
 		`nothing (?:wrong|suspicious)|worth considering|best practices?|further (?:review|investigation))\b`)
-	// speculationRE is a model reaching past its evidence. It is allowed only if the evidence says it too.
-	speculationRE = regexp.MustCompile(`(?i)\b(?:potential(?:ly)?|manipulat\w*|hidden risks?|vulnerabilit\w*|exploit\w*)\b`)
+	// speculationRE is a model reaching past its evidence, in words overlap cannot catch: in "the owner can create unlimited
+	// new tokens" every other word comes from the finding. It is allowed only if the evidence says it too.
+	speculationRE = regexp.MustCompile(`(?i)\b(?:potential(?:ly)?|manipulat\w*|hidden risks?|vulnerabilit\w*|exploit\w*|unlimited|` +
+		`massive(?:ly)?|highly|definitely|certain(?:ly)?|always|never|immediately|instantly|wipes?|crash\w*)\b`)
 )
 
 var abbreviations = strings.NewReplacer("e.g.", "for example", "i.e.", "that is", "E.g.", "For example", "I.e.", "That is")
@@ -246,7 +250,7 @@ func rejection(ids []string, sentence string, names []string, byID map[string]Ev
 	if r := []rune(sentence); len(r) == 0 || !(unicode.IsUpper(r[0]) || unicode.IsDigit(r[0])) {
 		return nil, whyFragment // what a citation at the start of a sentence leaves behind
 	}
-	if orphanRE.MatchString(sentence) {
+	if orphanRE.MatchString(sentence) && !ownSubjectRE.MatchString(sentence) {
 		return nil, whyFragment
 	}
 	if len(strings.Fields(sentence)) > maxWords {

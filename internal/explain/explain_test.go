@@ -56,7 +56,10 @@ func TestGroundDropsWhatDoesNot(t *testing.T) {
 		{"Taxes are collected by a charity supporting wildlife [C1].", whyNoFinding},
 		// From real review runs. Each of these cited something and passed a looser check.
 		{"That can collapse the price without any contract trick at all [C1][P1].", whyFragment},
+		{"The owner can set unlimited sell tax through setSellTax [S1].", whyOffTopic},
+		{"The deployer holds LP tokens and is highly likely to withdraw that liquidity at any time [C1].", whyOffTopic},
 		{"This means the deployer holds LP tokens and can withdraw that liquidity [C1].", whyFragment},
+		{"That fits a deployer who holds LP tokens and can withdraw that liquidity [C1].", whyFragment},
 		{"It holds the LP tokens and can withdraw that liquidity at any time [C1].", whyFragment},
 		{"Whoever holds the LP tokens can withdraw the liquidity at any time [C2][P1].", whyNoFinding},
 		{"The deployer holds 98% of the LP tokens and a test sale failed [C1][C2].", whyMixes},
@@ -355,6 +358,37 @@ func TestNothingGroundedRendersNothing(t *testing.T) {
 	}
 	if (*Explanation)(nil).Render() != "" {
 		t.Error("no explanation must render as nothing")
+	}
+}
+
+func TestClientWaitsOutARateLimit(t *testing.T) {
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if calls++; calls < 3 {
+			w.Header().Set("Retry-After", "0")
+			w.WriteHeader(http.StatusTooManyRequests)
+			return
+		}
+		_, _ = w.Write([]byte(`{"choices":[{"message":{"role":"assistant","content":"hello"}}]}`))
+	}))
+	defer srv.Close()
+	c := &Client{URL: srv.URL, Model: "m", HTTP: srv.Client()}
+	if got, err := c.Complete(context.Background(), "s", "u"); err != nil || got != "hello" || calls != 3 {
+		t.Errorf("%q, %v after %d calls", got, err, calls)
+	}
+}
+
+func TestClientGivesUpOnARateLimitItCannotWaitOut(t *testing.T) {
+	calls := 0
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		calls++
+		w.Header().Set("Retry-After", "3600") // a daily limit: no point waiting
+		w.WriteHeader(http.StatusTooManyRequests)
+	}))
+	defer srv.Close()
+	c := &Client{URL: srv.URL, Model: "m", HTTP: srv.Client()}
+	if _, err := c.Complete(context.Background(), "s", "u"); err == nil || !strings.Contains(err.Error(), "429") || calls != 1 {
+		t.Errorf("%v after %d calls", err, calls)
 	}
 }
 

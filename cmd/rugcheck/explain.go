@@ -139,6 +139,12 @@ func reviewSet() ([]reviewItem, error) {
 		if err := readJSON(file, &r); err != nil {
 			return nil, err
 		}
+		// Judged again, like the labelled tokens: the review tests today's rules and wording, not the day's they were recorded.
+		var simErr error
+		if r.SimError != "" {
+			simErr = errors.New(r.SimError)
+		}
+		r.Verdict = verdict.Judge(r.Facts, r.Sim, simErr, r.Facts.AsOf())
 		items = append(items, reviewItem{strings.TrimSuffix(filepath.Base(file), ".report.json"), "launch", &r})
 	}
 	return items, nil

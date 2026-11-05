@@ -1,7 +1,7 @@
 [
  {
   "title": "Honeypot",
-  "text": "A honeypot lets anyone buy but makes selling fail, or keeps nearly all of a sale, so buyers cannot get their money out. A test sale that reverts right after a test buy is the direct sign."
+  "text": "A honeypot lets anyone buy but makes selling fail, or keeps nearly all of a sale, so buyers cannot get their money out. A test sale that fails after a test buy worked is the direct sign."
  },
  {
   "title": "Sell tax set to all of a sale",

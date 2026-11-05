@@ -9,6 +9,7 @@ import (
 	"io"
 	"net/http"
 	"os"
+	"strconv"
 	"strings"
 	"time"
 )
@@ -38,38 +39,43 @@ type chatMessage struct {
 	Content string `json:"content"`
 }
 
-// Complete asks the model once. Errors say what happened without the endpoint or the key: both can be secrets, and the
-// bot logs errors.
+// Rate limits. A free tier refuses bursts and says how long to wait: worth waiting for within reason, as the caller's
+// context bounds the total. A wait longer than maxWait is a quota, not a burst.
+const (
+	maxWaits = 4
+	maxWait  = 90 * time.Second
+)
+
+// Complete asks the model. Errors say what happened without the endpoint or the key: both can be secrets, and the bot logs
+// errors.
 func (c *Client) Complete(ctx context.Context, system, user string) (string, error) {
+	// max_tokens is well above what two or three sentences need because reasoning models spend it on thinking first.
 	body, err := json.Marshal(map[string]any{
-		"model": c.Model, "temperature": 0, "max_tokens": 300,
+		"model": c.Model, "temperature": 0, "max_tokens": 1500,
 		"messages": []chatMessage{{"system", system}, {"user", user}},
 	})
 	if err != nil {
 		return "", err
 	}
-	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.URL+"/chat/completions", bytes.NewReader(body))
-	if err != nil {
-		return "", errors.New("llm: bad request URL")
-	}
-	req.Header.Set("Content-Type", "application/json")
-	if c.Key != "" {
-		req.Header.Set("Authorization", "Bearer "+c.Key)
-	}
-	resp, err := c.HTTP.Do(req)
-	if err != nil {
-		if ctx.Err() != nil {
+	var data []byte
+	for waits := 0; ; waits++ {
+		var status int
+		var retryAfter time.Duration
+		status, retryAfter, data, err = c.post(ctx, body)
+		if err != nil {
+			return "", err
+		}
+		if status == http.StatusOK {
+			break
+		}
+		if status != http.StatusTooManyRequests || waits == maxWaits || retryAfter > maxWait {
+			return "", fmt.Errorf("llm: HTTP %d", status)
+		}
+		select {
+		case <-time.After(retryAfter):
+		case <-ctx.Done():
 			return "", fmt.Errorf("llm: %w", ctx.Err())
 		}
-		return "", errors.New("llm: the request failed")
-	}
-	defer resp.Body.Close()
-	data, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
-	if err != nil {
-		return "", errors.New("llm: reading the answer failed")
-	}
-	if resp.StatusCode != http.StatusOK {
-		return "", fmt.Errorf("llm: HTTP %d", resp.StatusCode)
 	}
 	var out struct {
 		Choices []struct {
@@ -83,4 +89,33 @@ func (c *Client) Complete(ctx context.Context, system, user string) (string, err
 		return "", errors.New("llm: the answer has no choices")
 	}
 	return out.Choices[0].Message.Content, nil
+}
+
+// post sends one request and returns the status, how long the server asks to wait, and the body.
+func (c *Client) post(ctx context.Context, body []byte) (int, time.Duration, []byte, error) {
+	req, err := http.NewRequestWithContext(ctx, http.MethodPost, c.URL+"/chat/completions", bytes.NewReader(body))
+	if err != nil {
+		return 0, 0, nil, errors.New("llm: bad request URL")
+	}
+	req.Header.Set("Content-Type", "application/json")
+	if c.Key != "" {
+		req.Header.Set("Authorization", "Bearer "+c.Key)
+	}
+	resp, err := c.HTTP.Do(req)
+	if err != nil {
+		if ctx.Err() != nil {
+			return 0, 0, nil, fmt.Errorf("llm: %w", ctx.Err())
+		}
+		return 0, 0, nil, errors.New("llm: the request failed")
+	}
+	defer resp.Body.Close()
+	data, err := io.ReadAll(io.LimitReader(resp.Body, 1<<20))
+	if err != nil {
+		return 0, 0, nil, errors.New("llm: reading the answer failed")
+	}
+	wait := 2 * time.Second
+	if secs, err := strconv.Atoi(strings.TrimSpace(resp.Header.Get("Retry-After"))); err == nil && secs >= 0 {
+		wait = time.Duration(secs) * time.Second
+	}
+	return resp.StatusCode, wait, data, nil
 }
