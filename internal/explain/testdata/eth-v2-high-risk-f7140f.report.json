@@ -1,0 +1,185 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 153904,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 108124,
+   "tax": 0
+  },
+  "block": 26311862,
+  "chain": "ethereum",
+  "token": "0x3b8f56244d3004cf6546c583afe877f4b8124336",
+  "venue": "uniswap-v2 pool 0xF7140fa24899de2b4633aeD69d25B75F010f1c1B",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 51697,
+   "tax": 0
+  },
+  "spent_eth": 0.009000000000000001,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 3573348990
+ },
+ "name": "Cintas Corporation",
+ "block": 26311862,
+ "chain": "ethereum",
+ "facts": {
+  "gaps": [],
+  "block": 26311862,
+  "chain": "ethereum",
+  "pools": [
+   {
+    "dex": "uniswap-v2",
+    "usd": 4033.5664585293634,
+    "quote": "WETH",
+    "address": "0xf7140fa24899de2b4633aed69d25b75f010f1c1b",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 1.8,
+    "token_amount": 513000000000000000000000000000000
+   }
+  ],
+  "token": {
+   "name": "Cintas Corporation",
+   "symbol": "CTAS",
+   "decimals": 18,
+   "total_supply": 513000000000000000000000000000000
+  },
+  "powers": [],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0,
+   "in_pools": 1
+  },
+  "address": "0x3b8f56244d3004cf6546c583afe877f4b8124336",
+  "holders": {
+   "top": [
+    {
+     "label": "pool",
+     "share": 1,
+     "address": "0xf7140fa24899de2b4633aed69d25b75f010f1c1b",
+     "balance": 513000000000000000000000000000000
+    }
+   ],
+   "count": 1,
+   "source": "transfer-logs",
+   "top_share": 0,
+   "top10_share": 0
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0xe22017e6234d916946b6ca2377d9bd1a8b7e9316dc58881aaf79b48880f5b38d",
+    "Block": 26311857,
+    "Factory": null,
+    "Deployer": "0x6e82cb961c18c20cb2618a92c42925811e3c8255"
+   },
+   "verified": true,
+   "code_size": 1764,
+   "created_at": "2026-10-31T09:29:59Z",
+   "source_name": "MetamaskRouter",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 11,
+   "pulled": 1,
+   "tokens": [
+    {
+     "pool": "pulled",
+     "weth": 7.85262626844e-07,
+     "symbol": "AURIE",
+     "address": "0xa5e6cbe7c7c0cfd79b3e3b84049b8c3cf8827e2d"
+    }
+   ],
+   "address": "0x6e82cb961c18c20cb2618a92c42925811e3c8255",
+   "scanned": 11,
+   "balance_eth": 0.04983767234254331
+  },
+  "settings": null,
+  "liquidity": {
+   "lp": {
+    "top": [
+     {
+      "label": "deployer",
+      "share": 1,
+      "address": "0x6e82cb961c18c20cb2618a92c42925811e3c8255",
+      "balance": 30387497429041437929609400
+     },
+     {
+      "label": "burn",
+      "share": 3.2908270986616243e-23,
+      "address": "0x0000000000000000000000000000000000000000",
+      "balance": 1000
+     }
+    ],
+    "other": 0,
+    "owner": 0,
+    "burned": 3.2908270986616243e-23,
+    "locked": 0,
+    "source": "transfer-logs",
+    "deployer": 1,
+    "protocol": 0
+   },
+   "dex": "uniswap-v2",
+   "pool": "0xf7140fa24899de2b4633aed69d25b75f010f1c1b",
+   "pulled": false,
+   "created_at": "2026-10-31T09:30:59Z",
+   "created_block": 26311862
+  },
+  "block_time": "2026-10-31T09:30:59Z",
+  "checked_at": "2026-10-31T09:31:01.062827908Z",
+  "elapsed_ns": 10493209445,
+  "timings_ms": {
+   "block": 127,
+   "pools": 82,
+   "probe": 0,
+   "basics": 43,
+   "shares": 33,
+   "source": 399,
+   "holders": 374,
+   "contract": 314,
+   "creation": 7437,
+   "deployer": 176,
+   "liquidity": 2740
+  }
+ },
+ "symbol": "CTAS",
+ "address": "0x3b8f56244d3004cf6546c583afe877f4b8124336",
+ "verdict": {
+  "level": "high-risk",
+  "reasons": [
+   {
+    "text": "The deployer or owner holds 100% of the main pool's LP tokens and can withdraw that liquidity at any time.",
+    "level": "high-risk"
+   },
+   {
+    "text": "The deployer launched 1 other tokens and pulled the liquidity of 1.",
+    "level": "high-risk"
+   },
+   {
+    "text": "Only $4.0k of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 26311862 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": true,
+  "headline": "High risk: see the reasons below",
+  "not_checked": []
+ },
+ "checked_at": "2026-10-31T09:31:01.062827908Z",
+ "elapsed_ns": 10493250773
+}

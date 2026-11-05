@@ -1,0 +1,187 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 264505,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 218601,
+   "tax": 0
+  },
+  "block": 53336877,
+  "chain": "base",
+  "token": "0x594e633bd12dae29be8595008218f17aee77af63",
+  "venue": "aerodrome pool 0x99DAEC1c36C294dDb5950f4e492F0C1839833760",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 51432,
+   "tax": 0
+  },
+  "spent_eth": 1.5e-05,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 6734570657
+ },
+ "name": "Lying Token L2",
+ "block": 53336877,
+ "chain": "base",
+ "facts": {
+  "gaps": [
+   "deployer: no transaction in the creation block shows the contract being created (factory-made without a constructor event) (explorer: HTTP 403 from base.blockscout.com)"
+  ],
+  "block": 53336877,
+  "chain": "base",
+  "pools": [
+   {
+    "dex": "aerodrome",
+    "usd": 6.74624858630948,
+    "quote": "WETH",
+    "address": "0x99daec1c36c294ddb5950f4e492f0c1839833760",
+    "quote_token": "0x4200000000000000000000000000000000000006",
+    "quote_amount": 0.003,
+    "token_amount": 500000000000000000000000
+   }
+  ],
+  "token": {
+   "name": "Lying Token L2",
+   "symbol": "LIE-L2",
+   "decimals": 18,
+   "total_supply": 1000000000000000000000000
+  },
+  "powers": [
+   {
+    "kind": "mint",
+    "where": "OptimismMintableERC20.sol:72",
+    "probed": true,
+    "function": "mint(address,uint256)"
+   }
+  ],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0,
+   "in_pools": 0.5
+  },
+  "address": "0x594e633bd12dae29be8595008218f17aee77af63",
+  "holders": {
+   "top": [
+    {
+     "label": "pool",
+     "share": 0.5,
+     "address": "0x99daec1c36c294ddb5950f4e492f0c1839833760",
+     "balance": 500000000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.5,
+     "address": "0xcba6efccec3ee12f078f78eee8c0d7505b0941b2",
+     "balance": 500000000000000000000000
+    }
+   ],
+   "count": 2,
+   "source": "transfer-logs",
+   "top_share": 0.5,
+   "top10_share": 0.5
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0x0000000000000000000000000000000000000000000000000000000000000000",
+    "Block": 53335436,
+    "Factory": null,
+    "Deployer": "0x0000000000000000000000000000000000000000"
+   },
+   "verified": true,
+   "code_size": 4932,
+   "created_at": "2026-10-31T15:23:39Z",
+   "source_name": "OptimismMintableERC20",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "settings": null,
+  "liquidity": {
+   "lp": {
+    "top": [
+     {
+      "label": "wallet",
+      "share": 1,
+      "address": "0xcba6efccec3ee12f078f78eee8c0d7505b0941b2",
+      "balance": 38729833462074167851
+     },
+     {
+      "label": "wallet",
+      "share": 2.581988897471611e-17,
+      "address": "0x0000000000000000000000000000000000000001",
+      "balance": 1000
+     }
+    ],
+    "other": 1,
+    "owner": 0,
+    "burned": 0,
+    "locked": 0,
+    "source": "transfer-logs",
+    "deployer": 0,
+    "protocol": 0
+   },
+   "dex": "aerodrome",
+   "pool": "0x99daec1c36c294ddb5950f4e492f0c1839833760",
+   "pulled": false,
+   "created_at": "2026-10-31T16:11:41Z",
+   "created_block": 53336877
+  },
+  "block_time": "2026-10-31T16:11:41Z",
+  "checked_at": "2026-10-31T16:11:41.2657018Z",
+  "elapsed_ns": 8627537017,
+  "timings_ms": {
+   "block": 48,
+   "pools": 69,
+   "probe": 55,
+   "basics": 42,
+   "shares": 37,
+   "source": 109,
+   "holders": 643,
+   "contract": 168,
+   "creation": 4438,
+   "deployer": 0,
+   "liquidity": 4019
+  }
+ },
+ "symbol": "LIE-L2",
+ "address": "0x594e633bd12dae29be8595008218f17aee77af63",
+ "verdict": {
+  "level": "caution",
+  "reasons": [
+   {
+    "text": "Only $7 of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "One wallet holds 50% of the supply and could sell it at once.",
+    "level": "caution"
+   },
+   {
+    "text": "Some decisive checks did not finish (deployer), so this is not a clean bill of health.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 53336877 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": false,
+  "headline": "Caution: no trap found, but read the notes",
+  "not_checked": [
+   "deployer: no transaction in the creation block shows the contract being created (factory-made without a constructor event) (explorer: HTTP 403 from base.blockscout.com)"
+  ]
+ },
+ "checked_at": "2026-10-31T16:11:41.2657018Z",
+ "elapsed_ns": 8627582733
+}

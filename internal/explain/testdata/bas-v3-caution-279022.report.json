@@ -1,0 +1,162 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 144713,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 137173,
+   "tax": 0
+  },
+  "block": 53333486,
+  "chain": "base",
+  "token": "0x201089526b1c589130c0cabfa9f92aebbb801751",
+  "venue": "uniswap-v3 0.30% pool 0x27902255590D55e7beffd447026B328F50D32f17",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 52191,
+   "tax": 0
+  },
+  "spent_eth": 0.02,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 4787701381
+ },
+ "name": "ComplexQUAIL",
+ "block": 53333486,
+ "chain": "base",
+ "facts": {
+  "gaps": [
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "block": 53333486,
+  "chain": "base",
+  "pools": [
+   {
+    "dex": "uniswap-v3",
+    "fee": 3000,
+    "usd": 9011.902640284366,
+    "quote": "WETH",
+    "address": "0x27902255590d55e7beffd447026b328f50d32f17",
+    "quote_token": "0x4200000000000000000000000000000000000006",
+    "quote_amount": 4,
+    "token_amount": 999999999999999999999879
+   }
+  ],
+  "token": {
+   "name": "ComplexQUAIL",
+   "symbol": "CQUA",
+   "decimals": 18,
+   "total_supply": 1000000000000000000000000
+  },
+  "powers": [],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 1.21e-22,
+   "in_pools": 0.9999995019100151
+  },
+  "address": "0x201089526b1c589130c0cabfa9f92aebbb801751",
+  "holders": {
+   "top": [
+    {
+     "label": "pool",
+     "share": 0.9999995019100151,
+     "address": "0x27902255590d55e7beffd447026b328f50d32f17",
+     "balance": 999999501910015093756516
+    },
+    {
+     "label": "deployer",
+     "share": 1.21e-22,
+     "address": "0x7b56229905489d0c06a7273fdef13201178652e7",
+     "balance": 121
+    }
+   ],
+   "count": 2,
+   "source": "transfer-logs",
+   "top_share": 1.21e-22,
+   "top10_share": 1.21e-22
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0x930c544c7d0bc0c2fc5405320b1ba8080b8c63995aef7f2d03188499cac27a4c",
+    "Block": 53333432,
+    "Factory": null,
+    "Deployer": "0x7b56229905489d0c06a7273fdef13201178652e7"
+   },
+   "verified": true,
+   "code_size": 6997,
+   "created_at": "2026-10-31T14:16:51Z",
+   "source_name": "Hgi",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 3,
+   "pulled": 0,
+   "tokens": null,
+   "address": "0x7b56229905489d0c06a7273fdef13201178652e7",
+   "scanned": 3,
+   "balance_eth": 0.001958386183075888
+  },
+  "settings": null,
+  "liquidity": {
+   "dex": "uniswap-v3",
+   "pool": "0x27902255590d55e7beffd447026b328f50d32f17",
+   "pulled": false,
+   "created_at": "2026-10-31T14:18:39Z",
+   "created_block": 53333486
+  },
+  "block_time": "2026-10-31T14:18:39Z",
+  "checked_at": "2026-10-31T14:18:39.359045987Z",
+  "elapsed_ns": 8397735220,
+  "timings_ms": {
+   "block": 49,
+   "pools": 88,
+   "probe": 0,
+   "basics": 32,
+   "shares": 36,
+   "source": 415,
+   "holders": 367,
+   "contract": 283,
+   "creation": 4436,
+   "deployer": 99,
+   "liquidity": 3674
+  }
+ },
+ "symbol": "CQUA",
+ "address": "0x201089526b1c589130c0cabfa9f92aebbb801751",
+ "verdict": {
+  "level": "caution",
+  "reasons": [
+   {
+    "text": "Only $9.0k of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "Some decisive checks did not finish (LP lock), so this is not a clean bill of health.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 53333486 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": false,
+  "headline": "Caution: no trap found, but read the notes",
+  "not_checked": [
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ]
+ },
+ "checked_at": "2026-10-31T14:18:39.359045987Z",
+ "elapsed_ns": 8397775515
+}

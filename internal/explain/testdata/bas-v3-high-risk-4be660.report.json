@@ -1,0 +1,241 @@
+{
+ "sim": {
+  "block": 53327262,
+  "chain": "base",
+  "token": "0x7a53bfa46a9daad96283e895b78050dad3325e5e",
+  "reasons": [
+   "no pool against WETH, USDC or USDT has liquidity"
+  ],
+  "verdict": "no-pool",
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 3441871667
+ },
+ "name": "GTA VI",
+ "block": 53327262,
+ "chain": "base",
+ "facts": {
+  "gaps": [
+   "deployer history: only the last 1000 of 7106 transactions were checked",
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "block": 53327262,
+  "chain": "base",
+  "pools": [
+   {
+    "dex": "uniswap-v3",
+    "fee": 500,
+    "usd": 0,
+    "quote": "WETH",
+    "address": "0x4be66049913ce49d8c3d16c2fd6471c6a943d0ba",
+    "quote_token": "0x4200000000000000000000000000000000000006",
+    "quote_amount": 0,
+    "token_amount": 499999999999999999999999838
+   }
+  ],
+  "token": {
+   "name": "GTA VI",
+   "symbol": "GTA6",
+   "decimals": 18,
+   "total_supply": 1000000000000000000000000000
+  },
+  "powers": [
+   {
+    "kind": "mint",
+    "where": "MintBurnTeamToken.sol:789",
+    "probed": true,
+    "function": "mint(address,uint256)",
+    "callable_by": [
+     "owner"
+    ]
+   }
+  ],
+  "shares": {
+   "owner": 0.5,
+   "burned": 0,
+   "deployer": 0.5,
+   "in_pools": 0.5
+  },
+  "address": "0x7a53bfa46a9daad96283e895b78050dad3325e5e",
+  "holders": {
+   "top": [
+    {
+     "label": "deployer",
+     "share": 0.5,
+     "address": "0x1e944a66784a48e02605957189f08ae75555fb3b",
+     "balance": 500000000000000000000000162
+    },
+    {
+     "label": "pool",
+     "share": 0.5,
+     "address": "0x4be66049913ce49d8c3d16c2fd6471c6a943d0ba",
+     "balance": 499999999999999999999999838
+    }
+   ],
+   "count": 2,
+   "source": "transfer-logs",
+   "top_share": 0.5,
+   "top10_share": 0.5
+  },
+  "contract": {
+   "owner": "0x1e944a66784a48e02605957189f08ae75555fb3b",
+   "creation": {
+    "Tx": "0xe6c3a9402c53785ebf56cbc6243802ddd8c17b6a4609940801a064a7eb74eeb8",
+    "Block": 53327197,
+    "Factory": null,
+    "Deployer": "0x1e944a66784a48e02605957189f08ae75555fb3b"
+   },
+   "verified": true,
+   "code_size": 5150,
+   "created_at": "2026-10-31T10:49:01Z",
+   "source_name": "MintBurnTeamToken",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "wallet",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 7106,
+   "pulled": 0,
+   "tokens": [
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "XLM",
+     "address": "0x64ae85461e8bd21c5df64352c5090ff1a8c5bd6c"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "QTC",
+     "address": "0x4e8c89d0b1fab5e1b1b915e6be025f489b48204b"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "UNI",
+     "address": "0x6b57d3a47c0ad65c14ba3b7f2a54122fe72f07bd"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "CATBOT",
+     "address": "0xdfa6d3be0ef931dfbfd34504639ad4bc66e8429c"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "AXIS",
+     "address": "0x360c5c654bd8961c58c62dd504f63085db1adc4d"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "1 /TRUMP",
+     "address": "0xcf03a754af5ec9f44bda1ff70d158ee5ac1b3ec4"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "XRP",
+     "address": "0x73f5cb20c797d0497acf1d35048e5dd587895b8d"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "QTC",
+     "address": "0x51cf1a6ac8ae0e4aef1023db0913e3af24ccac2c"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "QTC",
+     "address": "0xeea96507378feb1743629f44e3cf4a912ec97471"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "QTC",
+     "address": "0x74b00de3a1cb161ccfe7c93541aa1e68a667ef70"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "PAID",
+     "address": "0xb9ae880d267b681f57b21ee217f6ebc1bad32516"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "BANDIT",
+     "address": "0xfd974ffe8050820c38507cb87b0af15afcffbc45"
+    }
+   ],
+   "address": "0x1e944a66784a48e02605957189f08ae75555fb3b",
+   "scanned": 1000,
+   "balance_eth": 0.04856116295737007
+  },
+  "settings": null,
+  "liquidity": {
+   "dex": "uniswap-v3",
+   "pool": "0x4be66049913ce49d8c3d16c2fd6471c6a943d0ba",
+   "pulled": false,
+   "created_at": "2026-10-31T10:51:11Z",
+   "created_block": 53327262
+  },
+  "block_time": "2026-10-31T10:51:11Z",
+  "checked_at": "2026-10-31T10:51:11.29467637Z",
+  "elapsed_ns": 8418289768,
+  "timings_ms": {
+   "block": 70,
+   "pools": 139,
+   "probe": 43,
+   "basics": 139,
+   "shares": 40,
+   "source": 210,
+   "holders": 235,
+   "contract": 269,
+   "creation": 4469,
+   "deployer": 1580,
+   "liquidity": 3677
+  }
+ },
+ "symbol": "GTA6",
+ "address": "0x7a53bfa46a9daad96283e895b78050dad3325e5e",
+ "verdict": {
+  "level": "high-risk",
+  "reasons": [
+   {
+    "text": "The owner can mint new tokens.",
+    "level": "high-risk"
+   },
+   {
+    "text": "There is no pool to sell into (no pool against WETH, USDC or USDT has liquidity).",
+    "level": "caution"
+   },
+   {
+    "text": "Almost no liquidity is left in any pool ($0.00).",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "The deployer still holds 50% of the supply and could sell it at once.",
+    "level": "caution"
+   },
+   {
+    "text": "Some decisive checks did not finish (LP lock), so this is not a clean bill of health.",
+    "level": "caution"
+   }
+  ],
+  "complete": false,
+  "headline": "High risk: see the reasons below",
+  "not_checked": [
+   "deployer history: only the last 1000 of 7106 transactions were checked",
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ]
+ },
+ "checked_at": "2026-10-31T10:51:11.29467637Z",
+ "elapsed_ns": 8418347277
+}

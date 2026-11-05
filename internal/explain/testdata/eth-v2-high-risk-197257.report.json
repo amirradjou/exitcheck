@@ -1,0 +1,174 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 153892,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 108115,
+   "tax": 0
+  },
+  "block": 26313089,
+  "chain": "ethereum",
+  "token": "0x2a1e7d87affe135da14cf93d5d00154ad8152eda",
+  "venue": "uniswap-v2 pool 0x1972574Dc8D0118367a7651B8157f9AeAe776994",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 51697,
+   "tax": 0
+  },
+  "spent_eth": 0.0165,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 3153974443
+ },
+ "name": "Rocket Bus Bandits",
+ "block": 26313089,
+ "chain": "ethereum",
+ "facts": {
+  "gaps": [],
+  "block": 26313089,
+  "chain": "ethereum",
+  "pools": [
+   {
+    "dex": "uniswap-v2",
+    "usd": 7416.081452727109,
+    "quote": "WETH",
+    "address": "0x1972574dc8d0118367a7651b8157f9aeae776994",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 3.3,
+    "token_amount": 814000000000000000000000000000000
+   }
+  ],
+  "token": {
+   "name": "Rocket Bus Bandits",
+   "symbol": "RBB",
+   "decimals": 18,
+   "total_supply": 814000000000000000000000000000000
+  },
+  "powers": [],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0,
+   "in_pools": 1
+  },
+  "address": "0x2a1e7d87affe135da14cf93d5d00154ad8152eda",
+  "holders": {
+   "top": [
+    {
+     "label": "pool",
+     "share": 1,
+     "address": "0x1972574dc8d0118367a7651b8157f9aeae776994",
+     "balance": 814000000000000000000000000000000
+    }
+   ],
+   "count": 1,
+   "source": "transfer-logs",
+   "top_share": 0,
+   "top10_share": 0
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0x85fadfa3d6652b2769429e47f1e1f34a387bd1fa3cd689839ae7a608be5834ff",
+    "Block": 26313085,
+    "Factory": null,
+    "Deployer": "0xeb8dfffe38cbfe889077c230ae91dc9d75f25d32"
+   },
+   "verified": true,
+   "code_size": 1764,
+   "created_at": "2026-10-31T13:36:47Z",
+   "source_name": "SandboxLandSale",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 3,
+   "pulled": 0,
+   "tokens": null,
+   "address": "0xeb8dfffe38cbfe889077c230ae91dc9d75f25d32",
+   "scanned": 3,
+   "balance_eth": 0.0495640962712339
+  },
+  "settings": null,
+  "liquidity": {
+   "lp": {
+    "top": [
+     {
+      "label": "deployer",
+      "share": 1,
+      "address": "0xeb8dfffe38cbfe889077c230ae91dc9d75f25d32",
+      "balance": 51828563553314884437781296
+     },
+     {
+      "label": "burn",
+      "share": 1.9294379999000405e-23,
+      "address": "0x0000000000000000000000000000000000000000",
+      "balance": 1000
+     }
+    ],
+    "other": 0,
+    "owner": 0,
+    "burned": 1.9294379999000405e-23,
+    "locked": 0,
+    "source": "transfer-logs",
+    "deployer": 1,
+    "protocol": 0
+   },
+   "dex": "uniswap-v2",
+   "pool": "0x1972574dc8d0118367a7651b8157f9aeae776994",
+   "pulled": false,
+   "created_at": "2026-10-31T13:37:35Z",
+   "created_block": 26313089
+  },
+  "block_time": "2026-10-31T13:37:35Z",
+  "checked_at": "2026-10-31T13:37:37.738292086Z",
+  "elapsed_ns": 6300665518,
+  "timings_ms": {
+   "block": 141,
+   "pools": 65,
+   "probe": 0,
+   "basics": 30,
+   "shares": 34,
+   "source": 124,
+   "holders": 287,
+   "contract": 282,
+   "creation": 3458,
+   "deployer": 105,
+   "liquidity": 2559
+  }
+ },
+ "symbol": "RBB",
+ "address": "0x2a1e7d87affe135da14cf93d5d00154ad8152eda",
+ "verdict": {
+  "level": "high-risk",
+  "reasons": [
+   {
+    "text": "The deployer or owner holds 100% of the main pool's LP tokens and can withdraw that liquidity at any time.",
+    "level": "high-risk"
+   },
+   {
+    "text": "Only $7.4k of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 26313089 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": true,
+  "headline": "High risk: see the reasons below",
+  "not_checked": []
+ },
+ "checked_at": "2026-10-31T13:37:37.738292086Z",
+ "elapsed_ns": 6300708118
+}

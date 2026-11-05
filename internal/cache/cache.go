@@ -102,6 +102,13 @@ func Put(ctx context.Context, c *Cache, key string, v any) {
 	}
 }
 
+// PutFor stores v under key for ttl (0: the cache's TTL). A nil cache drops it.
+func PutFor(ctx context.Context, c *Cache, key string, v any, ttl time.Duration) {
+	if c != nil {
+		c.set(ctx, key, v, ttl)
+	}
+}
+
 // Delete removes keys, so the next request computes afresh.
 func Delete(ctx context.Context, c *Cache, keys ...string) error {
 	if c == nil || len(keys) == 0 {

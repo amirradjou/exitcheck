@@ -1,0 +1,208 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 155341,
+   "tax": 0
+  },
+  "sell": {
+   "ok": false,
+   "error": "TransferHelper: TRANSFER_FROM_FAILED"
+  },
+  "block": 26314158,
+  "chain": "ethereum",
+  "token": "0xb43e7f3d2f4e0e90206cfb837ac263ceb593f4e1",
+  "venue": "uniswap-v2 pool 0x1746ad634735933818f8f565437102e5129bBD45",
+  "reasons": [
+   "selling reverts: TransferHelper: TRANSFER_FROM_FAILED"
+  ],
+  "verdict": "honeypot",
+  "transfer": {
+   "ok": true,
+   "gas": 52213,
+   "tax": 0
+  },
+  "sell_half": {
+   "ok": false,
+   "error": "TransferHelper: TRANSFER_FROM_FAILED"
+  },
+  "spent_eth": 0.001,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 29095067860
+ },
+ "name": "Ritual",
+ "block": 26314158,
+ "chain": "ethereum",
+ "facts": {
+  "gaps": [],
+  "block": 26314158,
+  "chain": "ethereum",
+  "pools": [
+   {
+    "dex": "uniswap-v2",
+    "usd": 449.82065771968365,
+    "quote": "WETH",
+    "address": "0x1746ad634735933818f8f565437102e5129bbd45",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 0.2,
+    "token_amount": 200000000000000000000000
+   }
+  ],
+  "token": {
+   "name": "Ritual",
+   "symbol": "RITUAL",
+   "decimals": 18,
+   "total_supply": 1000000000000000000000000000
+  },
+  "powers": [],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0,
+   "in_pools": 0.0002
+  },
+  "address": "0xb43e7f3d2f4e0e90206cfb837ac263ceb593f4e1",
+  "holders": {
+   "top": [
+    {
+     "label": "wallet",
+     "share": 0.9998,
+     "address": "0x5f0ea5041ad900f4288104de06ac842ee45b17b4",
+     "balance": 999800000000000000000000000
+    }
+   ],
+   "count": 1,
+   "source": "blockscout",
+   "top_share": 0.9998,
+   "top10_share": 0.9998
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0x0121fae4d47f865df68c825fefb05417889d93eb45d37b06db229d421c6afa2d",
+    "Block": 26314103,
+    "Factory": null,
+    "Deployer": "0xbabb01656477aa206b4948f9f30f76e9c37b230f"
+   },
+   "verified": true,
+   "code_size": 4327,
+   "created_at": "2026-10-31T17:01:23Z",
+   "source_name": "RITUAL",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 10,
+   "pulled": 2,
+   "tokens": [
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "RITUAL",
+     "address": "0xa7826b81065187959cb99db2a80302061de4e3c1"
+    },
+    {
+     "pool": "pulled",
+     "weth": 0.000183166319184721,
+     "symbol": "AIlOX",
+     "address": "0x6aa5e7e81ce46a854cc8df6b43bd586d4d388c01"
+    },
+    {
+     "pool": "pulled",
+     "weth": 0.000286963944878819,
+     "symbol": "DACC",
+     "address": "0x551d1529e9b302acb132b0b071d4a2e2356dfc49"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "MMT",
+     "address": "0xbc72f674ba43f1a7769686a0e5a6d050b507952d"
+    }
+   ],
+   "address": "0xbabb01656477aa206b4948f9f30f76e9c37b230f",
+   "scanned": 10,
+   "balance_eth": 0.006397919838174667
+  },
+  "settings": null,
+  "liquidity": {
+   "lp": {
+    "top": [
+     {
+      "label": "wallet",
+      "share": 1,
+      "address": "0x5f0ea5041ad900f4288104de06ac842ee45b17b4",
+      "balance": 199999999999999999000
+     },
+     {
+      "label": "burn",
+      "share": 5e-18,
+      "address": "0x0000000000000000000000000000000000000000",
+      "balance": 1000
+     }
+    ],
+    "other": 1,
+    "owner": 0,
+    "burned": 5e-18,
+    "locked": 0,
+    "source": "transfer-logs",
+    "deployer": 0,
+    "protocol": 0
+   },
+   "dex": "uniswap-v2",
+   "pool": "0x1746ad634735933818f8f565437102e5129bbd45",
+   "pulled": false,
+   "created_at": "2026-10-31T17:12:35Z",
+   "created_block": 26314158
+  },
+  "block_time": "2026-10-31T17:12:35Z",
+  "checked_at": "2026-10-31T17:12:39.409109272Z",
+  "elapsed_ns": 16182636922,
+  "timings_ms": {
+   "block": 169,
+   "pools": 184,
+   "probe": 0,
+   "basics": 169,
+   "shares": 49,
+   "source": 1853,
+   "holders": 2284,
+   "contract": 5487,
+   "creation": 2696,
+   "deployer": 241,
+   "liquidity": 7940
+  }
+ },
+ "symbol": "RITUAL",
+ "address": "0xb43e7f3d2f4e0e90206cfb837ac263ceb593f4e1",
+ "verdict": {
+  "level": "scam",
+  "reasons": [
+   {
+    "text": "A test buy worked but the sale failed (selling reverts: TransferHelper: TRANSFER_FROM_FAILED), on a fork of block 26314158.",
+    "level": "scam"
+   },
+   {
+    "text": "The deployer launched 4 other tokens and pulled the liquidity of 2.",
+    "level": "high-risk"
+   },
+   {
+    "text": "Only $450 of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "One wallet holds 99.9% of the supply and could sell it at once.",
+    "level": "caution"
+   }
+  ],
+  "complete": true,
+  "headline": "Honeypot: you can buy, but you cannot sell",
+  "not_checked": []
+ },
+ "checked_at": "2026-10-31T17:12:39.409109272Z",
+ "elapsed_ns": 29098845336
+}

@@ -1,0 +1,176 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 155104,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 109094,
+   "tax": 0
+  },
+  "block": 53335189,
+  "chain": "base",
+  "token": "0x95a11ba20745c3c52c533a1e049fa907ea4b1d3a",
+  "venue": "uniswap-v2 pool 0x3A07CB88349f0ADe07584F01bB3850E728F9AA91",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 52242,
+   "tax": 0
+  },
+  "spent_eth": 0.008,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 4599362383
+ },
+ "name": "from1kto100Mcoin",
+ "block": 53335189,
+ "chain": "base",
+ "facts": {
+  "gaps": [
+   "verified source: verification unknown: blockscout: HTTP 403 from base.blockscout.com"
+  ],
+  "block": 53335189,
+  "chain": "base",
+  "pools": [
+   {
+    "dex": "uniswap-v2",
+    "usd": 3597.9910567407687,
+    "quote": "WETH",
+    "address": "0x3a07cb88349f0ade07584f01bb3850e728f9aa91",
+    "quote_token": "0x4200000000000000000000000000000000000006",
+    "quote_amount": 1.6,
+    "token_amount": 5600000000000000000000000000
+   }
+  ],
+  "token": {
+   "name": "from1kto100Mcoin",
+   "symbol": "1KTO100M",
+   "decimals": 18,
+   "total_supply": 5600000000000000000000000000
+  },
+  "powers": [],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0,
+   "in_pools": 0.9999981322211962
+  },
+  "address": "0x95a11ba20745c3c52c533a1e049fa907ea4b1d3a",
+  "holders": {
+   "top": [
+    {
+     "label": "pool",
+     "share": 0.9999981322211962,
+     "address": "0x3a07cb88349f0ade07584f01bb3850e728f9aa91",
+     "balance": 5599989540438698183386851319
+    }
+   ],
+   "count": 1,
+   "source": "transfer-logs",
+   "top_share": 0,
+   "top10_share": 0
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0x25d34516720a38885a4c0eabfe77444b36cb522858b1da3642491c43e57dd75c",
+    "Block": 53335174,
+    "Factory": null,
+    "Deployer": "0xf22933bd7738f751a1cfa91074c5e8bebf759917"
+   },
+   "verified": null,
+   "code_size": 3553,
+   "created_at": "2026-10-31T15:14:55Z",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 3,
+   "pulled": 0,
+   "tokens": null,
+   "address": "0xf22933bd7738f751a1cfa91074c5e8bebf759917",
+   "scanned": 3,
+   "balance_eth": 0.004977298819378368
+  },
+  "settings": null,
+  "liquidity": {
+   "lp": {
+    "top": [
+     {
+      "label": "deployer",
+      "share": 1,
+      "address": "0xf22933bd7738f751a1cfa91074c5e8bebf759917",
+      "balance": 94657276529593856680077
+     },
+     {
+      "label": "burn",
+      "share": 1.0564428184106457e-20,
+      "address": "0x0000000000000000000000000000000000000000",
+      "balance": 1000
+     }
+    ],
+    "other": 0,
+    "owner": 0,
+    "burned": 1.0564428184106457e-20,
+    "locked": 0,
+    "source": "transfer-logs",
+    "deployer": 1,
+    "protocol": 0
+   },
+   "dex": "uniswap-v2",
+   "pool": "0x3a07cb88349f0ade07584f01bb3850e728f9aa91",
+   "pulled": false,
+   "created_at": "2026-10-31T15:15:25Z",
+   "created_block": 53335189
+  },
+  "block_time": "2026-10-31T15:15:25Z",
+  "checked_at": "2026-10-31T15:15:25.30604824Z",
+  "elapsed_ns": 8511785554,
+  "timings_ms": {
+   "block": 48,
+   "pools": 70,
+   "probe": 0,
+   "basics": 34,
+   "shares": 38,
+   "source": 472,
+   "holders": 274,
+   "contract": 242,
+   "creation": 4377,
+   "deployer": 116,
+   "liquidity": 3892
+  }
+ },
+ "symbol": "1KTO100M",
+ "address": "0x95a11ba20745c3c52c533a1e049fa907ea4b1d3a",
+ "verdict": {
+  "level": "high-risk",
+  "reasons": [
+   {
+    "text": "The deployer or owner holds 100% of the main pool's LP tokens and can withdraw that liquidity at any time.",
+    "level": "high-risk"
+   },
+   {
+    "text": "Only $3.6k of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 53335189 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": true,
+  "headline": "High risk: see the reasons below",
+  "not_checked": [
+   "verified source: verification unknown: blockscout: HTTP 403 from base.blockscout.com"
+  ]
+ },
+ "checked_at": "2026-10-31T15:15:25.30604824Z",
+ "elapsed_ns": 8511831470
+}

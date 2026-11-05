@@ -1,0 +1,199 @@
+{
+ "sim": {
+  "block": 26314661,
+  "chain": "ethereum",
+  "token": "0x7624ff5be71c80684001dbf93f95710b6c7a39cd",
+  "reasons": [
+   "no pool against WETH, USDC or USDT has liquidity"
+  ],
+  "verdict": "no-pool",
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 1970131533
+ },
+ "name": "GTA6CAT",
+ "block": 26314661,
+ "chain": "ethereum",
+ "facts": {
+  "gaps": [
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "block": 26314661,
+  "chain": "ethereum",
+  "pools": [
+   {
+    "dex": "uniswap-v3",
+    "fee": 10000,
+    "usd": 0,
+    "quote": "USDC",
+    "address": "0x1f6f5b7535084d9bb612d42505d702e400cf6e7a",
+    "quote_token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    "quote_amount": 0,
+    "token_amount": 67204316780072642553826
+   }
+  ],
+  "token": {
+   "name": "GTA6CAT",
+   "symbol": "GATO",
+   "decimals": 18,
+   "total_supply": 1000000000000000000000000000
+  },
+  "powers": [],
+  "shares": {
+   "owner": 0,
+   "burned": 0.02214437981713928,
+   "deployer": 1.8329e-23,
+   "in_pools": 6.720431678007265e-05
+  },
+  "address": "0x7624ff5be71c80684001dbf93f95710b6c7a39cd",
+  "holders": {
+   "top": [
+    {
+     "label": "contract",
+     "share": 0.2739823067567352,
+     "address": "0x000000000004444c5dc75cb358380d2e3de08a90",
+     "balance": 273982306756735162781549458
+    },
+    {
+     "label": "wallet",
+     "share": 0.026646066181202945,
+     "address": "0x4997950a8b4afef92f861300f4a8716a4fff3ccd",
+     "balance": 26646066181202943881746841
+    },
+    {
+     "label": "burn",
+     "share": 0.02214437981713928,
+     "address": "0x000000000000000000000000000000000000dead",
+     "balance": 22144379817139278422480022
+    },
+    {
+     "label": "wallet",
+     "share": 0.021246559786589743,
+     "address": "0x71f00c4e06aa1a15ad3730a4d2d4e15d5c961d41",
+     "balance": 21246559786589744401008965
+    },
+    {
+     "label": "wallet",
+     "share": 0.018519812812461022,
+     "address": "0x8dafedbd1f7d2a0d25c15e9a98ecdb53ad90ca9c",
+     "balance": 18519812812461023555184608
+    },
+    {
+     "label": "wallet",
+     "share": 0.015792937259401337,
+     "address": "0x3526549135746b4078ac29cba3ad8076c2408413",
+     "balance": 15792937259401338454898780
+    },
+    {
+     "label": "wallet",
+     "share": 0.014401753064968197,
+     "address": "0x3b9f1c16e35e4164a6f299679287a4f98b10d350",
+     "balance": 14401753064968197068859198
+    },
+    {
+     "label": "wallet",
+     "share": 0.01342875173242525,
+     "address": "0x1cfcace2aa81635a64082af577813069483a12a7",
+     "balance": 13428751732425250545398413
+    },
+    {
+     "label": "wallet",
+     "share": 0.01342747136780865,
+     "address": "0x9f0d3e20b2226e23a290902e1dcff98f7e714943",
+     "balance": 13427471367808650369198505
+    },
+    {
+     "label": "wallet",
+     "share": 0.013376648867647016,
+     "address": "0x2cf3d653e198ba103ca1c32cb8a91ec65de50699",
+     "balance": 13376648867647017056236937
+    }
+   ],
+   "count": 107,
+   "source": "blockscout",
+   "top_share": 0.2739823067567352,
+   "top10_share": 0.42410255764539007
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0x603a1bd06811a02ed3709f0cf32cdb9afffbf74b6b0568af285969d13f4d8281",
+    "Block": 26314174,
+    "Factory": null,
+    "Deployer": "0x23383ae3bf95afbfccf0d5d6b7e4824bd6d1593a"
+   },
+   "verified": true,
+   "code_size": 3679,
+   "created_at": "2026-10-31T17:15:47Z",
+   "source_name": "GATO",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 12,
+   "pulled": 0,
+   "tokens": null,
+   "address": "0x23383ae3bf95afbfccf0d5d6b7e4824bd6d1593a",
+   "scanned": 12,
+   "balance_eth": 0.09755350047113216
+  },
+  "settings": null,
+  "liquidity": {
+   "dex": "uniswap-v3",
+   "pool": "0x1f6f5b7535084d9bb612d42505d702e400cf6e7a",
+   "pulled": false,
+   "created_at": "2026-10-31T18:53:23Z",
+   "created_block": 26314661
+  },
+  "block_time": "2026-10-31T18:53:23Z",
+  "checked_at": "2026-10-31T18:53:26.111556769Z",
+  "elapsed_ns": 5724852126,
+  "timings_ms": {
+   "block": 33,
+   "pools": 79,
+   "probe": 0,
+   "basics": 34,
+   "shares": 36,
+   "source": 538,
+   "holders": 1610,
+   "contract": 366,
+   "creation": 3008,
+   "deployer": 113,
+   "liquidity": 2347
+  }
+ },
+ "symbol": "GATO",
+ "address": "0x7624ff5be71c80684001dbf93f95710b6c7a39cd",
+ "verdict": {
+  "level": "caution",
+  "reasons": [
+   {
+    "text": "There is no pool to sell into (no pool against WETH, USDC or USDT has liquidity).",
+    "level": "caution"
+   },
+   {
+    "text": "Almost no liquidity is left in any pool ($0.00).",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "One wallet holds 27% of the supply and could sell it at once.",
+    "level": "caution"
+   },
+   {
+    "text": "Some decisive checks did not finish (LP lock), so this is not a clean bill of health.",
+    "level": "caution"
+   }
+  ],
+  "complete": false,
+  "headline": "Caution: no trap found, but read the notes",
+  "not_checked": [
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ]
+ },
+ "checked_at": "2026-10-31T18:53:26.111556769Z",
+ "elapsed_ns": 5724933880
+}

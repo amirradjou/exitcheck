@@ -1,0 +1,206 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 157224,
+   "tax": 1
+  },
+  "block": 26313917,
+  "chain": "ethereum",
+  "token": "0x8bbf6b6d73f4e6f85e222d6626697230a5738627",
+  "venue": "uniswap-v2 pool 0x30126bAeA908118b2ce8D40BB9bfa8664E24f807",
+  "reasons": [
+   "the buy went through but delivered no tokens"
+  ],
+  "verdict": "honeypot",
+  "spent_eth": 0.05,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 2990446852
+ },
+ "name": "Loperax",
+ "block": 26313917,
+ "chain": "ethereum",
+ "facts": {
+  "gaps": [
+   "verified source: not verified on Sourcify or Blockscout; Etherscan not checked (set ETHERSCAN_API_KEY)"
+  ],
+  "block": 26313917,
+  "chain": "ethereum",
+  "pools": [
+   {
+    "dex": "uniswap-v2",
+    "usd": 24726.784871589298,
+    "quote": "WETH",
+    "address": "0x30126baea908118b2ce8d40bb9bfa8664e24f807",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 11,
+    "token_amount": 27500000000000000000000
+   }
+  ],
+  "token": {
+   "name": "Loperax",
+   "symbol": "LVX",
+   "decimals": 18,
+   "total_supply": 10000000000000000000000000
+  },
+  "powers": [
+   {
+    "kind": "fees",
+    "where": "bytecode",
+    "probed": true,
+    "function": "setSellTax(uint256)",
+    "callable_by": [
+     "owner"
+    ]
+   }
+  ],
+  "shares": {
+   "owner": 0.99725,
+   "burned": 0,
+   "deployer": 0.99725,
+   "in_pools": 0.00275
+  },
+  "address": "0x8bbf6b6d73f4e6f85e222d6626697230a5738627",
+  "holders": {
+   "top": [
+    {
+     "label": "deployer",
+     "share": 0.99725,
+     "address": "0xdabb53b9cfc0ebdec078ed003fd58e64aba6f6d7",
+     "balance": 9972500000000000000000000
+    },
+    {
+     "label": "pool",
+     "share": 0.00275,
+     "address": "0x30126baea908118b2ce8d40bb9bfa8664e24f807",
+     "balance": 27500000000000000000000
+    }
+   ],
+   "count": 2,
+   "source": "transfer-logs",
+   "top_share": 0.99725,
+   "top10_share": 0.99725
+  },
+  "contract": {
+   "owner": "0xdabb53b9cfc0ebdec078ed003fd58e64aba6f6d7",
+   "creation": {
+    "Tx": "0x92cabd7cfe2ff78ca41c0cf803f0af60a2f51466c4fe4d882a5847f3d1ca685e",
+    "Block": 26313908,
+    "Factory": null,
+    "Deployer": "0xdabb53b9cfc0ebdec078ed003fd58e64aba6f6d7"
+   },
+   "verified": null,
+   "code_size": 7797,
+   "created_at": "2026-10-31T16:22:11Z",
+   "delegatecall": false,
+   "owner_status": "wallet",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 36,
+   "pulled": 0,
+   "tokens": [
+    {
+     "pool": "live",
+     "weth": 2.609020713747062,
+     "symbol": "ASN",
+     "address": "0xbe2ab177599c6381c70725feee6663f9bcff2197"
+    }
+   ],
+   "address": "0xdabb53b9cfc0ebdec078ed003fd58e64aba6f6d7",
+   "scanned": 36,
+   "balance_eth": 0.18602770511472483
+  },
+  "settings": [
+   {
+    "kind": "fees",
+    "value": "10000",
+    "getter": "sellTax()"
+   }
+  ],
+  "liquidity": {
+   "lp": {
+    "top": [
+     {
+      "label": "deployer",
+      "share": 1,
+      "address": "0xdabb53b9cfc0ebdec078ed003fd58e64aba6f6d7",
+      "balance": 549999999999999999000
+     },
+     {
+      "label": "burn",
+      "share": 1.8181818181818182e-18,
+      "address": "0x0000000000000000000000000000000000000000",
+      "balance": 1000
+     }
+    ],
+    "other": 0,
+    "owner": 0,
+    "burned": 1.8181818181818182e-18,
+    "locked": 0,
+    "source": "transfer-logs",
+    "deployer": 1,
+    "protocol": 0
+   },
+   "dex": "uniswap-v2",
+   "pool": "0x30126baea908118b2ce8d40bb9bfa8664e24f807",
+   "pulled": false,
+   "created_at": "2026-10-31T16:23:59Z",
+   "created_block": 26313917
+  },
+  "block_time": "2026-10-31T16:23:59Z",
+  "checked_at": "2026-10-31T16:24:01.318363371Z",
+  "elapsed_ns": 8180198500,
+  "timings_ms": {
+   "block": 126,
+   "pools": 80,
+   "probe": 43,
+   "basics": 76,
+   "shares": 54,
+   "source": 589,
+   "holders": 307,
+   "contract": 365,
+   "creation": 5288,
+   "deployer": 251,
+   "liquidity": 2526
+  }
+ },
+ "symbol": "LVX",
+ "address": "0x8bbf6b6d73f4e6f85e222d6626697230a5738627",
+ "verdict": {
+  "level": "scam",
+  "reasons": [
+   {
+    "text": "A test buy worked but the sale failed (the buy went through but delivered no tokens), on a fork of block 26313917.",
+    "level": "scam"
+   },
+   {
+    "text": "Taxes in a test trade: buy 100.0%.",
+    "level": "high-risk"
+   },
+   {
+    "text": "The deployer or owner holds 100% of the main pool's LP tokens and can withdraw that liquidity at any time.",
+    "level": "high-risk"
+   },
+   {
+    "text": "The owner can change the taxes.",
+    "level": "high-risk"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "The deployer still holds 99.7% of the supply and could sell it at once.",
+    "level": "caution"
+   }
+  ],
+  "complete": true,
+  "headline": "Honeypot: you can buy, but you cannot sell",
+  "not_checked": [
+   "verified source: not verified on Sourcify or Blockscout; Etherscan not checked (set ETHERSCAN_API_KEY)"
+  ]
+ },
+ "checked_at": "2026-10-31T16:24:01.318363371Z",
+ "elapsed_ns": 8181986322
+}

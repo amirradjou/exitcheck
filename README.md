@@ -271,6 +271,48 @@ Limits:
   42 of 55 on Ethereum on M3's measured day). Pools funded later are only in the live data.
 - A few weeks of launches teach the model those weeks' scam templates.
 
+## How the explanations work (M5)
+
+```sh
+RUGCHECK_LLM_URL=http://localhost:11434/v1 RUGCHECK_LLM_MODEL=qwen2.5:7b ./bin/rugcheck explain <address>
+RUGCHECK_LLM_URL=… RUGCHECK_LLM_MODEL=… ./bin/rugcheck explain -review -out review.md   # the review set
+```
+
+The verdict is already decided when the model is called. The model explains it in plain words and can change nothing.
+Without a model configured, the bot answers exactly as before. It works with any OpenAI-compatible endpoint: Ollama on the
+same machine, or a free tier. rugcheck needs no paid key.
+
+- **Retrieval.** The model gets three kinds of evidence, each with an ID it must cite:
+  - `C`: the findings behind the verdict, in the rules' own words. Reassurances stay out: the rules have weighed them, and a
+    model handed "ownership is renounced" next to a failed sale writes that the token looks fine.
+  - `S`: lines of the verified source, found by BM25 over the contract's functions. The query is the privileged functions
+    someone can use now and the path a failed sale takes, nothing else. Asked about a wallet holding 40% of the supply,
+    source search returns whatever mentions balances, and a model cites it as if it mattered.
+  - `P`: entries from a small [library of known scam patterns](internal/explain/patterns.json), one per finding, which say
+    why a finding matters to a buyer.
+- **Grounding.** Nothing the model writes reaches a reader without passing [`Ground`](internal/explain/ground.go), a
+  deterministic check. A sentence is dropped if it:
+  - cites nothing, cites an ID that does not exist, or cites only the pattern library, which says nothing about this token;
+  - joins two findings. Every word of "the deployer holds 50% of the supply and could withdraw the liquidity" comes from one
+    of two findings; the claim comes from neither;
+  - has a number, link or address its citations do not have;
+  - takes under two thirds of its content words from what it cites;
+  - reassures or advises ("safe", "no obvious issues", "should buy"), whatever it cites.
+
+  A source citation that shares fewer than two words with its sentence is removed: it was added for show.
+- **Hostile input.** A token's name, its revert messages and its source are written by the token's author, who may be writing
+  for the model. Comments and strings are blanked before source is retrieved, square brackets are stripped so a revert message
+  cannot forge an evidence line, and the prompt says the evidence is data. The real defence is the verdict being out of the
+  model's reach and every sentence passing `Ground`.
+- **In the bot.** The verdict goes out as soon as it exists and the explanation is edited in afterwards, with a 30 s budget. A
+  slow or failing model costs the explanation and nothing else. A clear verdict is not put to the model: a sentence about a
+  token with no red flags reads as a recommendation.
+
+Limits:
+- `Ground` checks that a sentence stays close to what it cites. It does not understand the sentence: a claim made entirely of
+  words from its citation can still be wrong. Hence the review below, read by hand.
+- Most tokens are not verified when they launch, so most explanations of launches cite checks and patterns only.
+
 ## Stack
 
 - Go: RPC and explorer clients, Anvil fork simulation, analyzer workers, Telegram bot, HTTP API

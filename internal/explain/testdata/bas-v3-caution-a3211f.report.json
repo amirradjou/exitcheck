@@ -1,0 +1,168 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 128786,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 138232,
+   "tax": 0
+  },
+  "block": 53322378,
+  "chain": "base",
+  "token": "0x9bf602a7bb37c87bc9e70d2aebc588fede836edc",
+  "venue": "uniswap-v3 0.30% pool 0xa3211F4282fC1798B0e771E70F4eAAb7DD3fF767",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 52215,
+   "tax": 0
+  },
+  "spent_eth": 0.02000000999236998,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 9706168238
+ },
+ "name": "SmoothSTOAT",
+ "block": 53322378,
+ "chain": "base",
+ "facts": {
+  "gaps": [
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "block": 53322378,
+  "chain": "base",
+  "pools": [
+   {
+    "dex": "uniswap-v3",
+    "fee": 3000,
+    "usd": 8966.877547917136,
+    "quote": "WETH",
+    "address": "0xa3211f4282fc1798b0e771e70f4eaab7dd3ff767",
+    "quote_token": "0x4200000000000000000000000000000000000006",
+    "quote_amount": 4.000001998473996,
+    "token_amount": 999999501880603623056640039
+   }
+  ],
+  "token": {
+   "name": "SmoothSTOAT",
+   "symbol": "STT",
+   "decimals": 18,
+   "total_supply": 1000000000000000000000000000
+  },
+  "powers": [],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 1.799e-24,
+   "in_pools": 0.9999995018806036
+  },
+  "address": "0x9bf602a7bb37c87bc9e70d2aebc588fede836edc",
+  "holders": {
+   "top": [
+    {
+     "label": "pool",
+     "share": 0.9999995018806036,
+     "address": "0xa3211f4282fc1798b0e771e70f4eaab7dd3ff767",
+     "balance": 999999501880603623056640039
+    },
+    {
+     "label": "contract",
+     "share": 4.981193963769433e-07,
+     "address": "0x6aa989249e423b0f843a2b10cab9ea7eca41c7e8",
+     "balance": 498119396376943358162
+    },
+    {
+     "label": "deployer",
+     "share": 1.799e-24,
+     "address": "0xc8793e4f749ab9939266ea93245dea097cf7f047",
+     "balance": 1799
+    }
+   ],
+   "count": 3,
+   "source": "transfer-logs",
+   "top_share": 4.981193963769433e-07,
+   "top10_share": 4.981193963769433e-07
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0xa9d79585b032267c5ebbf47780616f57aa1ac90ff60291eabf81066a1d58b180",
+    "Block": 53322324,
+    "Factory": null,
+    "Deployer": "0xc8793e4f749ab9939266ea93245dea097cf7f047"
+   },
+   "verified": true,
+   "code_size": 6997,
+   "created_at": "2026-10-31T08:06:35Z",
+   "source_name": "Hgi",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 3,
+   "pulled": 0,
+   "tokens": null,
+   "address": "0xc8793e4f749ab9939266ea93245dea097cf7f047",
+   "scanned": 3,
+   "balance_eth": 0.001958348054123184
+  },
+  "settings": null,
+  "liquidity": {
+   "dex": "uniswap-v3",
+   "pool": "0xa3211f4282fc1798b0e771e70f4eaab7dd3ff767",
+   "pulled": false,
+   "created_at": "2026-10-31T08:08:23Z",
+   "created_block": 53322378
+  },
+  "block_time": "2026-10-31T08:08:23Z",
+  "checked_at": "2026-10-31T08:08:23.326795154Z",
+  "elapsed_ns": 9947104376,
+  "timings_ms": {
+   "block": 48,
+   "pools": 98,
+   "probe": 0,
+   "basics": 57,
+   "shares": 39,
+   "source": 566,
+   "holders": 903,
+   "contract": 183,
+   "creation": 5940,
+   "deployer": 104,
+   "liquidity": 3819
+  }
+ },
+ "symbol": "STT",
+ "address": "0x9bf602a7bb37c87bc9e70d2aebc588fede836edc",
+ "verdict": {
+  "level": "caution",
+  "reasons": [
+   {
+    "text": "Only $9.0k of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "Some decisive checks did not finish (LP lock), so this is not a clean bill of health.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 53322378 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": false,
+  "headline": "Caution: no trap found, but read the notes",
+  "not_checked": [
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ]
+ },
+ "checked_at": "2026-10-31T08:08:23.326795154Z",
+ "elapsed_ns": 9947149662
+}

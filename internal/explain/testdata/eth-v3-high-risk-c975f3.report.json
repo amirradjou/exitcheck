@@ -1,0 +1,409 @@
+{
+ "sim": {
+  "block": 26315139,
+  "chain": "ethereum",
+  "token": "0x01ef476942aae62c8f2397d1bab57e0c3c909066",
+  "reasons": [
+   "no pool against WETH, USDC or USDT has liquidity"
+  ],
+  "verdict": "no-pool",
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 1898889981
+ },
+ "name": "Fistbump",
+ "block": 26315139,
+ "chain": "ethereum",
+ "facts": {
+  "gaps": [
+   "deployer history: only the last 1000 of 5745 transactions were checked",
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "block": 26315139,
+  "chain": "ethereum",
+  "pools": [
+   {
+    "dex": "uniswap-v3",
+    "fee": 500,
+    "usd": 0,
+    "quote": "WETH",
+    "address": "0xc975f3ae09711c97580b021b4495f3fcea510b84",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 0,
+    "token_amount": 99999999999999999999999948
+   }
+  ],
+  "token": {
+   "name": "Fistbump",
+   "symbol": "FIST",
+   "decimals": 18,
+   "total_supply": 200000000000000000000000000
+  },
+  "powers": [
+   {
+    "kind": "mint",
+    "where": "MintBurnTeamToken.sol:789",
+    "probed": true,
+    "function": "mint(address,uint256)",
+    "callable_by": [
+     "owner"
+    ]
+   }
+  ],
+  "shares": {
+   "owner": 0.5,
+   "burned": 0,
+   "deployer": 0.5,
+   "in_pools": 0.5
+  },
+  "address": "0x01ef476942aae62c8f2397d1bab57e0c3c909066",
+  "holders": {
+   "top": [
+    {
+     "label": "deployer",
+     "share": 0.5,
+     "address": "0x2f0f35765563ba038ba80ffb80d76eb6106b946a",
+     "balance": 100000000000000000000000052
+    },
+    {
+     "label": "pool",
+     "share": 0.5,
+     "address": "0xc975f3ae09711c97580b021b4495f3fcea510b84",
+     "balance": 99999999999999999999999948
+    }
+   ],
+   "count": 2,
+   "source": "transfer-logs",
+   "top_share": 0.5,
+   "top10_share": 0.5
+  },
+  "contract": {
+   "owner": "0x2f0f35765563ba038ba80ffb80d76eb6106b946a",
+   "creation": {
+    "Tx": "0xf94cb2e17becc24eb4c2dde9f40423fbac3e79a57f975db298e336cb96e80169",
+    "Block": 26315127,
+    "Factory": null,
+    "Deployer": "0x2f0f35765563ba038ba80ffb80d76eb6106b946a"
+   },
+   "verified": true,
+   "code_size": 5150,
+   "created_at": "2026-10-31T20:26:47Z",
+   "source_name": "MintBurnTeamToken",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "wallet",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 5745,
+   "pulled": 0,
+   "tokens": [
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "PURR",
+     "address": "0x4f3b28b18111a8049f4e24d13d9006e7252f0b8c"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "GOOGLC",
+     "address": "0x9c4ed3222dfb38f7add45cf7a2ad7a0d677e3142"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "LTC",
+     "address": "0xcadf253f1c0dd82b44a45f7beff3638a40db833e"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "MPLX",
+     "address": "0x43ad36a7441f531e42d8c14a72597011581b435c"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "BASECAT",
+     "address": "0x7bfba74ec83d372b804bee2e17e83a4c92e7b66f"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "GROVE",
+     "address": "0x63d969bb027c81fb5b10440473073d57916501eb"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "ELON2028",
+     "address": "0xf1c921e9dd911cc113ece9b32bccbc86fd0765c9"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "PONS",
+     "address": "0xe17560fe3a1d72e58b1966e42a97dea6f1f8529e"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "HUMA",
+     "address": "0xfd4b8d3c02f6ba5dc81df533df6f70df6a119471"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "TAG",
+     "address": "0xd3d67a5d353d2f17b797699be8643165320f0125"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": " Q ",
+     "address": "0x550372d4a95838ccc45161af2362999d615b914d"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "QTC",
+     "address": "0x329817f372727f9fd03f3efa81c1a19ce9789369"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "LAUNCH",
+     "address": "0xfaed0f847972fb9b865b5ecc61948d8629ea974d"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "XDC",
+     "address": "0x079f63efbf8c7d166a84715b611d858a33e2b40e"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "BTC",
+     "address": "0x328c633f9328fd46ffac26970261d4a247432d68"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "CHIP",
+     "address": "0x0c1928b8640d70c78e71408ad11177999bb7530b"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "LAUNCH",
+     "address": "0x99cfe27fa37f8ab786c6fd8e4bdc8f1697b27107"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "EVMZONE",
+     "address": "0xeff4607c80e9fbeeeaab9e396d731f765e07770a"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "POPCAT",
+     "address": "0x8bb82871833febf9b2ef0eea5ae0ae58918267ae"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "GOAT",
+     "address": "0x5e2b9b21bbaa0a032510722ab91d99bc776ec44c"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "BIRB",
+     "address": "0x39a9d52d9dd06bcb63c908c47ff80a832e9a206d"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "PENGU",
+     "address": "0x4059e480a2804a136a11379312f4d1d837623312"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "BSC",
+     "address": "0x7f5db70f246e406e098ed287d4b61a7084cc90e7"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "AXIS",
+     "address": "0x23dc9375389ccd1d1cc64d67c11da582676effe3"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "QNT",
+     "address": "0x8f37a611a047df9a036bd061086a6d776eb2fbd7"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "VVV",
+     "address": "0x45575d98e1cc03d844923f36ddd4cba22dd3064c"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "NOCK",
+     "address": "0x303e09db85d156e87d8e3b52d750d43a2908a5b1"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "NOCK",
+     "address": "0x61ae506a01499abee4607d9d379a93c664f47cb7"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "AXIS",
+     "address": "0x9cba765add5ecb3302c727ff0d0488175db7dcf8"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "TORCH",
+     "address": "0x6e44f6e0e5934c3076217a65692dc295215fc33b"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "THETA",
+     "address": "0x8d6ca4658fc768dd13307b2651eeafc610bc9711"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "COMP",
+     "address": "0x45b3679fa4e210434761d8da79faa617b1607c87"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "WPRL",
+     "address": "0xeae718c3eb611cb20c175397a6d7fa675b33003f"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "WLFI",
+     "address": "0x8c8bf4f158d2417f5798544960676ee7db94bb0b"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "BOOMER",
+     "address": "0x026ded7211a7138cf8c138662eb4904a43f5640e"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "BNKR",
+     "address": "0xba4dac6af73445a8e544a2853bd6ec5bf48a7fd5"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "PEPE",
+     "address": "0x4669417246816f31abf3cb6d355427e9726097eb"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "VEREM",
+     "address": "0xe3be137e7742d73d24cdac69b99169077b3ee249"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "TIA",
+     "address": "0x608b15757a72d649b29474ce25fcff87a57629e6"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "DACITY",
+     "address": "0xd77d8300db26aac3605c167e5810199c3122e214"
+    }
+   ],
+   "address": "0x2f0f35765563ba038ba80ffb80d76eb6106b946a",
+   "scanned": 1000,
+   "balance_eth": 0.06419354342186845
+  },
+  "settings": null,
+  "liquidity": {
+   "dex": "uniswap-v3",
+   "pool": "0xc975f3ae09711c97580b021b4495f3fcea510b84",
+   "pulled": false,
+   "created_at": "2026-10-31T20:29:11Z",
+   "created_block": 26315139
+  },
+  "block_time": "2026-10-31T20:29:11Z",
+  "checked_at": "2026-10-31T20:29:15.884287779Z",
+  "elapsed_ns": 8789691724,
+  "timings_ms": {
+   "block": 29,
+   "pools": 73,
+   "probe": 92,
+   "basics": 77,
+   "shares": 49,
+   "source": 377,
+   "holders": 2756,
+   "contract": 332,
+   "creation": 4292,
+   "deployer": 1365,
+   "liquidity": 4164
+  }
+ },
+ "symbol": "FIST",
+ "address": "0x01ef476942aae62c8f2397d1bab57e0c3c909066",
+ "verdict": {
+  "level": "high-risk",
+  "reasons": [
+   {
+    "text": "The owner can mint new tokens.",
+    "level": "high-risk"
+   },
+   {
+    "text": "There is no pool to sell into (no pool against WETH, USDC or USDT has liquidity).",
+    "level": "caution"
+   },
+   {
+    "text": "Almost no liquidity is left in any pool ($0.00).",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "The deployer still holds 50% of the supply and could sell it at once.",
+    "level": "caution"
+   },
+   {
+    "text": "Some decisive checks did not finish (LP lock), so this is not a clean bill of health.",
+    "level": "caution"
+   }
+  ],
+  "complete": false,
+  "headline": "High risk: see the reasons below",
+  "not_checked": [
+   "deployer history: only the last 1000 of 5745 transactions were checked",
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ]
+ },
+ "checked_at": "2026-10-31T20:29:15.884287779Z",
+ "elapsed_ns": 8789734084
+}

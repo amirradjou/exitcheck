@@ -1,0 +1,226 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 241218,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 195039,
+   "tax": 0
+  },
+  "block": 53325481,
+  "chain": "base",
+  "token": "0xd77a99ea09584b773c9e435b3c05003a56fd1849",
+  "venue": "uniswap-v2 pool 0xF22Af36Cae5b63416DD42292599fa673EfB0F343",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 70309,
+   "tax": 0
+  },
+  "spent_eth": 0.05,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 5764666076
+ },
+ "name": "Alsa",
+ "block": 53325481,
+ "chain": "base",
+ "facts": {
+  "gaps": [
+   "verified source: verification unknown: blockscout: HTTP 403 from base.blockscout.com"
+  ],
+  "block": 53325481,
+  "chain": "base",
+  "pools": [
+   {
+    "dex": "uniswap-v2",
+    "usd": 30000,
+    "quote": "USDC",
+    "address": "0xf22af36cae5b63416dd42292599fa673efb0f343",
+    "quote_token": "0x833589fcd6edb6e08f4c7c32d4f71b54bda02913",
+    "quote_amount": 30000,
+    "token_amount": 3000000000000000000000000
+   }
+  ],
+  "token": {
+   "name": "Alsa",
+   "symbol": "Alsa",
+   "decimals": 18,
+   "total_supply": 10000000000000000000000000
+  },
+  "powers": [],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0,
+   "in_pools": 0.2999778739647418
+  },
+  "address": "0xd77a99ea09584b773c9e435b3c05003a56fd1849",
+  "holders": {
+   "top": [
+    {
+     "label": "wallet",
+     "share": 0.3578785007489099,
+     "address": "0xc4b5a61bb217afdcde82d94f34888dbf89637c07",
+     "balance": 3578785007489099450000000
+    },
+    {
+     "label": "pool",
+     "share": 0.2999778739647418,
+     "address": "0xf22af36cae5b63416dd42292599fa673efb0f343",
+     "balance": 2999778739647418191826433
+    },
+    {
+     "label": "wallet",
+     "share": 0.05,
+     "address": "0xba0a0ab545d18ac442c9c8dcb871b9b03f38c3e5",
+     "balance": 500000000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.04,
+     "address": "0xe8e822a0a9b04510934200377fb7a22c905e24c5",
+     "balance": 400000000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.03,
+     "address": "0x1985ea6e9c68e1c272d8209f3b478ac2fdb25c87",
+     "balance": 300000000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.03,
+     "address": "0x3304e22ddaa22bcdc5fca2269b418046ae7b566a",
+     "balance": 300000000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.03,
+     "address": "0xbaed383ede0e5d9d72430661f3285daa77e9439f",
+     "balance": 300000000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.03,
+     "address": "0xfd92f4e91d54b9ef91cc3f97c011a6af0c2a7eda",
+     "balance": 300000000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.009992492385436503,
+     "address": "0x31afdbc42c2f0d148c69f76169482379010eb005",
+     "balance": 99924923854365029643100
+    },
+    {
+     "label": "wallet",
+     "share": 0.008809365746903818,
+     "address": "0x662ba09eea2dee5d8fc12443f6f46ce249d52582",
+     "balance": 88093657469038170000000
+    }
+   ],
+   "count": 38,
+   "source": "transfer-logs",
+   "top_share": 0.3578785007489099,
+   "top10_share": 0.5954878690368436
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0x29c55d73d05069bb5a56a7ae04567339b7ec567e51ee38520fd01768730f63cf",
+    "Block": 53325071,
+    "Factory": null,
+    "Deployer": "0x319153dca10fe589ff6a15c6a1d3749a6af8c2ed"
+   },
+   "verified": null,
+   "code_size": 7612,
+   "created_at": "2026-10-31T09:38:09Z",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 27,
+   "pulled": 0,
+   "tokens": null,
+   "address": "0x319153dca10fe589ff6a15c6a1d3749a6af8c2ed",
+   "scanned": 27,
+   "balance_eth": 0.000732799868583999
+  },
+  "settings": null,
+  "liquidity": {
+   "lp": {
+    "top": [
+     {
+      "label": "wallet",
+      "share": 0.9999999999999967,
+      "address": "0xe8e822a0a9b04510934200377fb7a22c905e24c5",
+      "balance": 299999999999999000
+     },
+     {
+      "label": "burn",
+      "share": 3.3333333333333332e-15,
+      "address": "0x0000000000000000000000000000000000000000",
+      "balance": 1000
+     }
+    ],
+    "other": 0.9999999999999967,
+    "owner": 0,
+    "burned": 3.3333333333333332e-15,
+    "locked": 0,
+    "source": "transfer-logs",
+    "deployer": 0,
+    "protocol": 0
+   },
+   "dex": "uniswap-v2",
+   "pool": "0xf22af36cae5b63416dd42292599fa673efb0f343",
+   "pulled": false,
+   "created_at": "2026-10-31T09:51:49Z",
+   "created_block": 53325481
+  },
+  "block_time": "2026-10-31T09:51:49Z",
+  "checked_at": "2026-10-31T09:51:49.471717633Z",
+  "elapsed_ns": 8661258302,
+  "timings_ms": {
+   "block": 51,
+   "pools": 90,
+   "probe": 0,
+   "basics": 47,
+   "shares": 31,
+   "source": 601,
+   "holders": 822,
+   "contract": 365,
+   "creation": 4347,
+   "deployer": 96,
+   "liquidity": 3947
+  }
+ },
+ "symbol": "Alsa",
+ "address": "0xd77a99ea09584b773c9e435b3c05003a56fd1849",
+ "verdict": {
+  "level": "caution",
+  "reasons": [
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "One wallet holds 36% of the supply and could sell it at once.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 53325481 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": true,
+  "headline": "Caution: no trap found, but read the notes",
+  "not_checked": [
+   "verified source: verification unknown: blockscout: HTTP 403 from base.blockscout.com"
+  ]
+ },
+ "checked_at": "2026-10-31T09:51:49.471717633Z",
+ "elapsed_ns": 8661304629
+}

@@ -201,10 +201,23 @@ func runBot(ctx context.Context, args []string) error {
 	} else {
 		defer c.Close()
 	}
-	b := bot.New(tg, cs.checker(explorer.New()), cs.locate, c, bot.Config{
-		Concurrency: *concurrency, Timeout: *timeout, PerChat: *perChat, Window: *window,
-	}, log)
-	log.Info("bot running", "username", me.Username, "cache", c != nil, "concurrency", *concurrency)
+	cfg := bot.Config{Concurrency: *concurrency, Timeout: *timeout, PerChat: *perChat, Window: *window}
+	e := newExplainer()
+	if e != nil {
+		cfg.Explain = func(ctx context.Context, r *check.Report) string {
+			x, err := e.Explain(ctx, r)
+			if err != nil {
+				log.Warn("explain", "token", r.Address, "err", err)
+				return ""
+			}
+			if x != nil {
+				log.Info("explained", "token", r.Address, "kept", len(x.Sentences), "dropped", len(x.Dropped), "ms", x.Elapsed.Milliseconds())
+			}
+			return x.Render()
+		}
+	}
+	b := bot.New(tg, cs.checker(explorer.New()), cs.locate, c, cfg, log)
+	log.Info("bot running", "username", me.Username, "cache", c != nil, "concurrency", *concurrency, "explain", e != nil)
 	if err := b.Run(ctx); err != nil && !errors.Is(err, context.Canceled) {
 		return err
 	}

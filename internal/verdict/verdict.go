@@ -371,7 +371,11 @@ func (j *judge) deployer() {
 	if d == nil || d.Pulled == 0 {
 		return
 	}
-	j.add(HighRisk, "The deployer launched %d other tokens and pulled the liquidity of %d.", len(d.Tokens), d.Pulled)
+	tokens := "tokens"
+	if len(d.Tokens) == 1 {
+		tokens = "token"
+	}
+	j.add(HighRisk, "The deployer launched %d other %s and pulled the liquidity of %d.", len(d.Tokens), tokens, d.Pulled)
 }
 
 func (j *judge) contract() {

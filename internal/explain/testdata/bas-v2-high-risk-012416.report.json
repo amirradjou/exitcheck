@@ -1,0 +1,182 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 155104,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 109094,
+   "tax": 0
+  },
+  "block": 53331110,
+  "chain": "base",
+  "token": "0x8e22cf45ce988d15db73cd91a339cc1b6614f32e",
+  "venue": "uniswap-v2 pool 0x01241601d42b3E19016437F156368a8580c44EeD",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 52230,
+   "tax": 0
+  },
+  "spent_eth": 0.008000014990625,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 4534320174
+ },
+ "name": "Agent ID",
+ "block": 53331110,
+ "chain": "base",
+ "facts": {
+  "gaps": [
+   "verified source: verification unknown: blockscout: HTTP 403 from base.blockscout.com"
+  ],
+  "block": 53331110,
+  "chain": "base",
+  "pools": [
+   {
+    "dex": "uniswap-v2",
+    "usd": 3598.7385323789704,
+    "quote": "WETH",
+    "address": "0x01241601d42b3e19016437f156368a8580c44eed",
+    "quote_token": "0x4200000000000000000000000000000000000006",
+    "quote_amount": 1.600002998125,
+    "token_amount": 5599989538062357561377408492
+   }
+  ],
+  "token": {
+   "name": "Agent ID",
+   "symbol": ".AI",
+   "decimals": 18,
+   "total_supply": 5600000000000000000000000000
+  },
+  "powers": [],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0,
+   "in_pools": 0.9999862926063211
+  },
+  "address": "0x8e22cf45ce988d15db73cd91a339cc1b6614f32e",
+  "holders": {
+   "top": [
+    {
+     "label": "pool",
+     "share": 0.9999862926063211,
+     "address": "0x01241601d42b3e19016437f156368a8580c44eed",
+     "balance": 5599923238595398421842761774
+    },
+    {
+     "label": "contract",
+     "share": 1.8682031504354683e-06,
+     "address": "0x6aa989249e423b0f843a2b10cab9ea7eca41c7e8",
+     "balance": 10461937642438622591508
+    }
+   ],
+   "count": 2,
+   "source": "transfer-logs",
+   "top_share": 1.8682031504354683e-06,
+   "top10_share": 1.8682031504354683e-06
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0x1761f42922bb92fa294f2d13ec82ee44e2afa33435732cd5a88193ef1645d0d3",
+    "Block": 53331097,
+    "Factory": null,
+    "Deployer": "0xfa6e179e3efb4f752fcb6a11fea0f90d1f90ba77"
+   },
+   "verified": null,
+   "code_size": 3553,
+   "created_at": "2026-10-31T12:59:01Z",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 4,
+   "pulled": 0,
+   "tokens": null,
+   "address": "0xfa6e179e3efb4f752fcb6a11fea0f90d1f90ba77",
+   "scanned": 4,
+   "balance_eth": 0.004977059967013323
+  },
+  "settings": null,
+  "liquidity": {
+   "lp": {
+    "top": [
+     {
+      "label": "deployer",
+      "share": 1,
+      "address": "0xfa6e179e3efb4f752fcb6a11fea0f90d1f90ba77",
+      "balance": 94657276529593856680077
+     },
+     {
+      "label": "burn",
+      "share": 1.0564428184106457e-20,
+      "address": "0x0000000000000000000000000000000000000000",
+      "balance": 1000
+     }
+    ],
+    "other": 0,
+    "owner": 0,
+    "burned": 1.0564428184106457e-20,
+    "locked": 0,
+    "source": "transfer-logs",
+    "deployer": 1,
+    "protocol": 0
+   },
+   "dex": "uniswap-v2",
+   "pool": "0x01241601d42b3e19016437f156368a8580c44eed",
+   "pulled": false,
+   "created_at": "2026-10-31T12:59:27Z",
+   "created_block": 53331110
+  },
+  "block_time": "2026-10-31T12:59:27Z",
+  "checked_at": "2026-10-31T12:59:27.348211497Z",
+  "elapsed_ns": 8480184266,
+  "timings_ms": {
+   "block": 50,
+   "pools": 158,
+   "probe": 0,
+   "basics": 31,
+   "shares": 51,
+   "source": 421,
+   "holders": 334,
+   "contract": 195,
+   "creation": 4422,
+   "deployer": 127,
+   "liquidity": 3862
+  }
+ },
+ "symbol": ".AI",
+ "address": "0x8e22cf45ce988d15db73cd91a339cc1b6614f32e",
+ "verdict": {
+  "level": "high-risk",
+  "reasons": [
+   {
+    "text": "The deployer or owner holds 100% of the main pool's LP tokens and can withdraw that liquidity at any time.",
+    "level": "high-risk"
+   },
+   {
+    "text": "Only $3.6k of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 53331110 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": true,
+  "headline": "High risk: see the reasons below",
+  "not_checked": [
+   "verified source: verification unknown: blockscout: HTTP 403 from base.blockscout.com"
+  ]
+ },
+ "checked_at": "2026-10-31T12:59:27.348211497Z",
+ "elapsed_ns": 8480230823
+}
