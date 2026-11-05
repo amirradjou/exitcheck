@@ -15,7 +15,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/launch"
 )
 
 var t0 = time.Date(2026, 10, 29, 12, 0, 0, 0, time.UTC)

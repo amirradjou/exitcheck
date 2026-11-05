@@ -12,8 +12,8 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/facts"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/facts"
 )
 
 func taxed(t float64) *Step { return &Step{OK: true, Tax: &t} }
@@ -157,10 +157,10 @@ func TestOnlyEVMFailuresAreTheTokens(t *testing.T) {
 	}
 }
 
-// Live: forks Ethereum through the default public RPCs and needs anvil; run with RUGCHECK_LIVE=1.
+// Live: forks Ethereum through the default public RPCs and needs anvil; run with EXITCHECK_LIVE=1.
 func TestLiveSimulation(t *testing.T) {
-	if os.Getenv("RUGCHECK_LIVE") == "" {
-		t.Skip("set RUGCHECK_LIVE=1 to fork the chain")
+	if os.Getenv("EXITCHECK_LIVE") == "" {
+		t.Skip("set EXITCHECK_LIVE=1 to fork the chain")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Minute)
 	defer cancel()

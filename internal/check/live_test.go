@@ -8,15 +8,15 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/explorer"
 )
 
 // Live: a facts budget too short for the slow stages must still produce a verdict, with those stages listed as not
-// checked. Run with RUGCHECK_LIVE=1 (public RPCs and anvil).
+// checked. Run with EXITCHECK_LIVE=1 (public RPCs and anvil).
 func TestLiveBudgetBecomesNotChecked(t *testing.T) {
-	if os.Getenv("RUGCHECK_LIVE") == "" {
-		t.Skip("set RUGCHECK_LIVE=1 to use the public RPCs")
+	if os.Getenv("EXITCHECK_LIVE") == "" {
+		t.Skip("set EXITCHECK_LIVE=1 to use the public RPCs")
 	}
 	defer func(b time.Duration) { FactsBudget = b }(FactsBudget)
 	FactsBudget = 1500 * time.Millisecond

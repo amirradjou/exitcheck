@@ -1,11 +1,11 @@
-# rugcheck
+# exitcheck
 
-[![CI](https://github.com/amirradjou/rugcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/amirradjou/rugcheck/actions/workflows/ci.yml)
+[![CI](https://github.com/amirradjou/exitcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/amirradjou/exitcheck/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-Paste a token address, get a straight answer: is this token built to take your money?
+Paste a token address, get a straight answer: is this token built to take your money? (Formerly `rugcheck`.)
 
-rugcheck reads the contract, buys and sells a little of the token on a private copy of the chain, and gives a verdict with
+exitcheck reads the contract, buys and sells a little of the token on a private copy of the chain, and gives a verdict with
 the reasons behind it. It covers Ethereum and Base, and it watches new token launches as they happen. The verdict comes from fixed
 rules, never from a language model.
 
@@ -58,12 +58,12 @@ free public RPCs.
 
 ```sh
 make build
-./bin/rugcheck check 0xEF77fB35d6e0503faf3cbe9565193195Aa4c6eF8            # the verdict, as the bot gives it (ZiG, a Base honeypot)
-./bin/rugcheck facts 0x6982508145454Ce325dDbE47a25d4ec3d2311933            # the full report (PEPE on Ethereum)
-./bin/rugcheck facts -chain base 0x532f27101965dd16442E59d40670FaF5eBB142E4  # BRETT on Base
-./bin/rugcheck facts -json <address>                                        # machine-readable
-./bin/rugcheck sim 0x6982508145454Ce325dDbE47a25d4ec3d2311933              # buy then sell on a fork
-./bin/rugcheck eval testdata/tokens.json                                    # the labelled set
+./bin/exitcheck check 0xEF77fB35d6e0503faf3cbe9565193195Aa4c6eF8            # the verdict, as the bot gives it (ZiG, a Base honeypot)
+./bin/exitcheck facts 0x6982508145454Ce325dDbE47a25d4ec3d2311933            # the full report (PEPE on Ethereum)
+./bin/exitcheck facts -chain base 0x532f27101965dd16442E59d40670FaF5eBB142E4  # BRETT on Base
+./bin/exitcheck facts -json <address>                                        # machine-readable
+./bin/exitcheck sim 0x6982508145454Ce325dDbE47a25d4ec3d2311933              # buy then sell on a fork
+./bin/exitcheck eval testdata/tokens.json                                    # the labelled set
 make bot                                                                    # your own Telegram bot (TELEGRAM_BOT_TOKEN in .env)
 docker compose up -d --build                                                # the whole live watch (see M3)
 ```
@@ -100,7 +100,7 @@ free RPC is too slow).
 
 ## How the simulation works (M1)
 
-`rugcheck sim` starts Anvil on a fork of the latest block and trades the token the way a new buyer would:
+`exitcheck sim` starts Anvil on a fork of the latest block and trades the token the way a new buyer would:
 
 1. **Pool**: the deepest pool against WETH, USDC or USDT. A Uniswap v2 or Aerodrome pool beats a v3 one if it holds
    at least a twentieth of the deepest pool's value. v3's router rejects tokens that take a fee as they move, which
@@ -137,7 +137,7 @@ fees, blacklist or pause).
 
 ## How the verdict and the bot work (M2)
 
-`rugcheck check <address>` and the Telegram bot give the same answer. Facts and the simulation run side by side,
+`exitcheck check <address>` and the Telegram bot give the same answer. Facts and the simulation run side by side,
 because an answer has to come back in seconds; one after the other they take about 13 s at the median. Fixed rules
 then turn the results into one of four levels. The level never comes from a language model.
 
@@ -176,8 +176,8 @@ The bot:
 
 ```sh
 docker compose up -d --build      # Kafka, Postgres, Redis, the watcher, two analyzers and the bot
-./bin/rugcheck report -since 24h  # lag, duplicates and verdicts so far
-./bin/rugcheck audit -since 24h   # launches the watch missed, counted from the factories' logs
+./bin/exitcheck report -since 24h  # lag, duplicates and verdicts so far
+./bin/exitcheck audit -since 24h   # launches the watch missed, counted from the factories' logs
 ```
 
 ```
@@ -213,7 +213,7 @@ WebSocket newHeads ─▶ watcher ──(launches, keyed by token)──▶ Kafk
   - An alert is one row per token, claimed before it is sent. If posting fails, the claim is released and the stream
     retries until the alert is posted.
   - Launches are keyed by token, so a token's pools stay on one partition, in order.
-  - `rugcheck report` counts duplicates rather than assuming there are none.
+  - `exitcheck report` counts duplicates rather than assuming there are none.
 - **Analyzers scale by partition.** The topic has six partitions; `--scale analyzer=N` adds workers up to that, and
   Kafka moves a stopped worker's partitions to the rest. Each check runs the bot's own rules through the same Redis
   cache, so a token someone asks the bot about right after launch is answered from it.
@@ -230,13 +230,13 @@ Limits:
 ## How the dataset and model work (M4)
 
 ```sh
-./bin/rugcheck backfill -watch -from 2026-10-16 -to 2026-10-29T23:20:00Z  # past launches, checked as they stood
-./bin/rugcheck label -checked                                             # what happened in the day after each
-./bin/rugcheck dataset                                                    # ml/data/dataset.csv
+./bin/exitcheck backfill -watch -from 2026-10-16 -to 2026-10-29T23:20:00Z  # past launches, checked as they stood
+./bin/exitcheck label -checked                                             # what happened in the day after each
+./bin/exitcheck dataset                                                    # ml/data/dataset.csv
 cd ml && uv run train.py                                                  # time split, model vs rules, MLflow
 ```
 
-- **A label is what the chain did, not a list of scams.** `rugcheck label` reads each launch's pool logs, from the
+- **A label is what the chain did, not a list of scams.** `exitcheck label` reads each launch's pool logs, from the
   pool's creation to 24 h after its first liquidity.
   - A Uniswap v2 or Aerodrome pool is its own LP token. Its Transfer logs give the LP supply and the fee collector's
     share at every point, and the pool counts as pulled under the rule facts use: LP outside the fee collector and
@@ -247,7 +247,7 @@ cd ml && uv run train.py                                                  # time
   - Buys and sells before the pull are counted. A pull before any trade is bait: nobody lost money.
 - **Features are what the check saw at the launch's block.**
   - The live watch keeps each check's full report (`launches.report`).
-  - Launches from before that, and older ones, are checked again by `rugcheck backfill`. The unchanged check runs
+  - Launches from before that, and older ones, are checked again by `exitcheck backfill`. The unchanged check runs
     against an Anvil fork of the launch's block, where that block is the latest state, so facts and simulation see
     it as it stood then. Ages are measured from the checked block's timestamp, and explorers are offline: they only
     know the present.
@@ -282,13 +282,13 @@ Limits:
 ## How the explanations work (M5)
 
 ```sh
-RUGCHECK_LLM_URL=https://api.groq.com/openai/v1 RUGCHECK_LLM_KEY=… RUGCHECK_LLM_MODEL=qwen/qwen3.8-27b ./bin/rugcheck explain <address>
-./bin/rugcheck explain -review -out review.md   # the review set
+EXITCHECK_LLM_URL=https://api.groq.com/openai/v1 EXITCHECK_LLM_KEY=… EXITCHECK_LLM_MODEL=qwen/qwen3.8-27b ./bin/exitcheck explain <address>
+./bin/exitcheck explain -review -out review.md   # the review set
 ```
 
 The verdict is already decided when the model is called. The model explains it in plain words and can change nothing.
 Without a model configured, the bot answers exactly as before. It works with any OpenAI-compatible endpoint: Ollama on the
-same machine, or a free tier. rugcheck needs no paid key.
+same machine, or a free tier. exitcheck needs no paid key.
 
 - **Retrieval.** The model gets three kinds of evidence, each with an ID it must cite:
   - `C`: the findings behind the verdict, in the rules' own words. Reassurances stay out: the rules have weighed them, and a
@@ -324,54 +324,6 @@ Limits:
   words from its citation can still be wrong. Hence the review below, read by hand.
 - Most tokens are not verified when they launch, so most explanations of launches cite checks and patterns only.
 
-## M5 results
-
-`rugcheck explain -review` on 38 reports, 2026-11-05: the 20 labelled tokens and 18 launches the live watch saw, a spread of chains, venues
-and verdicts. With `qwen/qwen3.8-27b` on Groq's free tier: **all 58 sentences that reached a reader cite a check or a source line**, and
-reading them found none the checks contradict. All of them, with what each cites and what was dropped, are in
-[docs/m5-review.md](docs/m5-review.md).
-
-For a honeypot on Base, the answer ends like this:
-
-```
-Why, in plain words:
-A test buy succeeded but the sale failed, meaning buyers cannot get their money out. [1][2]
-Some decisive checks did not finish, so the token cannot be called free of red flags. [3][4]
-
-[1] check: A test buy worked but the sale failed (selling reverts: TransferHelper: TRANSFER_FROM_FAI…
-[2] known pattern: Honeypot
-[3] check: Some decisive checks did not finish (LP holders), so this is not a clean bill of health.
-[4] known pattern: Unfinished checks
-
-Written by a language model from the checks above. It did not decide the verdict.
-```
-
-How the same evidence and the same check treat different models. A model that stays close to its evidence keeps more; one that rewrites freely
-loses more, which is the check doing its job.
-
-| model | sentences written | kept | citing source lines | reports left without an explanation |
-|---|---|---|---|---|
-| `qwen/qwen3.8-27b` (Groq free tier) | 76 | 58 | 1 | 5 of 33 |
-| Claude Haiku 5.5 | 85 | 79 | 6 | 3 of 33 |
-
-What the numbers show:
-
-- **Citing is enforced, so it proves little by itself.** `Ground` keeps a sentence only if it cites a check or a source line, which makes "every
-  sentence cites" true by construction. What tests it is reading them, and the tests below came from doing that. Of the 58 sentences, none says
-  something the checks contradict, and two overstate: "faces a high chance of having its liquidity pulled" where the pattern says "many launches",
-  and "would collapse the price" where it says "can".
-- **Reading found what the counts hid**, on earlier runs:
-  - A denylist entry matched "no real market", a phrase from the pattern library itself, and silently removed the most serious finding from 16 reports.
-  - A realistic example sentence in the prompt was copied onto every token. The format is now described, not shown.
-  - "The deployer holds 50% of the supply and could withdraw all the liquidity" has every word from one of two findings and the claim from neither.
-    A sentence now rests on one finding.
-  - "The owner can create unlimited new tokens" shares nearly every word with its finding. Words that inflate a claim must now be in the evidence.
-  - "The owner holds 99.9% of the LP" was wrong on two tokens, because the verdict said "the deployer or owner". The fault was the verdict's: it now
-    says who.
-- **Five reports get no explanation, and that is the designed outcome.** USDT, USDC and DEGEN are among them: their powers are a known trade-off, so
-  no warning is offered, and what the model adds beyond that does not pass. The verdict goes out alone.
-- **Few sentences cite source lines.** Most launches are not verified when they launch, and this model prefers the checks. A stronger model cites more.
-
 ## Stack
 
 - Go: RPC and explorer clients, Anvil fork simulation, analyzer workers, Telegram bot, the model's scorer
@@ -383,7 +335,7 @@ What the numbers show:
 
 | | Milestone | Done when |
 |---|---|---|
-| M0 ✅ | `rugcheck facts <address>`: contract, owner powers, holders, LP state | correct on 20 hand-picked tokens (10 known scams, 10 legitimate) — **20/20, see [M0 results](#m0-results)** |
+| M0 ✅ | `exitcheck facts <address>`: contract, owner powers, holders, LP state | correct on 20 hand-picked tokens (10 known scams, 10 legitimate) — **20/20, see [M0 results](#m0-results)** |
 | M1 ✅ | Buy-then-sell simulation on an Anvil fork | every known honeypot in the set flagged; no legitimate token flagged — **6/6 flagged, 0/10 legitimate flagged, see [M1 results](#m1-results)** |
 | M2 ✅ | Telegram bot: verdict + reasons, cached in Redis | median answer under 10 s cold, instant when cached — **9.1 s cold, 0.5 ms cached, see [M2 results](#m2-results)** |
 | M3 | Live watch: factory events → Kafka → analyzers → alerts channel | a day of launches processed with lag under a minute and no duplicates — **the measured day: 262 of 264 under a minute (median 8.9 s), 0 duplicates, but 36 of Ethereum's 91 launches never seen (since fixed); being measured again, see [M3 results](#m3-results)** |
@@ -393,11 +345,11 @@ What the numbers show:
 
 ## M0 results
 
-`rugcheck eval testdata/tokens.json`, run 2026-10-29 on the default public RPCs: **20/20 tokens correct, 150/150
+`exitcheck eval testdata/tokens.json`, run 2026-10-29 on the default public RPCs: **20/20 tokens correct, 150/150
 checks passed**, median 7.4 s per token.
 
 Each token in [`testdata/tokens.json`](testdata/tokens.json) carries the evidence for its label and only the facts
-that were established without rugcheck: deployer and creation transaction from Blockscout and `cast`, verification
+that were established without exitcheck: deployer and creation transaction from Blockscout and `cast`, verification
 status from the explorers, owners and LP supplies read with `cast`, privileged functions from the verified source's
 modifiers, and, for unverified contracts, by calling them as the owner on an Anvil fork.
 
@@ -443,11 +395,11 @@ What this set showed:
 
 ## M1 results
 
-`rugcheck eval testdata/tokens.json`, run 2026-10-29 on the default public RPCs with Anvil 1.8.6: **6/6 honeypots
+`exitcheck eval testdata/tokens.json`, run 2026-10-29 on the default public RPCs with Anvil 1.8.6: **6/6 honeypots
 flagged, 0/10 legitimate tokens flagged**. The facts still hold: 20/20 tokens, 148/148 checks. A simulation took a
 median of 5.0 s.
 
-Every honeypot label now rests on a test that does not use rugcheck: `cast`, on an Anvil fork of the current chain,
+Every honeypot label now rests on a test that does not use exitcheck: `cast`, on an Anvil fork of the current chain,
 buys with a fresh wallet, waits, and sells. Adding that test to the labels changed the set:
 
 - **GTA6 was dropped.** A fresh buyer sells it without trouble. The buyers who never sold were launch-block sniper
@@ -500,7 +452,7 @@ What the honeypots show:
 
 ## M2 results
 
-`rugcheck bench testdata/tokens.json`, run 2026-10-29 on the default public RPCs with Redis from `compose.yaml`.
+`exitcheck bench testdata/tokens.json`, run 2026-10-29 on the default public RPCs with Redis from `compose.yaml`.
 Results: **median answer 9.1 s cold and 0.5 ms cached; 20/20 verdicts in their label's range**. Every scam comes
 out at least high risk, and no legitimate token worse than caution.
 
@@ -564,9 +516,9 @@ What the numbers show:
 
 `docker compose up -d --build` ran the whole live watch on a laptop, on the default public RPCs: the watcher, two
 analyzers, the bot, Kafka, Postgres and Redis. The measured day ran from 2026-10-30 01:31 to 2026-10-31 01:31 UTC,
-and `rugcheck report -since 24h` read it at the end. Results: **264 launches, all analyzed; median lag 8.9 s, p95
+and `exitcheck report -since 24h` read it at the end. Results: **264 launches, all analyzed; median lag 8.9 s, p95
 13.3 s, 2 over a minute; 0 duplicate results and 0 duplicate alerts; 199 alerts, all posted** to the public channel
-[@rugcheckApp](https://t.me/rugcheckApp). **But the watch did not see every launch:** `rugcheck audit` counts 300
+[@rugcheckApp](https://t.me/rugcheckApp). **But the watch did not see every launch:** `exitcheck audit` counts 300
 launches that day from the factories' logs, and the watch missed 36 of Ethereum's 91 (none of Base's 209). The cause
 is fixed; the day is being measured again, with completeness counted.
 
@@ -590,7 +542,7 @@ launch by the Mint that made it tradeable), so it measures the code in this repo
 What the numbers show:
 
 - **The watch missed 36 of Ethereum's 91 launches, and none of Base's 209.** Counted afterwards by
-  `rugcheck audit -until 2026-10-31T01:31:00Z`: every pool created that day against a quote token that became
+  `exitcheck audit -until 2026-10-31T01:31:00Z`: every pool created that day against a quote token that became
   tradeable by the watch's own rule (it held the token, and the quote too for a v2 pair), set against the watch's
   launches. The missed ones were 22 of 59 Uniswap v2 launches and 14 of 32 v3 ones; every missed v2 pool still held
   its liquidity at the end of the block that created it. (A first count by hand said 43 of 97: it also took in seven
@@ -690,3 +642,53 @@ to 19 and at 0% (0 of 46) from October 29. Read straight from the pools' logs, t
 What is left: finish the two-week backfill (Ethereum back to October 16, Base from October 29 back to October 20), label it all, and
 evaluate once more, with launches from after the training data as the test. M4 is done if the model then beats the rules across the
 folds, and this section will say so either way.
+
+## M5 results
+
+`exitcheck explain -review` on 38 reports, 2026-11-05: the 20 labelled tokens and 18 launches the live watch saw, a spread of chains, venues
+and verdicts. With `qwen/qwen3.8-27b` on Groq's free tier: **all 58 sentences that reached a reader cite a check or a source line**, and
+reading them found none the checks contradict. All of them, with what each cites and what was dropped, are in
+[docs/m5-review.md](docs/m5-review.md).
+
+For a honeypot on Base, the answer ends like this:
+
+```
+Why, in plain words:
+A test buy succeeded but the sale failed, meaning buyers cannot get their money out. [1][2]
+Some decisive checks did not finish, so the token cannot be called free of red flags. [3][4]
+
+[1] check: A test buy worked but the sale failed (selling reverts: TransferHelper: TRANSFER_FROM_FAI…
+[2] known pattern: Honeypot
+[3] check: Some decisive checks did not finish (LP holders), so this is not a clean bill of health.
+[4] known pattern: Unfinished checks
+
+Written by a language model from the checks above. It did not decide the verdict.
+```
+
+How the same evidence and the same check treat different models. A model that stays close to its evidence keeps more; one that rewrites freely
+loses more, which is the check doing its job.
+
+| model | sentences written | kept | citing source lines | reports left without an explanation |
+|---|---|---|---|---|
+| `qwen/qwen3.8-27b` (Groq free tier) | 76 | 58 | 1 | 5 of 33 |
+| Claude Haiku 5.5 | 85 | 79 | 6 | 3 of 33 |
+| `openai/gpt-oss-120b` (Groq free tier) | 88 | 25 | 2 | 15 of 33 |
+| `qwen2.5:7b` (local, Ollama) | 100 | 15 | 1 | 19 of 33 |
+
+What the numbers show:
+
+- **Citing is enforced, so it proves little by itself.** `Ground` keeps a sentence only if it cites a check or a source line, which makes "every
+  sentence cites" true by construction. What tests it is reading them, and the tests below came from doing that. Of the 58 sentences, none says
+  something the checks contradict, and two overstate: "faces a high chance of having its liquidity pulled" where the pattern says "many launches",
+  and "would collapse the price" where it says "can".
+- **Reading found what the counts hid**, on earlier runs:
+  - A denylist entry matched "no real market", a phrase from the pattern library itself, and silently removed the most serious finding from 16 reports.
+  - A realistic example sentence in the prompt was copied onto every token. The format is now described, not shown.
+  - "The deployer holds 50% of the supply and could withdraw all the liquidity" has every word from one of two findings and the claim from neither.
+    A sentence now rests on one finding.
+  - "The owner can create unlimited new tokens" shares nearly every word with its finding. Words that inflate a claim must now be in the evidence.
+  - "The owner holds 99.9% of the LP" was wrong on two tokens, because the verdict said "the deployer or owner". The fault was the verdict's: it now
+    says who.
+- **Five reports get no explanation, and that is the designed outcome.** USDT, USDC and DEGEN are among them: their powers are a known trade-off, so
+  no warning is offered, and what the model adds beyond that does not pass. The verdict goes out alone.
+- **Few sentences cite source lines.** Most launches are not verified when they launch, and this model prefers the checks. A stronger model cites more.

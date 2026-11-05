@@ -10,7 +10,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/chain"
 )
 
 func TestEtherscanFilesUnpacksAllThreeShapes(t *testing.T) {

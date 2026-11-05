@@ -1,4 +1,4 @@
-// Package check runs everything rugcheck knows how to check about one token (contract facts and the buy-then-sell
+// Package check runs everything exitcheck knows how to check about one token (contract facts and the buy-then-sell
 // simulation, side by side) and turns the result into a verdict and a short plain-text answer.
 package check
 
@@ -14,12 +14,12 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/evm"
-	"github.com/amirradjou/rugcheck/internal/explorer"
-	"github.com/amirradjou/rugcheck/internal/facts"
-	"github.com/amirradjou/rugcheck/internal/sim"
-	"github.com/amirradjou/rugcheck/internal/verdict"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/evm"
+	"github.com/amirradjou/exitcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/facts"
+	"github.com/amirradjou/exitcheck/internal/sim"
+	"github.com/amirradjou/exitcheck/internal/verdict"
 )
 
 // Report is one token's check.

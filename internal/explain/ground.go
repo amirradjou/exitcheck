@@ -72,7 +72,7 @@ var (
 	// ownSubjectRE is the exception: "This token" and "That wallet" name what they talk about.
 	ownSubjectRE = regexp.MustCompile(`^(?:This|That|These|Those)\s+(?:token|contract|pool|wallet|owner|deployer|function|sale|buy|tax|proxy)s?\b`)
 	// assuranceRE is what an explanation of a verdict must never say, whatever it cites: the verdict is not the
-	// model's to soften, and rugcheck does not give advice. A contract's text can ask for exactly this.
+	// model's to soften, and exitcheck does not give advice. A contract's text can ask for exactly this.
 	assuranceRE = regexp.MustCompile(`(?i)\b(?:safe|safely|legit|legitimate|trustworthy|trusted|guarantee[ds]?|no risk|risk[- ]free|` +
 		`not a scam|isn'?t a scam|good investment|should (?:buy|sell|invest|avoid|hold)|financial advice|recommend\w*|` +
 		`no (?:obvious|immediate|apparent|major) \w+|no (?:security )?(?:issues?|problems?|concerns?)|as expected|` +

@@ -3,7 +3,7 @@ package buildinfo
 
 import "runtime/debug"
 
-// Version is set at link time (-ldflags "-X github.com/amirradjou/rugcheck/internal/buildinfo.Version=v1.2.3");
+// Version is set at link time (-ldflags "-X github.com/amirradjou/exitcheck/internal/buildinfo.Version=v1.2.3");
 // otherwise it falls back to the module version Go records, or "dev".
 var Version = ""
 

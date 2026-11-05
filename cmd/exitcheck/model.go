@@ -16,12 +16,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/amirradjou/rugcheck/internal/backfill"
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/check"
-	"github.com/amirradjou/rugcheck/internal/features"
-	"github.com/amirradjou/rugcheck/internal/outcome"
-	"github.com/amirradjou/rugcheck/internal/store"
+	"github.com/amirradjou/exitcheck/internal/backfill"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/check"
+	"github.com/amirradjou/exitcheck/internal/features"
+	"github.com/amirradjou/exitcheck/internal/outcome"
+	"github.com/amirradjou/exitcheck/internal/store"
 )
 
 // runLabel reads the outcome of every launch whose horizon has ended and stores it.
@@ -31,7 +31,7 @@ func runLabel(ctx context.Context, args []string) error {
 	limit := fs.Int("limit", 0, "label at most this many launches per chain (0: all)")
 	checked := fs.Bool("checked", false, "only launches with a report, the ones the dataset can use")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck label [-horizon 24h] [-checked] [-limit N]   (DATABASE_URL)")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck label [-horizon 24h] [-checked] [-limit N]   (DATABASE_URL)")
 		fs.PrintDefaults()
 	}
 	if err := parse(fs, args); err != nil {
@@ -103,7 +103,7 @@ func runBackfill(ctx context.Context, args []string) error {
 	forkBase := fs.String("fork-base", "", "archive RPC Base forks are made from (default: Base's archive RPC)")
 	cups := fs.Int("compute-units", 136, "anvil's cap on requests to the archive RPC, in compute units per second")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck backfill [-watch] [-from 2026-10-15 [-to …]] [-limit N]   (DATABASE_URL)")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck backfill [-watch] [-from 2026-10-15 [-to …]] [-limit N]   (DATABASE_URL)")
 		fs.PrintDefaults()
 	}
 	if err := parse(fs, args); err != nil {
@@ -241,7 +241,7 @@ func runDataset(ctx context.Context, args []string) error {
 	fs := flag.NewFlagSet("dataset", flag.ContinueOnError)
 	out := fs.String("out", "ml/data/dataset.csv", "CSV file to write")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck dataset [-out ml/data/dataset.csv]   (DATABASE_URL)")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck dataset [-out ml/data/dataset.csv]   (DATABASE_URL)")
 		fs.PrintDefaults()
 	}
 	if err := parse(fs, args); err != nil {

@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/amirradjou/rugcheck/internal/outcome"
+	"github.com/amirradjou/exitcheck/internal/outcome"
 )
 
 // Unlabelled lists a chain's launches (live or backfilled) funded before cutoff that have no outcome yet, oldest first.

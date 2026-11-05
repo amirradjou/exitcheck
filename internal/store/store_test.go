@@ -9,19 +9,19 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/launch"
 )
 
-// Integration: needs Postgres (docker compose up -d postgres); run with RUGCHECK_INTEGRATION=1. DATABASE_URL
+// Integration: needs Postgres (docker compose up -d postgres); run with EXITCHECK_INTEGRATION=1. DATABASE_URL
 // overrides the compose default.
 func open(t *testing.T) *Store {
 	t.Helper()
-	if os.Getenv("RUGCHECK_INTEGRATION") == "" {
-		t.Skip("set RUGCHECK_INTEGRATION=1 (with Postgres from compose.yaml)")
+	if os.Getenv("EXITCHECK_INTEGRATION") == "" {
+		t.Skip("set EXITCHECK_INTEGRATION=1 (with Postgres from compose.yaml)")
 	}
 	url := os.Getenv("DATABASE_URL")
 	if url == "" {
-		url = "postgres://rugcheck:rugcheck@localhost:5434/rugcheck?sslmode=disable"
+		url = "postgres://exitcheck:exitcheck@localhost:5434/exitcheck?sslmode=disable"
 	}
 	s, err := Open(context.Background(), url)
 	if err != nil {
@@ -123,7 +123,7 @@ func TestAlertsAreClaimedOncePerToken(t *testing.T) {
 }
 
 func TestRedactHidesThePassword(t *testing.T) {
-	err := redact(fmt.Errorf(`connect to postgres://rugcheck:hunter2@db:5432/x failed`))
+	err := redact(fmt.Errorf(`connect to postgres://exitcheck:hunter2@db:5432/x failed`))
 	if got := err.Error(); got != "connect to postgres://…@db:5432/x failed" {
 		t.Errorf("redacted to %q", got)
 	}

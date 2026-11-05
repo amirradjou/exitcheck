@@ -18,13 +18,13 @@ import (
 	"github.com/twmb/franz-go/pkg/kerr"
 	"github.com/twmb/franz-go/pkg/kgo"
 
-	"github.com/amirradjou/rugcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/launch"
 )
 
 // Topic and Group name the launches topic and the analyzers' consumer group.
 const (
-	Topic = "rugcheck.launches"
-	Group = "rugcheck-analyzers"
+	Topic = "exitcheck.launches"
+	Group = "exitcheck-analyzers"
 )
 
 // Brokers splits a comma-separated broker list.

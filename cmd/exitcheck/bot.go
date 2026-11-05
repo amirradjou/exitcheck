@@ -13,12 +13,12 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/bot"
-	"github.com/amirradjou/rugcheck/internal/cache"
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/check"
-	"github.com/amirradjou/rugcheck/internal/explorer"
-	"github.com/amirradjou/rugcheck/internal/telegram"
+	"github.com/amirradjou/exitcheck/internal/bot"
+	"github.com/amirradjou/exitcheck/internal/cache"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/check"
+	"github.com/amirradjou/exitcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/telegram"
 )
 
 // clients dials every supported chain.
@@ -85,7 +85,7 @@ func runCheck(ctx context.Context, args []string) error {
 	ttl := fs.Duration("ttl", 10*time.Minute, "how long a cached answer stays fresh")
 	timeout := fs.Duration("timeout", 3*time.Minute, "give up after this long")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck check [-chain ethereum|base] [-json] [-cache redis://…] <token address>")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck check [-chain ethereum|base] [-json] [-cache redis://…] <token address>")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(interleave(args)); err != nil {
@@ -96,7 +96,7 @@ func runCheck(ctx context.Context, args []string) error {
 	}
 	if fs.NArg() != 1 || !common.IsHexAddress(fs.Arg(0)) {
 		fs.Usage()
-		return usageError{"rugcheck check: need one token address"}
+		return usageError{"exitcheck check: need one token address"}
 	}
 	token := common.HexToAddress(fs.Arg(0))
 	start := time.Now()
@@ -167,7 +167,7 @@ func runBot(ctx context.Context, args []string) error {
 	perChat := fs.Int("per-chat", 10, "uncached checks one chat may start per window")
 	window := fs.Duration("window", 10*time.Minute, "window for -per-chat")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck bot [flags]   (needs TELEGRAM_BOT_TOKEN; REDIS_URL for the cache)")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck bot [flags]   (needs TELEGRAM_BOT_TOKEN; REDIS_URL for the cache)")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(args); err != nil {
@@ -179,7 +179,7 @@ func runBot(ctx context.Context, args []string) error {
 	// Hand-edited .env files leave stray spaces and CRLF carriage returns behind.
 	token := strings.TrimSpace(os.Getenv("TELEGRAM_BOT_TOKEN"))
 	if token == "" {
-		return usageError{"rugcheck bot: set TELEGRAM_BOT_TOKEN (from @BotFather)"}
+		return usageError{"exitcheck bot: set TELEGRAM_BOT_TOKEN (from @BotFather)"}
 	}
 	log := slog.New(slog.NewJSONHandler(os.Stderr, nil))
 	tg := telegram.New(token, "")

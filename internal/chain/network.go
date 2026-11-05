@@ -1,4 +1,4 @@
-// Package chain talks to an EVM chain over JSON-RPC: the networks rugcheck knows, a client that copes with the
+// Package chain talks to an EVM chain over JSON-RPC: the networks exitcheck knows, a client that copes with the
 // limits of free public RPCs, Multicall3 batching, windowed log scans and contract-creation lookups.
 package chain
 
@@ -25,7 +25,7 @@ type V2DEX struct {
 	Router  common.Address
 }
 
-// Network is a chain rugcheck can analyse. Every address here was checked on chain (factory.getPair, router.factory,
+// Network is a chain exitcheck can analyse. Every address here was checked on chain (factory.getPair, router.factory,
 // router.WETH, quoter.factory, code present) when it was added.
 type Network struct {
 	Name      string
@@ -33,13 +33,13 @@ type Network struct {
 	BlockTime time.Duration
 	// RPC serves latest-state reads (eth_call, code, balances), which make up most of the traffic. ArchiveRPC serves
 	// old blocks: historical state, receipts, headers and eth_getLogs. Free providers split along this line, so the
-	// defaults use one of each. RUGCHECK_RPC_<NAME> overrides both; RUGCHECK_ARCHIVE_RPC_<NAME> only the archive.
+	// defaults use one of each. EXITCHECK_RPC_<NAME> overrides both; EXITCHECK_ARCHIVE_RPC_<NAME> only the archive.
 	RPC        string
 	ArchiveRPC string
 	// ArchiveRate paces the default archive RPC, in requests per second (each element of a batch counts); 0 means
 	// no limit.
 	ArchiveRate float64
-	// WS is a WebSocket endpoint for new-block subscriptions (the live watch); RUGCHECK_WS_<NAME> overrides it.
+	// WS is a WebSocket endpoint for new-block subscriptions (the live watch); EXITCHECK_WS_<NAME> overrides it.
 	WS string
 	// LogWindow is the largest eth_getLogs block range the default archive RPC accepts. The client shrinks it on
 	// errors.
@@ -65,7 +65,7 @@ type Network struct {
 	Lockers map[common.Address]string
 }
 
-// Multicall3 is deployed at the same address on every chain rugcheck supports.
+// Multicall3 is deployed at the same address on every chain exitcheck supports.
 var Multicall3 = common.HexToAddress("0xcA11bde05977b3631167028862bE2a173976CA11")
 
 // Burn addresses: tokens sent here are gone for good.
@@ -156,7 +156,7 @@ func ByName(name string) (Network, error) {
 
 // WSEndpoint returns the WebSocket URL after its environment override.
 func (n Network) WSEndpoint() string {
-	if u := os.Getenv("RUGCHECK_WS_" + strings.ToUpper(n.Name)); u != "" {
+	if u := os.Getenv("EXITCHECK_WS_" + strings.ToUpper(n.Name)); u != "" {
 		return u
 	}
 	return n.WS
@@ -166,10 +166,10 @@ func (n Network) WSEndpoint() string {
 // applies (none once the archive endpoint is not the default).
 func (n Network) Endpoints() (latest, archive string, archiveRate float64) {
 	latest, archive, archiveRate = n.RPC, n.ArchiveRPC, n.ArchiveRate
-	if u := os.Getenv("RUGCHECK_RPC_" + strings.ToUpper(n.Name)); u != "" {
+	if u := os.Getenv("EXITCHECK_RPC_" + strings.ToUpper(n.Name)); u != "" {
 		latest, archive, archiveRate = u, u, 0
 	}
-	if u := os.Getenv("RUGCHECK_ARCHIVE_RPC_" + strings.ToUpper(n.Name)); u != "" {
+	if u := os.Getenv("EXITCHECK_ARCHIVE_RPC_" + strings.ToUpper(n.Name)); u != "" {
 		archive, archiveRate = u, 0
 	}
 	return latest, archive, archiveRate

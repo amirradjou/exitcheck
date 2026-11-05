@@ -18,7 +18,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/chain"
 )
 
 // Source is a contract's verified source code.
@@ -288,7 +288,7 @@ func (c *Client) fetchJSON(ctx context.Context, url string, v any) (int, error) 
 		return 0, err
 	}
 	req.Header.Set("Accept", "application/json")
-	req.Header.Set("User-Agent", "rugcheck (+https://github.com/amirradjou/rugcheck)")
+	req.Header.Set("User-Agent", "exitcheck (+https://github.com/amirradjou/exitcheck)")
 	resp, err := c.HTTP.Do(req)
 	if err != nil {
 		return 0, err

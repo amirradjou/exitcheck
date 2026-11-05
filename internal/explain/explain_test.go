@@ -11,10 +11,10 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/check"
-	"github.com/amirradjou/rugcheck/internal/explorer"
-	"github.com/amirradjou/rugcheck/internal/facts"
-	"github.com/amirradjou/rugcheck/internal/verdict"
+	"github.com/amirradjou/exitcheck/internal/check"
+	"github.com/amirradjou/exitcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/facts"
+	"github.com/amirradjou/exitcheck/internal/verdict"
 )
 
 var evidence = []Evidence{
@@ -422,13 +422,13 @@ func TestClientKeepsEndpointAndKeyOutOfErrors(t *testing.T) {
 }
 
 func TestFromEnv(t *testing.T) {
-	t.Setenv("RUGCHECK_LLM_URL", "")
-	t.Setenv("RUGCHECK_LLM_MODEL", "")
+	t.Setenv("EXITCHECK_LLM_URL", "")
+	t.Setenv("EXITCHECK_LLM_MODEL", "")
 	if FromEnv() != nil {
 		t.Error("no model configured must mean no client")
 	}
-	t.Setenv("RUGCHECK_LLM_URL", " http://localhost:11434/v1/ ")
-	t.Setenv("RUGCHECK_LLM_MODEL", "m")
+	t.Setenv("EXITCHECK_LLM_URL", " http://localhost:11434/v1/ ")
+	t.Setenv("EXITCHECK_LLM_MODEL", "m")
 	if c := FromEnv(); c == nil || c.URL != "http://localhost:11434/v1" {
 		t.Errorf("%+v", c)
 	}

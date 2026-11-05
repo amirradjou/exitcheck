@@ -12,7 +12,7 @@ import (
 	"github.com/ethereum/go-ethereum/accounts/abi"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/chain"
 )
 
 // Pool is a DEX pool that trades the token.
@@ -52,11 +52,11 @@ func (g *gatherer) pools(ctx context.Context) {
 	}
 	g.f.Pools = found
 	if len(found) == 0 {
-		g.gap("pools: no pool against %s on the DEXes rugcheck knows", quoteSymbols(g.c.Net))
+		g.gap("pools: no pool against %s on the DEXes exitcheck knows", quoteSymbols(g.c.Net))
 	}
 }
 
-// Pools lists every pool that trades token against a quote token (WETH, USDC, USDT) on the DEXes rugcheck knows,
+// Pools lists every pool that trades token against a quote token (WETH, USDC, USDT) on the DEXes exitcheck knows,
 // most valuable first.
 func Pools(ctx context.Context, c *chain.Client, token common.Address) ([]Pool, error) {
 	found, _, err := findPools(ctx, c, token)

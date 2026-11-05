@@ -14,12 +14,12 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/evm"
-	"github.com/amirradjou/rugcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/evm"
+	"github.com/amirradjou/exitcheck/internal/explorer"
 )
 
-// Facts is everything rugcheck found out about one token.
+// Facts is everything exitcheck found out about one token.
 type Facts struct {
 	Chain     string         `json:"chain"`
 	Address   common.Address `json:"address"`
