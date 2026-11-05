@@ -231,7 +231,7 @@ Limits:
 
 ```sh
 ./bin/rugcheck backfill -watch -from 2026-10-16 -to 2026-10-29T23:20:00Z  # past launches, checked as they stood
-./bin/rugcheck label                                                      # what happened in the day after each
+./bin/rugcheck label -checked                                             # what happened in the day after each
 ./bin/rugcheck dataset                                                    # ml/data/dataset.csv
 cd ml && uv run train.py                                                  # time split, model vs rules, MLflow
 ```
@@ -258,18 +258,26 @@ cd ml && uv run train.py                                                  # time
   history, the simulation's steps and taxes. Explorer answers are left out (verified source, powers found only in
   source, Blockscout's holder list): a backfill cannot have them, and a live launch is usually too new to be indexed.
   A value the check could not read stays missing.
-- **Time split.** `ml/train.py` (XGBoost, tracked in a local MLflow store) trains on the oldest launches, picks the
-  alert threshold on the next ones and tests on the newest, so the model is judged on launches it could not have
-  seen. The threshold is set at the rules' own precision on the threshold launches; the test then compares how many
-  pulls each catches. Results are also split by venue: the rules catch nearly every v2 pull (the deployer holds the
-  LP tokens) and miss most v3 ones (positions are NFTs, so who holds them is not checked).
+- **Time split.** `ml/train.py` (XGBoost, tracked in a local MLflow store) trains on the oldest launches, picks its thresholds
+  on the next ones and tests on the newest, so the model is judged on launches it could not have seen. A label looks a day past
+  its launch, so each part stops a full day before the next begins: without that gap, the last day of training data holds what
+  happened after the cut. The whole procedure is repeated with the cut moved earlier (walk-forward), since one split can be
+  lucky, and differences from the rules come with a bootstrap interval over the same test launches. Results are also split by
+  venue and chain: the rules catch nearly every v2 pull (the deployer holds the LP tokens) and miss most v3 ones (positions are
+  NFTs, so who holds them is not checked).
+- **The rules first, the model where they are silent.** That is the form it would run in, and the one that counts. It could raise
+  a launch the rules let through to high risk and could never lower anything. Lowering would be wrong even when the model is
+  right about the day: an owner who can mint and has not yet done so has not stopped being dangerous because the pool survived
+  24 hours. So the only choice is how much precision to trade for catching more pulls. The threshold is the one with the best
+  combined F1 on the threshold launches, among those whose added alerts are right more often than not.
+- **Not in the live verdict.** Not until it clearly beats the rules: see [M4 status](#m4-status).
 
 Limits:
 - The label is liquidity pulled within a day. A honeypot that keeps its liquidity, with buyers unable to sell, is not
   counted as one.
-- Backfill takes launches funded in the block that created their pool, which is most of them (206 of 210 on Base and
-  42 of 55 on Ethereum on M3's measured day). Pools funded later are only in the live data.
-- A few weeks of launches teach the model those weeks' scam templates.
+- Backfill takes launches that became tradeable in the block that created their pool, which is most of them (206 of 210 on
+  Base and 42 of 55 on Ethereum on M3's measured day). Pools funded later are only in the live data.
+- A few weeks of launches teach the model those weeks' scam templates, and who launches changes quickly (see below).
 
 ## Stack
 
@@ -549,3 +557,43 @@ What the numbers show:
     deployer's own wallets, so they show that the pool traded, not how many people lost money.
 - **Small footprint.** Idle at the end of the day, the seven containers used 814 MiB, 738 MiB of it Kafka. Each
   check's Anvil fork starts and stops inside an analyzer.
+
+## M4 status
+
+**Not done.** The evaluation is in place, and what it says so far is promising but not stable, so the model is not in the live
+verdict. These are the numbers as of 2026-11-05. `cd ml && uv run train.py` reproduces them from
+[`ml/dataset.csv.gz`](ml/dataset.csv.gz): 1,144 launches, 72% of them pulled within a day.
+
+| 228 test launches, 2026-10-30 to 10-31 | alerts | precision | recall | F1 |
+|---|---|---|---|---|
+| rules alone | 180 | 87.8% | 88.3% | 0.88 |
+| model alone | 191 | 90.6% | 96.6% | 0.94 |
+| rules, with the model on what they let through | 196 | 86.7% | 95.0% | 0.91 |
+
+Against the rules alone on the same launches, the model alone gains 0.055 of F1 (95% interval +0.022 to +0.090), and the form
+that would run gains 0.026 (+0.005 to +0.049). It would add 16 alerts, 12 of them right, and catch 12 of the 21 pulls the rules
+missed.
+
+Why that is not a result yet:
+
+- **It moves too much.** A run a few hours earlier, with 95 fewer launches, gave the model alone a gain of 0.015 with an interval
+  spanning zero (-0.016 to +0.045). A number that swings that far on 95 launches says the sample is too small to claim anything.
+- **The folds disagree.** Moving the cut earlier, the form that would run gains nothing, then 0.03, then nothing:
+
+  | trained on | tested on | rules: precision / recall / F1 | rules and model | alerts added |
+  |---|---|---|---|---|
+  | 90 | 190 | 89.6% / 94.9% / 0.92 | 89.6% / 94.9% / 0.92 | 0 |
+  | 141 | 190 | 91.2% / 86.0% / 0.89 | 86.8% / 97.5% / 0.92 | 22 |
+  | 282 | 190 | 85.6% / 89.7% / 0.88 | 83.4% / 93.2% / 0.88 | 10 |
+- **It trained on 179 launches, all on Ethereum.** The day-long gaps use up two days, and Base's backfill so far only reaches back to
+  October 29. Base's labels are also incomplete, so its 105 test launches are not all of them.
+- **One rule was chosen after looking.** The threshold for what the rules let through replaced one that added no alerts at all, and
+  was picked after seeing a test table. The next evaluation is what tests it.
+
+Where it looks most useful is Uniswap v3, whose positions the rules cannot read: on 61 test launches the rules catch 20% of the pulls
+at 33% precision, the model alone 80% at 69%. That is also where the data shifts most. Base v3 pools were pulled at 14% from October 16
+to 19 and at 0% (0 of 46) from October 29. Read straight from the pools' logs, that drop is real, not a labelling error.
+
+What is left: finish the two-week backfill (Ethereum back to October 16, Base from October 29 back to October 20), label it all, and
+evaluate once more, with launches from after the training data as the test. M4 is done if the model then beats the rules across the
+folds, and this section will say so either way.

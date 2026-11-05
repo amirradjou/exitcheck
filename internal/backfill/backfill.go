@@ -53,8 +53,9 @@ func CheckAt(ctx context.Context, net chain.Network, upstream string, computeUni
 }
 
 // Scan finds the launches of pools created between two blocks: pools against a quote token (as the live watch takes
-// them) that got their first liquidity in the block that created them. That is how most launches happen (206 of the
-// 210 Base launches and 42 of the 55 Ethereum ones on the live watch's measured day); pools funded later are left out.
+// them) that became tradeable, by the watch's own rule, in the block that created them. That is how most launches
+// happen (206 of the 210 Base launches and 42 of the 55 Ethereum ones on the live watch's measured day); pools funded
+// later are left out.
 func Scan(ctx context.Context, c *chain.Client, from, to uint64) ([]store.Backfill, error) {
 	pools, err := created(ctx, c, from, to)
 	if err != nil {
@@ -69,6 +70,16 @@ func Scan(ctx context.Context, c *chain.Client, from, to uint64) ([]store.Backfi
 		}
 		if !funded {
 			continue
+		}
+		// A v2 or Aerodrome Mint deposits both sides. A v3 one can be the quote token alone: nothing to buy yet.
+		if p.DEX == "uniswap-v3" {
+			ok, err := Tradeable(ctx, c, p, p.Block)
+			if err != nil {
+				return nil, err
+			}
+			if !ok {
+				continue
+			}
 		}
 		t, ok := times[p.Block]
 		if !ok {

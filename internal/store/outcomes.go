@@ -10,16 +10,20 @@ import (
 	"github.com/amirradjou/rugcheck/internal/outcome"
 )
 
-// Unlabelled lists a chain's launches (live or backfilled) funded before cutoff that have no outcome yet, oldest first. limit 0 means all.
-func (s *Store) Unlabelled(ctx context.Context, chain string, cutoff time.Time, limit int) ([]outcome.Launch, error) {
+// Unlabelled lists a chain's launches (live or backfilled) funded before cutoff that have no outcome yet, oldest first.
+// checkedOnly keeps those with a report, the only ones a dataset can use. limit 0 means all.
+func (s *Store) Unlabelled(ctx context.Context, chain string, cutoff time.Time, checkedOnly bool, limit int) ([]outcome.Launch, error) {
 	q := `SELECT l.id, l.dex, l.pool, l.token, l.quote, l.created_block, l.funded_block, l.funded_at
 		FROM (SELECT id, chain, dex, pool, token, quote, created_block, funded_block, funded_at FROM launches
 			UNION SELECT id, chain, dex, pool, token, quote, created_block, funded_block, funded_at FROM backfill) l
 		LEFT JOIN outcomes o ON o.launch_id = l.id
-		WHERE l.chain = $1 AND l.funded_at < $2 AND o.launch_id IS NULL ORDER BY l.funded_at`
-	args := []any{chain, cutoff}
+		WHERE l.chain = $1 AND l.funded_at < $2 AND o.launch_id IS NULL AND (NOT $3
+			OR EXISTS (SELECT 1 FROM launches x WHERE x.id = l.id AND x.report IS NOT NULL)
+			OR EXISTS (SELECT 1 FROM backfill x WHERE x.id = l.id AND x.report IS NOT NULL))
+		ORDER BY l.funded_at`
+	args := []any{chain, cutoff, checkedOnly}
 	if limit > 0 {
-		q += ` LIMIT $3`
+		q += ` LIMIT $4`
 		args = append(args, limit)
 	}
 	rows, err := s.db.Query(ctx, q, args...)

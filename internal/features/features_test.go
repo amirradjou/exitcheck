@@ -95,3 +95,24 @@ func TestAnEmptyReportIsMissingNotZero(t *testing.T) {
 		t.Errorf("share_deployer = %v without facts, want NaN", got)
 	}
 }
+
+func TestLimitAboveTheSupplyIsNoLimit(t *testing.T) {
+	huge, small := 1.157920892373162e+50, 0.02
+	for _, c := range []struct {
+		shares []*float64
+		want   float64
+	}{
+		{[]*float64{&huge}, 1},
+		{[]*float64{&huge, &small}, small},
+	} {
+		f := &facts.Facts{}
+		for _, share := range c.shares {
+			f.Settings = append(f.Settings, facts.Setting{Kind: "limits", SupplyShare: share})
+		}
+		v := map[string]float64{}
+		powers(v, f)
+		if v["limit_min_share"] != c.want {
+			t.Errorf("limit_min_share = %v, want %v", v["limit_min_share"], c.want)
+		}
+	}
+}
