@@ -223,3 +223,16 @@ func TestLevelText(t *testing.T) {
 		t.Error("unknown level parsed")
 	}
 }
+
+func TestRaiseNeverLowers(t *testing.T) {
+	v := Verdict{Level: Caution, Headline: headlines[Caution], Reasons: []Reason{{Caution, "a note"}, {Clear, "fine"}}}
+	v.Raise(HighRisk, "worse")
+	if v.Level != HighRisk || v.Headline != headlines[HighRisk] || v.Reasons[0].Text != "worse" {
+		t.Errorf("%+v", v)
+	}
+	s := Verdict{Level: Scam, Headline: "Honeypot: you can buy, but you cannot sell"}
+	s.Raise(HighRisk, "a lesser reason")
+	if s.Level != Scam || s.Headline != "Honeypot: you can buy, but you cannot sell" {
+		t.Errorf("%+v", s)
+	}
+}

@@ -169,7 +169,9 @@ func powers(v map[string]float64, f *facts.Facts) {
 	}
 	v["settings_fees"], v["settings_limits"], v["settings_trading"] = float64(fees), float64(limits), float64(trading)
 	if !math.IsInf(minShare, 1) {
-		v["limit_min_share"] = minShare
+		// A limit above the whole supply limits nothing. Contracts set them to the largest uint256, which is
+		// 1e50 of a supply and does not fit the float32 that gradient-boosted trees compare with.
+		v["limit_min_share"] = math.Min(minShare, 1)
 	}
 }
 

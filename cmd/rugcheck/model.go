@@ -283,7 +283,12 @@ func runDataset(ctx context.Context, args []string) error {
 		if o.Pulled && !o.PulledAt.IsZero() {
 			minutes = strconv.FormatFloat(o.PulledAt.Sub(s.FundedAt).Minutes(), 'f', 2, 64)
 		}
-		row := []string{s.ID, s.Chain, s.DEX, strconv.FormatInt(s.FundedAt.Unix(), 10), s.Source, s.Level, s.LiveLevel,
+		// What the model raised is not the rules' verdict, and the rules are what a new model is compared with.
+		level := s.Level
+		if r.Model != nil {
+			level = r.Model.RulesLevel.String()
+		}
+		row := []string{s.ID, s.Chain, s.DEX, strconv.FormatInt(s.FundedAt.Unix(), 10), s.Source, level, s.LiveLevel,
 			strconv.FormatBool(o.Pulled), strconv.FormatBool(o.Bait), strconv.Itoa(o.Buys), strconv.Itoa(o.Sells), minutes}
 		for _, x := range features.Vector(&r) {
 			if math.IsNaN(x) {

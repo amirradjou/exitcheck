@@ -34,6 +34,17 @@ type Report struct {
 	Sim       *sim.Result     `json:"sim,omitempty"`
 	SimError  string          `json:"sim_error,omitempty"`
 	Elapsed   time.Duration   `json:"elapsed_ns"`
+	// Model is the launch classifier's opinion, set for tokens it can judge (package model).
+	Model *ModelScore `json:"model,omitempty"`
+}
+
+// ModelScore is what the launch classifier made of a report.
+type ModelScore struct {
+	Score     float64 `json:"score"`
+	Threshold float64 `json:"threshold"`
+	// RulesLevel is the verdict before the model spoke: what a new training set must compare the model with.
+	RulesLevel verdict.Level `json:"rules_level"`
+	Raised     bool          `json:"raised"`
 }
 
 // ErrNoContract is returned for an address without contract code.

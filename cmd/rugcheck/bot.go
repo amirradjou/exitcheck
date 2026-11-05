@@ -18,6 +18,7 @@ import (
 	"github.com/amirradjou/rugcheck/internal/chain"
 	"github.com/amirradjou/rugcheck/internal/check"
 	"github.com/amirradjou/rugcheck/internal/explorer"
+	"github.com/amirradjou/rugcheck/internal/model"
 	"github.com/amirradjou/rugcheck/internal/telegram"
 )
 
@@ -25,10 +26,18 @@ import (
 type clients struct {
 	byName map[string]*chain.Client
 	all    []*chain.Client
+	model  *model.Model
 }
 
 func dialAll(ctx context.Context) (*clients, error) {
-	cs := &clients{byName: map[string]*chain.Client{}}
+	m, err := model.Load()
+	if err != nil {
+		return nil, err
+	}
+	if err := m.Check(); err != nil {
+		return nil, err
+	}
+	cs := &clients{byName: map[string]*chain.Client{}, model: m}
 	for _, net := range chain.Networks() {
 		c, err := chain.Dial(ctx, net)
 		if err != nil {
@@ -56,7 +65,12 @@ func (cs *clients) checker(ex *explorer.Client) bot.Checker {
 		if !ok {
 			return nil, fmt.Errorf("unknown chain %q", chainName)
 		}
-		return check.Run(ctx, c, ex, token)
+		r, err := check.Run(ctx, c, ex, token)
+		if err != nil {
+			return nil, err
+		}
+		cs.model.Apply(r)
+		return r, nil
 	}
 }
 

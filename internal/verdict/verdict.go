@@ -430,12 +430,24 @@ func (j *judge) headline() string {
 	case j.pulled:
 		return "Rug pull: the liquidity is gone"
 	}
-	return map[Level]string{
-		Clear:    "No red flags found",
-		Caution:  "Caution: no trap found, but read the notes",
-		HighRisk: "High risk: see the reasons below",
-		Scam:     "Scam",
-	}[j.v.Level]
+	return headlines[j.v.Level]
+}
+
+var headlines = map[Level]string{
+	Clear:    "No red flags found",
+	Caution:  "Caution: no trap found, but read the notes",
+	HighRisk: "High risk: see the reasons below",
+	Scam:     "Scam",
+}
+
+// Raise makes the verdict at least level l, for a reason from outside the fixed rules, and puts that reason in its place
+// by severity. It never lowers a verdict.
+func (v *Verdict) Raise(l Level, reason string) {
+	v.Reasons = append(v.Reasons, Reason{Level: l, Text: reason})
+	sort.SliceStable(v.Reasons, func(a, b int) bool { return v.Reasons[a].Level > v.Reasons[b].Level })
+	if l > v.Level {
+		v.Level, v.Headline = l, headlines[l]
+	}
 }
 
 // pct formats a share, keeping a decimal near 100% so 99.6% does not read as everything. The decimal is rounded down:
