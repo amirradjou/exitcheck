@@ -208,7 +208,9 @@ WebSocket newHeads ─▶ watcher ──(launches, keyed by token)──▶ Kafk
   after a launch is stored, so a crashed analyzer's partitions are replayed by the others. The newest 100 blocks of a
   range are read from the latest-state RPC alone, which errors for a block it does not have yet; a refused step is
   tried again a second later. An archive RPC can answer "no logs" for a block it has not reached, and that silently
-  lost launches during M3's measured day (see [M3 results](#m3-results)).
+  lost launches during M3's measured day (see [M3 results](#m3-results)). A step has a time budget: a stalled RPC
+  connection otherwise holds up every launch behind it. A step that overruns is tried again on a new connection, and
+  the last attempt's budget is long enough for a catch-up that honestly needs the time. Slow steps and calls are logged by name.
 - **Nothing is doubled.**
   - The producer is idempotent.
   - A launch is one Postgres row per pool, so a redelivery only increments a counter.

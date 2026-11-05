@@ -1,12 +1,14 @@
 package watch
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"io"
 	"log/slog"
 	"maps"
 	"slices"
+	"strings"
 	"sync"
 	"testing"
 	"time"
@@ -28,6 +30,11 @@ type fakeSource struct {
 	ranges  [][2]uint64
 	// refuse makes the next Created calls fail, as an RPC node a moment behind the head does.
 	refuse int
+	// hang makes the next Created calls wait for their context to end, as a stalled connection does.
+	hang int
+	// needs makes every Created call take this long, unless its context ends first.
+	needs time.Duration
+	calls int
 }
 
 func (f *fakeSource) Heads(context.Context) (<-chan uint64, error) {
@@ -39,7 +46,25 @@ func (f *fakeSource) Heads(context.Context) (<-chan uint64, error) {
 
 func (f *fakeSource) Head(context.Context) (uint64, error) { return f.head, nil }
 
-func (f *fakeSource) Created(_ context.Context, from, to uint64) ([]launch.Pool, error) {
+func (f *fakeSource) Created(ctx context.Context, from, to uint64) ([]launch.Pool, error) {
+	f.mu.Lock()
+	f.calls++
+	hang, needs := f.hang > 0, f.needs
+	if hang {
+		f.hang--
+	}
+	f.mu.Unlock()
+	if hang {
+		<-ctx.Done()
+		return nil, ctx.Err()
+	}
+	if needs > 0 {
+		select {
+		case <-time.After(needs):
+		case <-ctx.Done():
+			return nil, ctx.Err()
+		}
+	}
 	f.mu.Lock()
 	defer f.mu.Unlock()
 	f.ranges = append(f.ranges, [2]uint64{from, to})
@@ -313,5 +338,76 @@ func TestAStepRefusedForAMomentIsTriedAgainAtOnce(t *testing.T) {
 	w.advanceTo(context.Background(), 101)
 	if w.cursor != 101 || len(pub.got) != 1 {
 		t.Errorf("after one refusal: cursor %d, %d launches published; want the block read on the retry", w.cursor, len(pub.got))
+	}
+}
+
+func TestAHungCallCostsOneBudgetNotTheWholeWatch(t *testing.T) {
+	p := pool(9, 101)
+	src := &fakeSource{created: map[uint64][]launch.Pool{101: {p}}, funded: map[common.Address]bool{p.Pool: true},
+		mint: map[common.Address][]uint64{}, hang: 1}
+	st, pub := newState(), &fakePub{}
+	st.cursor["base"] = 100
+	w := newWatcher(src, st, pub)
+	w.cursor, w.StepTimeout = 100, 20*time.Millisecond
+	start := time.Now()
+	w.advanceTo(context.Background(), 101)
+	if w.cursor != 101 || len(pub.got) != 1 {
+		t.Fatalf("after one hung call: cursor %d, %d launches published", w.cursor, len(pub.got))
+	}
+	if took := time.Since(start); took > time.Second {
+		t.Errorf("a hung call held the watcher for %s", took)
+	}
+}
+
+func TestAStepThatHonestlyNeedsTheTimeStillFinishes(t *testing.T) {
+	// A fixed limit shorter than a real step would retry it forever. The last attempt's budget is there for this.
+	src := &fakeSource{created: map[uint64][]launch.Pool{}, funded: map[common.Address]bool{},
+		mint: map[common.Address][]uint64{}, needs: 60 * time.Millisecond}
+	st, pub := newState(), &fakePub{}
+	st.cursor["base"] = 100
+	w := newWatcher(src, st, pub)
+	w.cursor, w.StepTimeout = 100, 20*time.Millisecond
+	w.advanceTo(context.Background(), 101)
+	if w.cursor != 101 {
+		t.Errorf("cursor %d: a step longer than the first budgets never finished", w.cursor)
+	}
+	if src.calls != 3 {
+		t.Errorf("%d attempts, want the third to succeed", src.calls)
+	}
+}
+
+func TestAHungStepIsLeftForTheNextHeadAndChangesNothing(t *testing.T) {
+	src := &fakeSource{created: map[uint64][]launch.Pool{}, funded: map[common.Address]bool{},
+		mint: map[common.Address][]uint64{}, hang: len(stepBudgets)}
+	st, pub := newState(), &fakePub{}
+	st.cursor["base"] = 100
+	w := newWatcher(src, st, pub)
+	w.cursor, w.StepTimeout = 100, time.Millisecond
+	w.advanceTo(context.Background(), 101)
+	if w.cursor != 100 || st.cursor["base"] != 100 {
+		t.Fatalf("cursor moved past blocks it never read: memory %d, saved %d", w.cursor, st.cursor["base"])
+	}
+	w.advanceTo(context.Background(), 102) // the next head
+	if w.cursor != 102 {
+		t.Errorf("cursor %d after the next head", w.cursor)
+	}
+}
+
+func TestSlowCallsAreLoggedByName(t *testing.T) {
+	var logged bytes.Buffer
+	log := slog.New(slog.NewTextHandler(&logged, nil))
+	src := &fakeSource{created: map[uint64][]launch.Pool{}}
+	if _, err := (timedSource{Source: src, limit: 0, log: log}).Created(context.Background(), 1, 1); err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(logged.String(), `call="creation logs"`) {
+		t.Errorf("log: %s", logged.String())
+	}
+	logged.Reset()
+	if _, err := (timedSource{Source: src, limit: time.Hour, log: log}).Created(context.Background(), 1, 1); err != nil {
+		t.Fatal(err)
+	}
+	if logged.Len() != 0 {
+		t.Errorf("a fast call was logged: %s", logged.String())
 	}
 }
