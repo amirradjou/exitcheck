@@ -6,8 +6,8 @@
 Paste a token address, get a straight answer: is this token built to take your money?
 
 rugcheck reads the contract, buys and sells a little of the token on a private copy of the chain, and gives a verdict with
-the reasons behind it. It covers Ethereum and Base, and it watches new token launches as they happen. The verdict comes from
-fixed rules and a model trained on what launches actually did next, never from a language model.
+the reasons behind it. It covers Ethereum and Base, and it watches new token launches as they happen. The verdict comes from fixed
+rules, never from a language model.
 
 It is not hosted yet. The Telegram bot and the [alerts channel](https://t.me/rugcheckApp) only answer while I have the stack
 running, so to use it, [run your own](#try-it): the checks need no keys at all.
@@ -15,6 +15,18 @@ running, so to use it, [run your own](#try-it): the checks need no keys at all.
 Not financial advice. It never holds funds and never trades: every simulation runs on a local fork with throwaway accounts.
 A verdict is an automated reading of on-chain data at one block, and it can be wrong. If you think one is, open an issue with
 the address.
+
+## Where it stands
+
+| | |
+|---|---|
+| Contract facts | 20 of 20 hand-labelled tokens right ([M0](#m0-results)) |
+| Honeypot simulation | 6 of 6 honeypots flagged, 0 of 10 legitimate tokens ([M1](#m1-results)) |
+| Telegram bot | median answer 9.1 s, 0.5 ms from the cache ([M2](#m2-results)) |
+| Live watch | being measured again: its first measured day missed 36 of Ethereum's 91 launches, since fixed ([M3](#m3-results)) |
+| Classifier | built and evaluated, but not yet clearly better than the rules, so not in the verdict ([M4](#m4-status)) |
+| Explanations | every sentence cites a check or a source line ([M5](#m5-results)) |
+| Hosted demo | not yet |
 
 ## What it does
 
@@ -27,12 +39,13 @@ check.
    its liquidity is burned, locked or withdrawable, and the deployer's other tokens.
 2. **Buy-then-sell simulation.** On an Anvil fork of the latest block: buy, wait, transfer, sell. Measures taxes, failed
    sales and transfer limits.
-3. **Verdict.** Fixed rules give one of four levels and the reasons for it. For a new launch the rules let through, a
-   gradient-boosted classifier trained on what past launches did next can raise the level, never lower it.
+3. **Verdict.** Fixed rules give one of four levels and the reasons for it. A gradient-boosted classifier, trained on what past
+   launches did next, is being evaluated against them. It joins the verdict only if it beats them, and [so far it has not
+   shown that](#m4-status).
 4. **"Why" in plain words.** With a model configured, a language model explains the verdict through retrieval-augmented
    generation, citing the checks and source lines behind it. Any sentence it cannot ground is dropped.
 5. **Live watch.** New pools on the Uniswap v2/v3 factories and Aerodrome stream through Kafka to analyzer workers, which
-   check each launch and post the dangerous ones to the alerts channel.
+   check each launch and post the dangerous ones to an alerts channel.
 
 Whatever could not be checked is listed under "Not checked" with the reason, and a check that did not finish is never read as
 a pass. Known blind spot, stated in every answer: a contract can treat later buyers differently, so a clean result is not a
@@ -267,8 +280,8 @@ Limits:
 | M1 ✅ | Buy-then-sell simulation on an Anvil fork | every known honeypot in the set flagged; no legitimate token flagged — **6/6 flagged, 0/10 legitimate flagged, see [M1 results](#m1-results)** |
 | M2 ✅ | Telegram bot: verdict + reasons, cached in Redis | median answer under 10 s cold, instant when cached — **9.1 s cold, 0.5 ms cached, see [M2 results](#m2-results)** |
 | M3 | Live watch: factory events → Kafka → analyzers → alerts channel | a day of launches processed with lag under a minute and no duplicates — **the measured day: 262 of 264 under a minute (median 8.9 s), 0 duplicates, but 36 of Ethereum's 91 launches never seen (since fixed); being measured again, see [M3 results](#m3-results)** |
-| M4 | Labelled dataset, features, model, MLflow | time-split precision/recall published; beats the hard rules alone |
-| M5 | Grounded "why" explanations | on a review set, every sentence cites a check or a source line |
+| M4 | Labelled dataset, features, model, MLflow | time-split precision/recall published; beats the hard rules alone — **published, not yet beating them clearly, see [M4 status](#m4-status)** |
+| M5 ✅ | Grounded "why" explanations | on a review set, every sentence cites a check or a source line — **58 of 58, read by hand, see [M5 results](#m5-results)** |
 | M6 | Public demo and results | README shows tokens analysed, precision at the alert threshold, median time to verdict; a hosted demo is postponed |
 
 ## M0 results
