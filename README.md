@@ -9,8 +9,8 @@ rugcheck reads the contract, buys and sells a little of the token on a private c
 the reasons behind it. It covers Ethereum and Base, and it watches new token launches as they happen. The verdict comes from
 fixed rules and a model trained on what launches actually did next, never from a language model.
 
-- **Ask the bot:** [@rugcheck_ai](https://t.me/rugcheck_ai) on Telegram
-- **Alerts on new launches:** [@rugcheckApp](https://t.me/rugcheckApp)
+It is not hosted yet. The Telegram bot and the [alerts channel](https://t.me/rugcheckApp) only answer while I have the stack
+running, so to use it, [run your own](#try-it): the checks need no keys at all.
 
 Not financial advice. It never holds funds and never trades: every simulation runs on a local fork with throwaway accounts.
 A verdict is an automated reading of on-chain data at one block, and it can be wrong. If you think one is, open an issue with
@@ -269,7 +269,7 @@ Limits:
 | M3 | Live watch: factory events → Kafka → analyzers → alerts channel | a day of launches processed with lag under a minute and no duplicates — **the measured day: 262 of 264 under a minute (median 8.9 s), 0 duplicates, but 36 of Ethereum's 91 launches never seen (since fixed); being measured again, see [M3 results](#m3-results)** |
 | M4 | Labelled dataset, features, model, MLflow | time-split precision/recall published; beats the hard rules alone |
 | M5 | Grounded "why" explanations | on a review set, every sentence cites a check or a source line |
-| M6 | Public demo and results | README shows tokens analysed, precision at the alert threshold, median time to verdict |
+| M6 | Public demo and results | README shows tokens analysed, precision at the alert threshold, median time to verdict; a hosted demo is postponed |
 
 ## M0 results
 
