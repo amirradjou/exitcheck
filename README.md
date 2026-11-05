@@ -274,8 +274,8 @@ Limits:
 ## How the explanations work (M5)
 
 ```sh
-RUGCHECK_LLM_URL=http://localhost:11434/v1 RUGCHECK_LLM_MODEL=qwen2.5:7b ./bin/rugcheck explain <address>
-RUGCHECK_LLM_URL=… RUGCHECK_LLM_MODEL=… ./bin/rugcheck explain -review -out review.md   # the review set
+RUGCHECK_LLM_URL=https://api.groq.com/openai/v1 RUGCHECK_LLM_KEY=… RUGCHECK_LLM_MODEL=qwen/qwen3.8-27b ./bin/rugcheck explain <address>
+./bin/rugcheck explain -review -out review.md   # the review set
 ```
 
 The verdict is already decided when the model is called. The model explains it in plain words and can change nothing.
@@ -296,14 +296,17 @@ same machine, or a free tier. rugcheck needs no paid key.
   - joins two findings. Every word of "the deployer holds 50% of the supply and could withdraw the liquidity" comes from one
     of two findings; the claim comes from neither;
   - has a number, link or address its citations do not have;
-  - takes under two thirds of its content words from what it cites;
+  - takes under two thirds of its content words from what it cites, or does not state the finding it cites;
+  - leans on the sentence before it ("That can collapse the price"), which may have been dropped;
+  - inflates its evidence ("unlimited", "highly likely") with words the evidence does not use;
   - reassures or advises ("safe", "no obvious issues", "should buy"), whatever it cites.
 
   A source citation that shares fewer than two words with its sentence is removed: it was added for show.
 - **Hostile input.** A token's name, its revert messages and its source are written by the token's author, who may be writing
   for the model. Comments and strings are blanked before source is retrieved, square brackets are stripped so a revert message
-  cannot forge an evidence line, and the prompt says the evidence is data. The real defence is the verdict being out of the
-  model's reach and every sentence passing `Ground`.
+  cannot forge an evidence line, a token's name cannot ground a claim, and the prompt says the evidence is data. The real defence is
+  the verdict being out of the model's reach and every sentence passing `Ground`. Telegram turns "evil.xyz" in a token's name into a live
+  link, and these answers go to a public channel, so anything author-written is defanged when rendered.
 - **In the bot.** The verdict goes out as soon as it exists and the explanation is edited in afterwards, with a 30 s budget. A
   slow or failing model costs the explanation and nothing else. A clear verdict is not put to the model: a sentence about a
   token with no red flags reads as a recommendation.
@@ -312,6 +315,54 @@ Limits:
 - `Ground` checks that a sentence stays close to what it cites. It does not understand the sentence: a claim made entirely of
   words from its citation can still be wrong. Hence the review below, read by hand.
 - Most tokens are not verified when they launch, so most explanations of launches cite checks and patterns only.
+
+## M5 results
+
+`rugcheck explain -review` on 38 reports, 2026-11-05: the 20 labelled tokens and 18 launches the live watch saw, a spread of chains, venues
+and verdicts. With `qwen/qwen3.8-27b` on Groq's free tier: **all 58 sentences that reached a reader cite a check or a source line**, and
+reading them found none the checks contradict. All of them, with what each cites and what was dropped, are in
+[docs/m5-review.md](docs/m5-review.md).
+
+For a honeypot on Base, the answer ends like this:
+
+```
+Why, in plain words:
+A test buy succeeded but the sale failed, meaning buyers cannot get their money out. [1][2]
+Some decisive checks did not finish, so the token cannot be called free of red flags. [3][4]
+
+[1] check: A test buy worked but the sale failed (selling reverts: TransferHelper: TRANSFER_FROM_FAI…
+[2] known pattern: Honeypot
+[3] check: Some decisive checks did not finish (LP holders), so this is not a clean bill of health.
+[4] known pattern: Unfinished checks
+
+Written by a language model from the checks above. It did not decide the verdict.
+```
+
+How the same evidence and the same check treat different models. A model that stays close to its evidence keeps more; one that rewrites freely
+loses more, which is the check doing its job.
+
+| model | sentences written | kept | citing source lines | reports left without an explanation |
+|---|---|---|---|---|
+| `qwen/qwen3.8-27b` (Groq free tier) | 76 | 58 | 1 | 5 of 33 |
+| Claude Haiku 5.5 | 85 | 79 | 6 | 3 of 33 |
+
+What the numbers show:
+
+- **Citing is enforced, so it proves little by itself.** `Ground` keeps a sentence only if it cites a check or a source line, which makes "every
+  sentence cites" true by construction. What tests it is reading them, and the tests below came from doing that. Of the 58 sentences, none says
+  something the checks contradict, and two overstate: "faces a high chance of having its liquidity pulled" where the pattern says "many launches",
+  and "would collapse the price" where it says "can".
+- **Reading found what the counts hid**, on earlier runs:
+  - A denylist entry matched "no real market", a phrase from the pattern library itself, and silently removed the most serious finding from 16 reports.
+  - A realistic example sentence in the prompt was copied onto every token. The format is now described, not shown.
+  - "The deployer holds 50% of the supply and could withdraw all the liquidity" has every word from one of two findings and the claim from neither.
+    A sentence now rests on one finding.
+  - "The owner can create unlimited new tokens" shares nearly every word with its finding. Words that inflate a claim must now be in the evidence.
+  - "The owner holds 99.9% of the LP" was wrong on two tokens, because the verdict said "the deployer or owner". The fault was the verdict's: it now
+    says who.
+- **Five reports get no explanation, and that is the designed outcome.** USDT, USDC and DEGEN are among them: their powers are a known trade-off, so
+  no warning is offered, and what the model adds beyond that does not pass. The verdict goes out alone.
+- **Few sentences cite source lines.** Most launches are not verified when they launch, and this model prefers the checks. A stronger model cites more.
 
 ## Stack
 
