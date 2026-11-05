@@ -208,7 +208,11 @@ WebSocket newHeads ─▶ watcher ──(launches, keyed by token)──▶ Kafk
   after a launch is stored, so a crashed analyzer's partitions are replayed by the others. The newest 100 blocks of a
   range are read from the latest-state RPC alone, which errors for a block it does not have yet; a refused step is
   tried again a second later. An archive RPC can answer "no logs" for a block it has not reached, and that silently
-  lost launches during M3's measured day (see [M3 results](#m3-results)).
+  lost launches during M3's measured day (see [M3 results](#m3-results)). A step has a time budget: a stalled RPC
+  connection otherwise holds up every launch behind it. A step that overruns is tried again on a new connection, and
+  the last attempt's budget is long enough for a catch-up that honestly needs the time. Slow steps and calls are logged by name.
+  A late watcher goes straight to the newest head, reading the whole range in one step: taken one at a time, heads arrive
+  faster than a slow step clears them, and the watcher never gets back to the present.
 - **Nothing is doubled.**
   - The producer is idempotent.
   - A launch is one Postgres row per pool, so a redelivery only increments a counter.
@@ -220,7 +224,9 @@ WebSocket newHeads ─▶ watcher ──(launches, keyed by token)──▶ Kafk
   Kafka moves a stopped worker's partitions to the rest. Each check runs the bot's own rules through the same Redis
   cache, so a token someone asks the bot about right after launch is answered from it.
 - **Alerts** go to the Telegram channel in `TELEGRAM_ALERTS_CHAT` (the bot must be an admin there): every launch
-  judged high risk or scam, once per token.
+  judged high risk or scam, once per token. A launch more than 30 minutes old is stored but not posted: after an outage
+  the watcher reads every block it missed, and a channel should not get a day of old launches at once.
+- **A reboot brings it all back.** Every service restarts on its own, and the watcher resumes from its saved cursor.
 
 Limits:
 - Uniswap v4 pools are not watched.

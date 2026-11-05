@@ -66,6 +66,14 @@ type Watcher struct {
 	// Retry is the wait before a failed step is tried again (twice) before it is left for the next head: a
 	// load-balanced RPC's node often trails the head announcement by a moment.
 	Retry time.Duration
+	// StepTimeout bounds a step's first attempt; later attempts get longer (see stepBudgets). One goroutine reads the
+	// heads and runs the steps, so a call that hangs holds up every launch behind it: a stalled RPC connection once
+	// made a Base launch 117 s late, with nothing in the logs.
+	StepTimeout time.Duration
+	// SlowCall is how long an RPC call may take before it is logged.
+	SlowCall time.Duration
+	// BehindWarn is how many blocks behind the head the watcher may be before it says so.
+	BehindWarn int64
 
 	pending map[common.Address]launch.Pool
 	// unfunded is the last block at which each pending pool was seen without liquidity. A pool's first Mint can come
@@ -77,12 +85,20 @@ type Watcher struct {
 
 // New returns a watcher for one chain.
 func New(chainName string, src Source, state State, pub Publisher, log *slog.Logger) *Watcher {
+	log = log.With("chain", chainName)
+	const slow = 5 * time.Second
 	return &Watcher{
-		Chain: chainName, src: src, state: state, pub: pub, log: log.With("chain", chainName), now: time.Now,
+		Chain: chainName, src: timedSource{Source: src, limit: slow, log: log}, state: state, pub: pub, log: log, now: time.Now,
 		MaxRange: 500, Expire: 24 * time.Hour, Poll: 30 * time.Second, Retry: time.Second,
+		StepTimeout: 20 * time.Second, SlowCall: slow, BehindWarn: 10,
 		pending: map[common.Address]launch.Pool{}, unfunded: map[common.Address]uint64{},
 	}
 }
+
+// stepBudgets multiply StepTimeout for each attempt at a step. The first two catch a connection that hung: the retry
+// opens a new one. The last is long because a step can honestly need the time (a catch-up dating many pools through a
+// paced archive RPC); a fixed limit would retry such a step forever and never move on.
+var stepBudgets = [...]time.Duration{1, 2, 10}
 
 // Run watches until ctx ends. Failures of the subscription or the RPC are logged and retried; only a failure to
 // load the saved state stops it.
@@ -141,7 +157,7 @@ func (w *Watcher) load(ctx context.Context) error {
 	return nil
 }
 
-// follow processes heads until the subscription ends, polling over HTTP if it goes quiet.
+// follow processes the newest head until the subscription ends, polling over HTTP if it goes quiet.
 func (w *Watcher) follow(ctx context.Context, heads <-chan uint64) {
 	quiet := time.NewTimer(w.Poll)
 	defer quiet.Stop()
@@ -150,16 +166,42 @@ func (w *Watcher) follow(ctx context.Context, heads <-chan uint64) {
 		case <-ctx.Done():
 			return
 		case h, open := <-heads:
+			if open {
+				h, open = newest(heads, h)
+			}
+			if h > 0 {
+				if behind := int64(h) - int64(w.cursor); behind > w.BehindWarn {
+					w.log.Warn("behind the head", "blocks", behind)
+				}
+				w.advanceTo(ctx, h)
+			}
 			if !open {
 				w.log.Warn("new-block subscription ended; resubscribing")
 				return
 			}
-			w.advanceTo(ctx, h)
 		case <-quiet.C:
 			w.log.Warn("no new block over the subscription", "for", w.Poll)
 			w.catchUp(ctx)
 		}
 		quiet.Reset(w.Poll)
+	}
+}
+
+// newest drains the heads already waiting and returns the latest, and whether the subscription is still open. Only the
+// newest matters, as a step reads a whole range. Processed one by one, a watcher whose steps take just over a block time
+// falls further behind with every block and never recovers, however little work there is: on Base, with a block every
+// 2 s, that once put detection 65 s behind and rising with no single call slow.
+func newest(heads <-chan uint64, h uint64) (uint64, bool) {
+	for {
+		select {
+		case n, open := <-heads:
+			if !open {
+				return h, false
+			}
+			h = max(h, n)
+		default:
+			return h, true
+		}
 	}
 }
 
@@ -178,11 +220,11 @@ func (w *Watcher) advanceTo(ctx context.Context, head uint64) {
 	for w.cursor < head && ctx.Err() == nil {
 		to := min(head, w.cursor+w.MaxRange)
 		var err error
-		for attempt := range 3 {
+		for attempt, budget := range stepBudgets {
 			if attempt > 0 {
 				sleep(ctx, w.Retry)
 			}
-			if err = w.Step(ctx, w.cursor+1, to); err == nil || ctx.Err() != nil {
+			if err = w.boundedStep(ctx, w.cursor+1, to, budget*w.StepTimeout); err == nil || ctx.Err() != nil {
 				break
 			}
 		}
@@ -191,6 +233,17 @@ func (w *Watcher) advanceTo(ctx context.Context, head uint64) {
 			return
 		}
 	}
+}
+
+func (w *Watcher) boundedStep(ctx context.Context, from, to uint64, budget time.Duration) error {
+	start := time.Now()
+	sctx, cancel := context.WithTimeout(ctx, budget)
+	defer cancel()
+	err := w.Step(sctx, from, to)
+	if took := time.Since(start); took >= w.SlowCall {
+		w.log.Warn("slow step", "from", from, "to", to, "took_s", took.Seconds(), "budget_s", budget.Seconds(), "failed", err != nil)
+	}
+	return err
 }
 
 // Step processes blocks from..to: records new pools, publishes those now funded, and saves the cursor. It changes
@@ -311,4 +364,42 @@ func sleep(ctx context.Context, d time.Duration) {
 	case <-t.C:
 	case <-ctx.Done():
 	}
+}
+
+// timedSource logs the source's slow calls by name. A step's total says a launch was late; this says which call did it.
+type timedSource struct {
+	Source
+	limit time.Duration
+	log   *slog.Logger
+}
+
+func (t timedSource) took(call string, start time.Time) {
+	if d := time.Since(start); d >= t.limit {
+		t.log.Warn("slow RPC call", "call", call, "took_s", d.Seconds())
+	}
+}
+
+func (t timedSource) Head(ctx context.Context) (uint64, error) {
+	defer t.took("head", time.Now())
+	return t.Source.Head(ctx)
+}
+
+func (t timedSource) Created(ctx context.Context, from, to uint64) ([]launch.Pool, error) {
+	defer t.took("creation logs", time.Now())
+	return t.Source.Created(ctx, from, to)
+}
+
+func (t timedSource) Funded(ctx context.Context, pools []launch.Pool, block uint64) ([]bool, error) {
+	defer t.took("pool balances", time.Now())
+	return t.Source.Funded(ctx, pools, block)
+}
+
+func (t timedSource) FirstMint(ctx context.Context, p launch.Pool, from, to uint64) (uint64, bool, error) {
+	defer t.took("first mint", time.Now())
+	return t.Source.FirstMint(ctx, p, from, to)
+}
+
+func (t timedSource) BlockTime(ctx context.Context, block uint64) (time.Time, error) {
+	defer t.took("block time", time.Now())
+	return t.Source.BlockTime(ctx, block)
 }
