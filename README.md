@@ -1,81 +1,75 @@
 # rugcheck
 
-Paste a token address, get a straight answer: is this token built to take your money? A Telegram bot that gives a
-risk verdict with the reasons behind it, plus a live watch of new token launches.
+[![CI](https://github.com/amirradjou/rugcheck/actions/workflows/ci.yml/badge.svg)](https://github.com/amirradjou/rugcheck/actions/workflows/ci.yml)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
 
-> **Status: M0 (contract facts), M1 (buy-then-sell simulation) and M2 (Telegram bot) built.** This README is the
-> spec. The milestones at the end track what is built.
+Paste a token address, get a straight answer: is this token built to take your money?
+
+rugcheck reads the contract, buys and sells a little of the token on a private copy of the chain, and gives a verdict with
+the reasons behind it. It covers Ethereum and Base, and it watches new token launches as they happen. The verdict comes from fixed
+rules, never from a language model.
+
+It is not hosted yet. The Telegram bot and the [alerts channel](https://t.me/rugcheckApp) only answer while I have the stack
+running, so to use it, [run your own](#try-it): the checks need no keys at all.
+
+Not financial advice. It never holds funds and never trades: every simulation runs on a local fork with throwaway accounts.
+A verdict is an automated reading of on-chain data at one block, and it can be wrong. If you think one is, open an issue with
+the address.
+
+## Where it stands
+
+| | |
+|---|---|
+| Contract facts | 20 of 20 hand-labelled tokens right ([M0](#m0-results)) |
+| Honeypot simulation | 6 of 6 honeypots flagged, 0 of 10 legitimate tokens ([M1](#m1-results)) |
+| Telegram bot | median answer 9.1 s, 0.5 ms from the cache ([M2](#m2-results)) |
+| Live watch | being measured again: its first measured day missed 36 of Ethereum's 91 launches, since fixed ([M3](#m3-results)) |
+| Classifier | built and evaluated, but not yet clearly better than the rules, so not in the verdict ([M4](#m4-status)) |
+| Explanations | every sentence cites a check or a source line ([M5](#m5-results)) |
+| Hosted demo | not yet |
+
+## What it does
+
+Most new tokens are traps: honeypots you can buy but never sell, hidden mint functions, 99% sell taxes switched on after
+launch, liquidity the deployer can pull. The signs are on chain and in the contract, but they take an expert ten minutes to
+check.
+
+1. **Contract facts.** Verified source, proxy, owner. Every privileged function and who can use it right now, tested by
+   simulating the call rather than trusting its name. Fees and limits as set now. Holder concentration, every pool, whether
+   its liquidity is burned, locked or withdrawable, and the deployer's other tokens.
+2. **Buy-then-sell simulation.** On an Anvil fork of the latest block: buy, wait, transfer, sell. Measures taxes, failed
+   sales and transfer limits.
+3. **Verdict.** Fixed rules give one of four levels and the reasons for it. A gradient-boosted classifier, trained on what past
+   launches did next, is being evaluated against them. It joins the verdict only if it beats them, and [so far it has not
+   shown that](#m4-status).
+4. **"Why" in plain words.** With a model configured, a language model explains the verdict through retrieval-augmented
+   generation, citing the checks and source lines behind it. Any sentence it cannot ground is dropped.
+5. **Live watch.** New pools on the Uniswap v2/v3 factories and Aerodrome stream through Kafka to analyzer workers, which
+   check each launch and post the dangerous ones to an alerts channel.
+
+Whatever could not be checked is listed under "Not checked" with the reason, and a check that did not finish is never read as
+a pass. Known blind spot, stated in every answer: a contract can treat later buyers differently, so a clean result is not a
+guarantee.
 
 ## Try it
 
+You need [Go 1.26](https://go.dev/dl/) and, for the simulation, [Foundry](https://getfoundry.sh)'s `anvil`. No keys: it runs on
+free public RPCs.
+
 ```sh
 make build
-./bin/rugcheck facts 0x6982508145454Ce325dDbE47a25d4ec3d2311933            # PEPE on Ethereum
+./bin/rugcheck check 0xEF77fB35d6e0503faf3cbe9565193195Aa4c6eF8            # the verdict, as the bot gives it (ZiG, a Base honeypot)
+./bin/rugcheck facts 0x6982508145454Ce325dDbE47a25d4ec3d2311933            # the full report (PEPE on Ethereum)
 ./bin/rugcheck facts -chain base 0x532f27101965dd16442E59d40670FaF5eBB142E4  # BRETT on Base
 ./bin/rugcheck facts -json <address>                                        # machine-readable
 ./bin/rugcheck sim 0x6982508145454Ce325dDbE47a25d4ec3d2311933              # buy then sell on a fork
-./bin/rugcheck sim -chain base 0x940181a94A35A4569E4529A3CDfB74e38FD98631  # AERO, through Aerodrome
-./bin/rugcheck check 0xEF77fB35d6e0503faf3cbe9565193195Aa4c6eF8            # the verdict, as the bot gives it
 ./bin/rugcheck eval testdata/tokens.json                                    # the labelled set
-make bot                                                                    # the Telegram bot (TELEGRAM_BOT_TOKEN in .env)
+make bot                                                                    # your own Telegram bot (TELEGRAM_BOT_TOKEN in .env)
+docker compose up -d --build                                                # the whole live watch (see M3)
 ```
 
-No keys needed: it runs on free public RPCs. `ETHERSCAN_API_KEY` is optional (see `.env.example`). A report covers
-the contract (verified, proxy, owner, deployment), every privileged function and who can use it right now, current
-fee and limit settings, holder concentration, every pool and whether its liquidity is burned, locked or pulled, and
-the deployer's other tokens. Whatever could not be checked is listed under NOT CHECKED with the reason.
-
-`sim` needs Foundry's `anvil` (on PATH or in `~/.foundry/bin`; see [getfoundry.sh](https://getfoundry.sh)). It
-reports the venue, each step's outcome and tax, and a verdict.
-
-## Why
-
-Most new tokens and "airdrops" are traps: honeypots you can buy but never sell, hidden mint functions, 99% sell
-taxes switched on after launch, liquidity the deployer can pull. The signs are on chain and in the contract — they
-just take an expert ten minutes to check. rugcheck does it in seconds and explains what it found in plain words.
-
-Not financial advice, never holds funds, never trades. Every simulation runs on a local fork with throwaway accounts.
-
-## What it needs to do
-
-### 1. Contract facts (Ethereum mainnet and Base first)
-
-- Verified source or not (block-explorer API), proxy / upgradeable, owner renounced or not.
-- Owner powers: mint, pause, blacklist, max-transaction and fee setters, trading switches, and the current fee values.
-- Holders: top-holder concentration, deployer share, LP tokens burned or locked (and until when), pool age and size.
-- Deployer history: other tokens the same address launched, and what happened to their liquidity.
-
-### 2. Buy-then-sell simulation
-
-On an Anvil fork of the latest block: buy through the pool's router with a funded test account, then try to sell.
-Measures buy and sell tax, whether the sell reverts, and transfer limits. Known blind spot, stated in every verdict:
-a contract can behave differently for later buyers (time switches, allowlists), so a clean simulation is not a
-guarantee.
-
-### 3. Verdict
-
-Hard rules first (sell reverts → honeypot; owner can mint without limit → high risk), then a classifier over the
-features above for the grey zone. The verdict and its score come from the checks and the model — never from an LLM.
-
-### 4. "Why" in plain words
-
-The LLM only explains, through retrieval-augmented generation (RAG): it gets the decisive checks plus the relevant
-source lines (retrieved from the verified source and a small library of known scam patterns) and writes two or three sentences that cite them. If it cannot ground a
-sentence in a check or a line of code, the sentence is dropped.
-
-### 5. Live watch (event-driven)
-
-An event-driven pipeline: new-pool events from the Uniswap v2/v3 factories (and Base's main DEXes), followed over a WebSocket RPC until each pool's first liquidity, stream into Kafka;
-analyzer workers check each new token and post high-risk launches to an alerts channel. Analyzers are independent consumers in one Kafka consumer group, so adding
-workers scales the watch and a crashed worker's partitions move to the others; results land in Postgres. Caching:
-Redis holds recent verdicts so a repeated address answers instantly.
-
-### 6. Dataset and model
-
-A labelled set: known honeypots and rugs from public scam reports, and tokens that are clearly legitimate (listed on
-major exchanges, long-lived liquidity). A machine-learning classifier (gradient-boosted trees, scikit-learn/XGBoost) over the contract, holder and simulation
-features, tracked in MLflow. Evaluated on a **time split** — trained on older launches, tested on newer ones — with precision and
-recall at the alert threshold published in this README.
+`ETHERSCAN_API_KEY` is optional, and every other setting is in [`.env.example`](.env.example). `sim` looks for `anvil` on your
+PATH and in `~/.foundry/bin`.
 
 ## How the facts are checked (M0)
 
@@ -380,10 +374,10 @@ What the numbers show:
 
 ## Stack
 
-- Go: RPC and explorer clients, Anvil fork simulation, analyzer workers, Telegram bot, HTTP API
-- Foundry/Anvil for forks; Python (uv, scikit-learn/XGBoost, MLflow) for the model, served as features → score
-- Kafka for the launch stream, Postgres for results, Redis for the verdict cache; `compose.yaml` for local runs
-- Sources: a WebSocket RPC (free tier), Etherscan/Basescan APIs (free key, rate-limited) — respect each one's limits
+- Go: RPC and explorer clients, Anvil fork simulation, analyzer workers, Telegram bot, the model's scorer
+- Foundry/Anvil for forks; Python (uv, XGBoost, MLflow) to train the model
+- Kafka for the launch stream, Postgres for results, Redis for the verdict cache; `compose.yaml` runs all of it
+- Sources: free public RPCs over HTTP and WebSocket, Sourcify and Blockscout (keyless), Etherscan (optional key)
 
 ## Milestones
 
@@ -393,9 +387,9 @@ What the numbers show:
 | M1 ✅ | Buy-then-sell simulation on an Anvil fork | every known honeypot in the set flagged; no legitimate token flagged — **6/6 flagged, 0/10 legitimate flagged, see [M1 results](#m1-results)** |
 | M2 ✅ | Telegram bot: verdict + reasons, cached in Redis | median answer under 10 s cold, instant when cached — **9.1 s cold, 0.5 ms cached, see [M2 results](#m2-results)** |
 | M3 | Live watch: factory events → Kafka → analyzers → alerts channel | a day of launches processed with lag under a minute and no duplicates — **the measured day: 262 of 264 under a minute (median 8.9 s), 0 duplicates, but 36 of Ethereum's 91 launches never seen (since fixed); being measured again, see [M3 results](#m3-results)** |
-| M4 | Labelled dataset, features, model, MLflow | time-split precision/recall published; beats the hard rules alone |
-| M5 | Grounded "why" explanations | on a review set, every sentence cites a check or a source line |
-| M6 | Public demo and results | README shows tokens analysed, precision at the alert threshold, median time to verdict |
+| M4 | Labelled dataset, features, model, MLflow | time-split precision/recall published; beats the hard rules alone — **published, not yet beating them clearly, see [M4 status](#m4-status)** |
+| M5 ✅ | Grounded "why" explanations | on a review set, every sentence cites a check or a source line — **58 of 58, read by hand, see [M5 results](#m5-results)** |
+| M6 | Public demo and results | README shows tokens analysed, precision at the alert threshold, median time to verdict; a hosted demo is postponed |
 
 ## M0 results
 
