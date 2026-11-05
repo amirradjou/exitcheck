@@ -44,3 +44,34 @@ func TestRender(t *testing.T) {
 		t.Errorf("control characters reached the output:\n%q", got)
 	}
 }
+
+func TestDefangStopsAuthorTextBeingALink(t *testing.T) {
+	for in, want := range map[string]string{
+		"Claim at evil.xyz":          "Claim at evil[.]xyz",
+		"go to https://a.evil.ru/x":  "go to https[:]//a[.]evil[.]ru/x",
+		"join t.me/evilgroup":        "join t[.]me/evilgroup",
+		"ask @evilbot now":           "ask (at)evilbot now",
+		"@evilbot":                   "(at)evilbot",
+		"$106.2M in pools, 9.1 s":    "$106.2M in pools, 9.1 s",
+		"see Token.sol:12-30":        "see Token.sol:12-30",
+		"Block 26301188 · checked.":  "Block 26301188 · checked.",
+		"UniswapV2Library: REVERTED": "UniswapV2Library: REVERTED",
+	} {
+		if got := Defang(in); got != want {
+			t.Errorf("Defang(%q) = %q, want %q", in, got, want)
+		}
+	}
+}
+
+func TestRenderDefangsNamesAndReasons(t *testing.T) {
+	r := &Report{Chain: "base", Name: "Claim at evil.xyz", Symbol: "t.me/evil", Verdict: verdict.Verdict{
+		Level: verdict.Scam, Headline: "Honeypot",
+		Reasons: []verdict.Reason{{Level: verdict.Scam, Text: "The sale failed (visit https://evil.ru)."}},
+	}}
+	got := Render(r)
+	for _, bad := range []string{"evil.xyz", "t.me/", "https://", "evil.ru"} {
+		if strings.Contains(got, bad) {
+			t.Errorf("%q is still live:\n%s", bad, got)
+		}
+	}
+}

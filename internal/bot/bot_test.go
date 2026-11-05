@@ -267,3 +267,94 @@ func TestShutdownReachesRunningAndQueuedChecks(t *testing.T) {
 		t.Errorf("%d checks started; the queued one must not start after shutdown", started)
 	}
 }
+
+// explainHarness answers with a verdict that has something to explain.
+func explainHarness(t *testing.T, explain func(context.Context, *check.Report) string) *harness {
+	t.Helper()
+	h := newHarness(t, []string{"ethereum"}, nil)
+	h.bot.check = func(_ context.Context, chain string, token common.Address) (*check.Report, error) {
+		h.checks++
+		r := report(chain, token)
+		r.Verdict = verdict.Verdict{Level: verdict.HighRisk, Headline: "High risk", Complete: true,
+			Reasons: []verdict.Reason{{Level: verdict.HighRisk, Text: "The owner can mint."}}}
+		return r, nil
+	}
+	h.bot.cfg.Explain = explain
+	return h
+}
+
+func TestVerdictGoesOutBeforeItsExplanation(t *testing.T) {
+	var shownWhenExplaining string
+	var h *harness
+	h = explainHarness(t, func(context.Context, *check.Report) string {
+		shownWhenExplaining = h.tg.last()
+		return "Why, in plain words: the owner can mint."
+	})
+	ctx := context.Background()
+	h.bot.Handle(ctx, msg(pepe))
+	if !strings.Contains(shownWhenExplaining, "High risk") {
+		t.Errorf("the chat was not shown the verdict before the model ran: %q", shownWhenExplaining)
+	}
+	if got := h.tg.last(); !strings.Contains(got, "High risk") || !strings.Contains(got, "Why, in plain words") {
+		t.Errorf("final answer:\n%s", got)
+	}
+	h.bot.Handle(ctx, msg(pepe))
+	if got := h.tg.last(); h.checks != 1 || !strings.Contains(got, "Why, in plain words") || !strings.Contains(got, "Cached answer") {
+		t.Errorf("the cached answer should carry the explanation (%d checks):\n%s", h.checks, got)
+	}
+}
+
+func TestAModelDoesNotHoldBackAnotherChatAskingAboutTheSameToken(t *testing.T) {
+	started, finish := make(chan struct{}), make(chan struct{})
+	h := explainHarness(t, func(context.Context, *check.Report) string {
+		close(started)
+		<-finish
+		return "Why, in plain words: the owner can mint."
+	})
+	first := make(chan struct{})
+	go func() {
+		defer close(first)
+		h.bot.Handle(context.Background(), msg(pepe))
+	}()
+	<-started // the first request has its verdict and is waiting on the model
+
+	other := msg(pepe)
+	other.Chat.ID = 8
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		h.bot.Handle(context.Background(), other)
+	}()
+	select {
+	case <-done:
+	case <-time.After(5 * time.Second):
+		close(finish)
+		t.Fatal("a second chat waited for the model")
+	}
+	if got := h.tg.last(); !strings.Contains(got, "High risk") {
+		t.Errorf("the second chat got:\n%s", got)
+	}
+	close(finish)
+	<-first
+}
+
+func TestVerdictSurvivesAModelThatFailsOrIsSlow(t *testing.T) {
+	h := explainHarness(t, func(ctx context.Context, _ *check.Report) string {
+		<-ctx.Done() // a model that never answers, until the bot's budget ends
+		return ""
+	})
+	h.bot.cfg.ExplainTimeout = time.Millisecond
+	h.bot.Handle(context.Background(), msg(pepe))
+	if got := h.tg.last(); !strings.Contains(got, "High risk") || strings.Contains(got, "Something went wrong") {
+		t.Errorf("answer:\n%s", got)
+	}
+}
+
+func TestClearVerdictIsNotExplained(t *testing.T) {
+	h := newHarness(t, []string{"ethereum"}, nil)
+	h.bot.cfg.Explain = func(context.Context, *check.Report) string {
+		t.Error("a clear verdict was put to the model")
+		return ""
+	}
+	h.bot.Handle(context.Background(), msg(pepe))
+}

@@ -223,3 +223,19 @@ func TestLevelText(t *testing.T) {
 		t.Error("unknown level parsed")
 	}
 }
+
+func TestLPHoldersSaysExactlyWho(t *testing.T) {
+	for _, c := range []struct {
+		lp   facts.LPShares
+		want string
+	}{
+		{facts.LPShares{Deployer: 0.999}, "The deployer holds"},
+		{facts.LPShares{Owner: 0.999}, "The owner holds"},
+		{facts.LPShares{Deployer: 0.5, Owner: 0.4}, "The deployer and the owner hold"},
+		{facts.LPShares{Deployer: 0.9, Owner: 0.001}, "The deployer holds"},
+	} {
+		if got := lpHolders(&c.lp); got != c.want {
+			t.Errorf("%+v: %q, want %q", c.lp, got, c.want)
+		}
+	}
+}

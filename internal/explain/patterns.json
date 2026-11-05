@@ -1,0 +1,82 @@
+[
+ {
+  "title": "Honeypot",
+  "text": "A honeypot lets anyone buy but makes selling fail, or keeps nearly all of a sale, so buyers cannot get their money out. A test sale that fails after a test buy worked is the direct sign."
+ },
+ {
+  "title": "Sell tax set to all of a sale",
+  "text": "Some tokens set their sell tax to all of the sale. Nothing reaches the pool, so the DEX router reverts and the sale fails, which looks like a broken swap but is the trap working."
+ },
+ {
+  "title": "Fee wallet that refuses payment",
+  "text": "A token can pay a fee wallet on every sale from a wallet that rejects payment, for example one delegated by EIP-7702 to code that reverts. The sale then fails although the token's own code, renounced ownership and burned LP all look clean."
+ },
+ {
+  "title": "Hard-coded list of sellers",
+  "text": "A contract can let only a fixed list of wallets sell, checking addresses instead of the owner. Ownership can be renounced and no privileged function appear, while every outside buyer is trapped."
+ },
+ {
+  "title": "Liquidity pull",
+  "text": "Whoever holds a pool's LP tokens can withdraw its liquidity at any time. After a pull there is almost nothing left to sell into, so holders keep tokens with no real market."
+ },
+ {
+  "title": "Deployer holds the LP",
+  "text": "When the deployer of a new token keeps the LP tokens instead of burning or locking them, nothing stops them from withdrawing the liquidity. Pools set up this way are usually emptied soon after buyers arrive."
+ },
+ {
+  "title": "Serial deployer",
+  "text": "A deployer whose earlier tokens had their liquidity pulled is likely to do it again: launching and emptying pools repeatedly is how the business works."
+ },
+ {
+  "title": "Minting",
+  "text": "An owner who can mint can create new tokens and sell them into the pool, draining it and diluting every holder."
+ },
+ {
+  "title": "Blacklist",
+  "text": "A blacklist lets its holder stop chosen wallets from selling. Used against buyers, it is a honeypot that can be switched on after launch."
+ },
+ {
+  "title": "Pause",
+  "text": "A pause function stops all transfers while it is on, so holders cannot sell, however good the token looked when they bought."
+ },
+ {
+  "title": "Tax setter",
+  "text": "An owner who can change the taxes can raise the sell tax after buyers are in, taking most of what they try to sell. A low tax today does not limit tomorrow's."
+ },
+ {
+  "title": "Trading switch",
+  "text": "A trading switch can close the market for everyone except wallets the owner chooses. A token can trade normally for a while and then stop."
+ },
+ {
+  "title": "Transaction and wallet limits",
+  "text": "Low limits on transaction or wallet size stop a holder from selling a whole position at once, and an owner who can change them can tighten them later."
+ },
+ {
+  "title": "Seizing tokens",
+  "text": "A function that moves tokens out of other wallets lets its holder simply take what buyers bought."
+ },
+ {
+  "title": "Reclaiming ownership",
+  "text": "A token can look renounced while keeping a hidden way to take ownership back, restoring every owner power after buyers have checked."
+ },
+ {
+  "title": "Upgradeable proxy",
+  "text": "A proxy's code can be replaced by whoever controls upgrades, so what a check reads today says little about what the contract will do tomorrow."
+ },
+ {
+  "title": "Concentrated supply",
+  "text": "One wallet holding a large share of the supply can sell it all at once and collapse the price, without any contract trick at all."
+ },
+ {
+  "title": "Thin or young pool",
+  "text": "A pool with little liquidity moves sharply on a small sale, and a very young pool has no record: many launches have their liquidity pulled within their first day."
+ },
+ {
+  "title": "Unpublished source",
+  "text": "A contract without published source cannot be read: what it does can only be inferred from its bytecode and from simulated trades."
+ },
+ {
+  "title": "Unfinished checks",
+  "text": "When a decisive check does not finish, the answer may be milder than the truth, so the token cannot be called free of red flags."
+ }
+]

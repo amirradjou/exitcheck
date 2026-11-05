@@ -1,0 +1,128 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 155483,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 109265,
+   "tax": 0
+  },
+  "block": 26314535,
+  "chain": "ethereum",
+  "token": "0x8b1b32fb4e0475117a6b13cb1ea7915822c80186",
+  "venue": "uniswap-v2 pool 0xA3bCA2D4Ea0D2B5A5d356b8925427b1FA1c862bd",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 52328,
+   "tax": 0
+  },
+  "spent_eth": 0.0025,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 3464332915
+ },
+ "name": "Gourdwick Holdings",
+ "block": 26314535,
+ "chain": "ethereum",
+ "facts": {
+  "gaps": [
+   "verified source: not verified on Sourcify or Blockscout; Etherscan not checked (set ETHERSCAN_API_KEY)",
+   "creation block: Post https://rpc.mevblocker.io: context deadline exceeded",
+   "holders: too much history to replay through the RPC (log scan budget exhausted: 26314536 blocks need at least 2632 requests of 10000 blocks, budget is 150) (explorer: Get https://eth.blockscout.com: context deadline exceeded)",
+   "balances: multicall: Post https://ethereum-rpc.publicnode.com: context deadline exceeded",
+   "pool age: Post https://rpc.mevblocker.io: context deadline exceeded",
+   "LP supply: multicall: Post https://ethereum-rpc.publicnode.com: context deadline exceeded"
+  ],
+  "block": 26314535,
+  "chain": "ethereum",
+  "pools": [
+   {
+    "dex": "uniswap-v2",
+    "usd": 1125.91024128119,
+    "quote": "WETH",
+    "address": "0xa3bca2d4ea0d2b5a5d356b8925427b1fa1c862bd",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 0.5,
+    "token_amount": 7800000000000000000000000000
+   }
+  ],
+  "token": {
+   "name": "Gourdwick Holdings",
+   "symbol": "$GRDW",
+   "decimals": 18,
+   "total_supply": 7800000000000000000000000000
+  },
+  "powers": [],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0,
+   "in_pools": 0
+  },
+  "address": "0x8b1b32fb4e0475117a6b13cb1ea7915822c80186",
+  "contract": {
+   "verified": null,
+   "code_size": 4642,
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "settings": null,
+  "liquidity": {
+   "dex": "uniswap-v2",
+   "pool": "0xa3bca2d4ea0d2b5a5d356b8925427b1fa1c862bd",
+   "pulled": false
+  },
+  "block_time": "2026-10-31T18:28:11Z",
+  "checked_at": "2026-10-31T18:28:12.02410526Z",
+  "elapsed_ns": 20000808279,
+  "timings_ms": {
+   "block": 41,
+   "pools": 126,
+   "probe": 0,
+   "basics": 36,
+   "shares": 0,
+   "source": 6474,
+   "holders": 0,
+   "contract": 359,
+   "creation": 19640,
+   "deployer": 0,
+   "liquidity": 0
+  }
+ },
+ "symbol": "$GRDW",
+ "address": "0x8b1b32fb4e0475117a6b13cb1ea7915822c80186",
+ "verdict": {
+  "level": "caution",
+  "reasons": [
+   {
+    "text": "Only $1.1k of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "Some decisive checks did not finish (LP supply, creation block), so this is not a clean bill of health.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 26314535 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": false,
+  "headline": "Caution: no trap found, but read the notes",
+  "not_checked": [
+   "verified source: not verified on Sourcify or Blockscout; Etherscan not checked (set ETHERSCAN_API_KEY)",
+   "creation block: Post https://rpc.mevblocker.io: context deadline exceeded",
+   "holders: too much history to replay through the RPC (log scan budget exhausted: 26314536 blocks need at least 2632 requests of 10000 blocks, budget is 150) (explorer: Get https://eth.blockscout.com: context deadline exceeded)",
+   "balances: multicall: Post https://ethereum-rpc.publicnode.com: context deadline exceeded",
+   "pool age: Post https://rpc.mevblocker.io: context deadline exceeded",
+   "LP supply: multicall: Post https://ethereum-rpc.publicnode.com: context deadline exceeded"
+  ]
+ },
+ "checked_at": "2026-10-31T18:28:12.02410526Z",
+ "elapsed_ns": 20000850358
+}

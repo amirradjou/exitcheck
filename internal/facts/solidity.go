@@ -2,9 +2,9 @@ package facts
 
 import "regexp"
 
-// blankComments replaces Solidity comments and string literals with spaces, keeping newlines, so offsets and line
+// BlankComments replaces Solidity comments and string literals with spaces, keeping newlines, so offsets and line
 // numbers still match the original and commented-out code is not mistaken for live code.
-func blankComments(src string) string {
+func BlankComments(src string) string {
 	b := []byte(src)
 	for i := 0; i < len(b); i++ {
 		switch {

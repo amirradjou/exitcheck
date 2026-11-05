@@ -37,6 +37,7 @@ commands:
   audit             launches the live watch missed, from the factories' logs
   eval <cases.json> check facts against hand-labelled tokens (testdata/tokens.json)
   backfill          check past launches as they stood at their block, on a fork (M4's training set)
+  explain           check a token and explain the verdict in plain words, citing the checks (needs a model)
   label             read what happened to each launch's liquidity in the day after it (M4's labels)
   dataset           write the labelled launches and their features as CSV, for the model
   version           print the version
@@ -48,6 +49,8 @@ environment:
   ETHERSCAN_API_KEY                          optional; lets "verified source" answer no instead of unknown
   TELEGRAM_BOT_TOKEN                         the bot's token from @BotFather (bot only)
   REDIS_URL                                  answer cache, e.g. redis://localhost:6379/0 (bot, check)
+  RUGCHECK_LLM_URL, RUGCHECK_LLM_MODEL       optional; an OpenAI-compatible model for the plain-words "why" (bot, explain)
+  RUGCHECK_LLM_KEY                           its key, if it needs one
 `
 
 func main() {
@@ -77,6 +80,8 @@ func main() {
 		err = runCheck(ctx, os.Args[2:])
 	case "bot":
 		err = runBot(ctx, os.Args[2:])
+	case "explain":
+		err = runExplain(ctx, os.Args[2:])
 	case "bench":
 		err = runBench(ctx, os.Args[2:])
 	case "watch":

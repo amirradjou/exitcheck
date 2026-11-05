@@ -6,6 +6,7 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"regexp"
 	"strings"
 	"sync"
 	"time"
@@ -113,11 +114,11 @@ func Locate(ctx context.Context, clients []*chain.Client, address common.Address
 var icons = map[verdict.Level]string{verdict.Clear: "🟢", verdict.Caution: "🟡", verdict.HighRisk: "🟠", verdict.Scam: "🔴"}
 
 // Render writes the report as a short plain-text answer: the verdict, its reasons, what was not checked, and the
-// caveat. Every line passes through printable: names and revert reasons are written by the token's author.
+// caveat. Every line passes through printable and Defang: names and revert reasons are written by the token's author.
 func Render(r *Report) string {
 	var b strings.Builder
 	line := func(format string, args ...any) {
-		b.WriteString(printable(fmt.Sprintf(format, args...)))
+		b.WriteString(printable(Defang(fmt.Sprintf(format, args...))))
 		b.WriteByte('\n')
 	}
 	v := r.Verdict
@@ -177,6 +178,26 @@ func clip(s string, n int) string {
 		return s
 	}
 	return string(r[:n-1]) + "…"
+}
+
+var (
+	schemeRE = regexp.MustCompile(`(?i)\b(https?)://`)
+	hostRE   = regexp.MustCompile(`(?i)\b[a-z0-9-]+(?:\.[a-z0-9-]+)*\.[a-z]{2,}\b`)
+	handleRE = regexp.MustCompile(`(^|\s)@(\w{3,})`)
+)
+
+// Defang stops links and Telegram handles in author-written text from being live. Telegram turns "evil.xyz" and "@evil"
+// into links in plain text, and these answers go to a public channel: a token's name would otherwise be a free phishing
+// post, sent by this bot, about a token it has just called dangerous.
+func Defang(s string) string {
+	s = schemeRE.ReplaceAllString(s, "${1}[:]//")
+	s = hostRE.ReplaceAllStringFunc(s, func(h string) string {
+		if strings.HasSuffix(strings.ToLower(h), ".sol") {
+			return h // a source file, which Telegram does not link
+		}
+		return strings.ReplaceAll(h, ".", "[.]")
+	})
+	return handleRE.ReplaceAllString(s, "${1}(at)${2}")
 }
 
 // printable replaces control and other non-printing characters, keeping newlines out of single lines.

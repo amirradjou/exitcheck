@@ -1,0 +1,201 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 171703,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 183924,
+   "tax": 0
+  },
+  "block": 53346448,
+  "chain": "base",
+  "token": "0x30e1fd8113e97e536e17cd1e2180c4a0b4bf9979",
+  "venue": "uniswap-v3 0.30% pool 0x9ABa6e52C6a5cA393554dc4E93434A408EB26fD8",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 51556,
+   "tax": 0
+  },
+  "spent_eth": 0.00499500999331,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 5036697535
+ },
+ "name": "WOTF",
+ "block": 53346448,
+ "chain": "base",
+ "facts": {
+  "gaps": [
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "block": 53346448,
+  "chain": "base",
+  "pools": [
+   {
+    "dex": "uniswap-v3",
+    "fee": 3000,
+    "usd": 2251.2347359358096,
+    "quote": "WETH",
+    "address": "0x9aba6e52c6a5ca393554dc4e93434a408eb26fd8",
+    "quote_token": "0x4200000000000000000000000000000000000006",
+    "quote_amount": 0.999001998662,
+    "token_amount": 8996399478264554319911691138
+   }
+  ],
+  "token": {
+   "name": "WOTF",
+   "symbol": "WOTF",
+   "decimals": 18,
+   "total_supply": 10000000000000000000000000000
+  },
+  "powers": [
+   {
+    "kind": "mint",
+    "where": "BurnMintERC20.sol:127",
+    "probed": true,
+    "function": "mint(address,uint256)"
+   },
+   {
+    "kind": "mint",
+    "where": "BurnMintERC20.sol:141",
+    "probed": true,
+    "function": "grantMintAndBurnRoles(address)",
+    "callable_by": [
+     "deployer"
+    ]
+   }
+  ],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0.10036502178652096,
+   "in_pools": 0.899634973730301
+  },
+  "address": "0x30e1fd8113e97e536e17cd1e2180c4a0b4bf9979",
+  "holders": {
+   "top": [
+    {
+     "label": "pool",
+     "share": 0.899634973730301,
+     "address": "0x9aba6e52c6a5ca393554dc4e93434a408eb26fd8",
+     "balance": 8996349737303010247754136557
+    },
+    {
+     "label": "deployer",
+     "share": 0.10036502178652096,
+     "address": "0x21087c04c02e009cc68d71da1c3a7dd90120ddf8",
+     "balance": 1003650217865209617545477814
+    },
+    {
+     "label": "contract",
+     "share": 4.483178013470038e-09,
+     "address": "0x6aa989249e423b0f843a2b10cab9ea7eca41c7e8",
+     "balance": 44831780134700385629
+    }
+   ],
+   "count": 3,
+   "source": "transfer-logs",
+   "top_share": 0.10036502178652096,
+   "top10_share": 0.10036502626969897
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0x85fa8af577c4d272771849f48b4ae0e5bd36e32aa9e5f6181470902432502f90",
+    "Block": 53346410,
+    "Factory": null,
+    "Deployer": "0x21087c04c02e009cc68d71da1c3a7dd90120ddf8"
+   },
+   "verified": true,
+   "code_size": 6062,
+   "created_at": "2026-10-31T21:29:27Z",
+   "source_name": "BurnMintERC20",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 26,
+   "pulled": 0,
+   "tokens": [
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "WOTF",
+     "address": "0xbe3e9859c080a3c2c3713db2519229221cf1317d"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "WOTF",
+     "address": "0x6be062e6a6f68763c49f0138c80fda023088e98a"
+    }
+   ],
+   "address": "0x21087c04c02e009cc68d71da1c3a7dd90120ddf8",
+   "scanned": 26,
+   "balance_eth": 0.4986515821543788
+  },
+  "settings": null,
+  "liquidity": {
+   "dex": "uniswap-v3",
+   "pool": "0x9aba6e52c6a5ca393554dc4e93434a408eb26fd8",
+   "pulled": false,
+   "created_at": "2026-10-31T21:30:43Z",
+   "created_block": 53346448
+  },
+  "block_time": "2026-10-31T21:30:43Z",
+  "checked_at": "2026-10-31T21:30:43.262143001Z",
+  "elapsed_ns": 8002193122,
+  "timings_ms": {
+   "block": 48,
+   "pools": 85,
+   "probe": 50,
+   "basics": 54,
+   "shares": 32,
+   "source": 398,
+   "holders": 393,
+   "contract": 300,
+   "creation": 4108,
+   "deployer": 315,
+   "liquidity": 3586
+  }
+ },
+ "symbol": "WOTF",
+ "address": "0x30e1fd8113e97e536e17cd1e2180c4a0b4bf9979",
+ "verdict": {
+  "level": "high-risk",
+  "reasons": [
+   {
+    "text": "The deployer can mint new tokens.",
+    "level": "high-risk"
+   },
+   {
+    "text": "Only $2.3k of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is less than a minute old.",
+    "level": "caution"
+   },
+   {
+    "text": "Some decisive checks did not finish (LP lock), so this is not a clean bill of health.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 53346448 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": false,
+  "headline": "High risk: see the reasons below",
+  "not_checked": [
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ]
+ },
+ "checked_at": "2026-10-31T21:30:43.262143001Z",
+ "elapsed_ns": 8002281650
+}

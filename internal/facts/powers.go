@@ -140,7 +140,7 @@ func scanSource(files map[string]string) []Power {
 	}
 	sort.Strings(paths)
 	for _, path := range paths {
-		text := blankComments(files[path])
+		text := BlankComments(files[path])
 		skip := declarationsOnly(text)
 		for _, m := range funcDecl.FindAllStringSubmatchIndex(text, -1) {
 			if inSpans(skip, m[0]) {

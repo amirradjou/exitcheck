@@ -1,0 +1,229 @@
+{
+ "name": "Nomina",
+ "block": 26314293,
+ "chain": "ethereum",
+ "facts": {
+  "gaps": [
+   "deployer history: this token was created through contract 0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed, so only the deployer's direct deployments are listed",
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "block": 26314293,
+  "chain": "ethereum",
+  "pools": [
+   {
+    "dex": "uniswap-v3",
+    "fee": 10000,
+    "usd": 100023.206296,
+    "quote": "USDC",
+    "address": "0x55aba0f4f68fac8a66e5bb1b42a2ddc7afc686d4",
+    "quote_token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    "quote_amount": 100023.206296,
+    "token_amount": 43927838811710275931600
+   },
+   {
+    "dex": "uniswap-v3",
+    "fee": 10000,
+    "usd": 44982.38626641195,
+    "quote": "WETH",
+    "address": "0x334551d1760c0d9529a9397692ad01e9c39b289a",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 20,
+    "token_amount": 1
+   },
+   {
+    "dex": "uniswap-v3",
+    "fee": 3000,
+    "usd": 8.996477253282391e-15,
+    "quote": "WETH",
+    "address": "0xd578fcae478d9b8147b442da079068a61749ed87",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 4e-18,
+    "token_amount": 6
+   }
+  ],
+  "token": {
+   "name": "Nomina",
+   "symbol": "NOM",
+   "decimals": 18,
+   "total_supply": 7318436508226206056223902100
+  },
+  "powers": [
+   {
+    "kind": "mint",
+    "where": "Nomina.sol:129",
+    "probed": true,
+    "function": "mint(address,uint256)"
+   },
+   {
+    "kind": "mint",
+    "where": "Nomina.sol:162",
+    "probed": true,
+    "function": "setMintAuthority(address)"
+   },
+   {
+    "kind": "mint",
+    "where": "Nomina.sol:171",
+    "probed": true,
+    "function": "acceptMintAuthority()"
+   },
+   {
+    "kind": "mint",
+    "where": "Nomina.sol:182",
+    "probed": true,
+    "function": "setMinter(address)"
+   }
+  ],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0,
+   "in_pools": 6.0023529291172625e-06
+  },
+  "address": "0x6e6f6d696e61decd6605bd4a57836c5db6923340",
+  "holders": {
+   "top": [
+    {
+     "label": "wallet",
+     "share": 0.4668162168792301,
+     "address": "0xf977814e90da44bfa03b6295a0616a897441acec",
+     "balance": 3416364844241000000000000000
+    },
+    {
+     "label": "contract",
+     "share": 0.24442995945777063,
+     "address": "0x89d6ab0cf22af8a5dbeb0bc1bd7294ef5282850d",
+     "balance": 1788845139000000000000000000
+    },
+    {
+     "label": "contract",
+     "share": 0.03622072048550679,
+     "address": "0xa9d1e08c7793af67e9d92fe308d5697fb81d3e43",
+     "balance": 265079043155389730231835400
+    },
+    {
+     "label": "wallet",
+     "share": 0.0315676003655016,
+     "address": "0x2c61e549e4073d86e09fc4b9d6dfe65703c48fcc",
+     "balance": 231025478991981875547034835
+    },
+    {
+     "label": "wallet",
+     "share": 0.023058141770395304,
+     "address": "0xab782bc7d4a2b306825de5a7730034f8f63ee1bc",
+     "balance": 168749546544316634871707509
+    },
+    {
+     "label": "wallet",
+     "share": 0.021848346066850616,
+     "address": "0x06f0bc7d4c22a6ab56589ea57975a18e6e1d2df4",
+     "balance": 159895733500000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.02074947028633225,
+     "address": "0x0d0707963952f2fba59dd06f2b425ace40b492fe",
+     "balance": 151853680869848789217919840
+    },
+    {
+     "label": "wallet",
+     "share": 0.015030532802512632,
+     "address": "0xe5912b8eb692305a55370ec68cb6a9ab139c7aaa",
+     "balance": 110000000000000000000000000
+    },
+    {
+     "label": "contract",
+     "share": 0.009974931113256796,
+     "address": "0xd07c7fd3598750fd770c20e89ae005f65f189fe4",
+     "balance": 73000900026300000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.009373896476780033,
+     "address": "0x43684d03d81d3a4c70da68febdd61029d426f042",
+     "balance": 68602266200000000000000000
+    }
+   ],
+   "count": 9397,
+   "source": "blockscout",
+   "top_share": 0.4668162168792301,
+   "top10_share": 0.8790698157041368
+  },
+  "contract": {
+   "creation": {
+    "Tx": "0x6b2270cc6e06da7189292eff04d659b6804657bfc1ca88a6b3de4106c1d482b2",
+    "Block": 23175537,
+    "Factory": "0xba5ed099633d3b313e4d5f7bdc1305d3c28ba5ed",
+    "Deployer": "0x9496bf1bd2fa5bcba72062cc781cc97ea6930a13"
+   },
+   "verified": true,
+   "code_size": 3270,
+   "created_at": "2025-08-19T13:52:11Z",
+   "source_name": "Nomina",
+   "verified_by": "sourcify",
+   "delegatecall": false,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 31,
+   "pulled": 0,
+   "tokens": null,
+   "address": "0x9496bf1bd2fa5bcba72062cc781cc97ea6930a13",
+   "scanned": 31,
+   "balance_eth": 7.3247328e-08
+  },
+  "settings": null,
+  "liquidity": {
+   "dex": "uniswap-v3",
+   "pool": "0x55aba0f4f68fac8a66e5bb1b42a2ddc7afc686d4",
+   "pulled": false,
+   "created_at": "2026-10-31T15:14:11Z",
+   "created_block": 26313570
+  },
+  "block_time": "2026-10-31T17:39:47Z",
+  "checked_at": "2026-10-31T17:39:51.677018119Z",
+  "elapsed_ns": 7271222014,
+  "timings_ms": {
+   "block": 32,
+   "pools": 99,
+   "probe": 48,
+   "basics": 36,
+   "shares": 57,
+   "source": 576,
+   "holders": 4183,
+   "contract": 324,
+   "creation": 2760,
+   "deployer": 221,
+   "liquidity": 2036
+  }
+ },
+ "symbol": "NOM",
+ "address": "0x6e6f6d696e61decd6605bd4a57836c5db6923340",
+ "verdict": {
+  "level": "caution",
+  "reasons": [
+   {
+    "text": "The main pool is 2 hours old.",
+    "level": "caution"
+   },
+   {
+    "text": "One wallet holds 47% of the supply and could sell it at once.",
+    "level": "caution"
+   },
+   {
+    "text": "Some decisive checks did not finish (the buy-then-sell simulation), so this is not a clean bill of health.",
+    "level": "caution"
+   }
+  ],
+  "complete": false,
+  "headline": "Caution: no trap found, but read the notes",
+  "not_checked": [
+   "buy-then-sell simulation: failed to get account for 0x57c6EA6dBa84a16Cd62D26FE93338841Bc631711: server returned an error response: error code -32001: block not found: hash 0x3bcbd63041392b3e63e41ff81282f2f7a56ac81293639575510adfc8c095c413",
+   "deployer history: this token was created through contract 0xba5Ed099633D3B313e4D5F7bdc1305d3c28ba5Ed, so only the deployer's direct deployments are listed",
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ]
+ },
+ "sim_error": "failed to get account for 0x57c6EA6dBa84a16Cd62D26FE93338841Bc631711: server returned an error response: error code -32001: block not found: hash 0x3bcbd63041392b3e63e41ff81282f2f7a56ac81293639575510adfc8c095c413",
+ "checked_at": "2026-10-31T17:39:51.677018119Z",
+ "elapsed_ns": 7271259545
+}

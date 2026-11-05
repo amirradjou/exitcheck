@@ -269,7 +269,7 @@ func (j *judge) liquidity() {
 	insiders := l.LP.Deployer + l.LP.Owner
 	switch {
 	case insiders >= insiderLP:
-		j.add(j.unlessEstablished(HighRisk), "The deployer or owner holds %s of the main pool's LP tokens and can withdraw that liquidity at any time.", pct(insiders))
+		j.add(j.unlessEstablished(HighRisk), "%s %s of the main pool's LP tokens and can withdraw that liquidity at any time.", lpHolders(l.LP), pct(insiders))
 	case l.LP.Burned >= burnedLP:
 		j.add(Clear, "%s of the main pool's LP tokens are burned: that liquidity can never be withdrawn.", pct(l.LP.Burned))
 	}
@@ -371,7 +371,11 @@ func (j *judge) deployer() {
 	if d == nil || d.Pulled == 0 {
 		return
 	}
-	j.add(HighRisk, "The deployer launched %d other tokens and pulled the liquidity of %d.", len(d.Tokens), d.Pulled)
+	tokens := "tokens"
+	if len(d.Tokens) == 1 {
+		tokens = "token"
+	}
+	j.add(HighRisk, "The deployer launched %d other %s and pulled the liquidity of %d.", len(d.Tokens), tokens, d.Pulled)
 }
 
 func (j *judge) contract() {
@@ -436,6 +440,19 @@ func (j *judge) headline() string {
 		HighRisk: "High risk: see the reasons below",
 		Scam:     "Scam",
 	}[j.v.Level]
+}
+
+// lpHolders says who holds the LP, as exactly as the report knows it. "The deployer or owner" reads as either one, and a
+// language model explaining a verdict picked one: wrongly, on two of nine tokens in a review.
+func lpHolders(lp *facts.LPShares) string {
+	const some = 0.01
+	switch {
+	case lp.Owner < some:
+		return "The deployer holds"
+	case lp.Deployer < some:
+		return "The owner holds"
+	}
+	return "The deployer and the owner hold"
 }
 
 // pct formats a share, keeping a decimal near 100% so 99.6% does not read as everything. The decimal is rounded down:

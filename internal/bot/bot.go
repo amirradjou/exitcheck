@@ -60,6 +60,10 @@ type Config struct {
 	// PerChat is how many uncached checks a chat may start per Window.
 	PerChat int
 	Window  time.Duration
+	// Explain writes the plain-words "why" of a report, or "" when it has none; nil runs without a model.
+	Explain func(ctx context.Context, r *check.Report) string
+	// ExplainTimeout bounds it.
+	ExplainTimeout time.Duration
 }
 
 // Bot is a running Telegram bot.
@@ -100,6 +104,9 @@ func New(tg Messenger, check Checker, locate Locator, c *cache.Cache, cfg Config
 	}
 	if cfg.PerChat == 0 {
 		cfg.PerChat, cfg.Window = 10, 10*time.Minute
+	}
+	if cfg.ExplainTimeout == 0 {
+		cfg.ExplainTimeout = 30 * time.Second
 	}
 	return &Bot{
 		tg: tg, check: check, locate: locate, cache: c, cfg: cfg, log: log,
@@ -228,9 +235,15 @@ func (b *Bot) Handle(ctx context.Context, m *telegram.Message) {
 		return
 	}
 	_ = b.tg.Typing(ctx, chat)
+	var fresh *check.Report // set only for the request that ran the check, not one that joined it
 	a, hit, err := cache.Fetch(ctx, b.cache, key, func(ctx context.Context) (Answer, time.Duration, error) {
-		a, err := b.run(ctx, chat, progress, chain, token)
-		return a, a.TTL(), err
+		r, err := b.runCheck(ctx, chat, progress, chain, token)
+		if err != nil {
+			return Answer{}, 0, err
+		}
+		fresh = r
+		a := NewAnswer(r)
+		return a, a.TTL(), nil
 	})
 	text := a.Text + note
 	if err != nil {
@@ -241,11 +254,34 @@ func (b *Bot) Handle(ctx context.Context, m *telegram.Message) {
 	}
 	if err == nil {
 		b.served(Served{Chain: chain, Token: token, Level: a.Level, Cached: hit, Took: b.now().Sub(start)})
+		if fresh != nil {
+			b.explain(ctx, chat, progress, key, a, note, fresh)
+		}
 	}
 }
 
-// run performs one check, holding a global slot. The timeout covers the wait for a slot too.
-func (b *Bot) run(ctx context.Context, chat, progress int64, chain string, token common.Address) (Answer, error) {
+// explain adds the plain-words "why" to an answer already sent and cached. It runs after both on purpose: a model is the
+// slowest and least reliable part of an answer, and neither its delay nor its failure may hold a verdict back, here or
+// for anyone else asking about the same token meanwhile.
+func (b *Bot) explain(ctx context.Context, chat, progress int64, key string, a Answer, note string, r *check.Report) {
+	if b.cfg.Explain == nil || r.Verdict.Level == verdict.Clear {
+		return
+	}
+	xctx, cancel := context.WithTimeout(ctx, b.cfg.ExplainTimeout)
+	defer cancel()
+	why := b.cfg.Explain(xctx, r)
+	if why == "" {
+		return
+	}
+	a.Text += "\n\n" + why
+	cache.PutFor(ctx, b.cache, key, a, a.TTL())
+	if err := b.tg.Edit(ctx, chat, progress, a.Text+note); err != nil {
+		b.log.Warn("edit", "chat", chat, "err", err)
+	}
+}
+
+// runCheck performs one check, holding a global slot. The timeout covers the wait for a slot too.
+func (b *Bot) runCheck(ctx context.Context, chat, progress int64, chain string, token common.Address) (*check.Report, error) {
 	ctx, cancel := context.WithTimeout(ctx, b.cfg.Timeout)
 	defer cancel()
 	select {
@@ -255,19 +291,15 @@ func (b *Bot) run(ctx context.Context, chat, progress int64, chain string, token
 		select {
 		case b.slots <- struct{}{}:
 		case <-ctx.Done():
-			return Answer{}, ctx.Err()
+			return nil, ctx.Err()
 		}
 	}
 	defer func() { <-b.slots }()
 	// A slot freed at the moment of shutdown can win the select above; don't start a fork for nobody.
 	if err := ctx.Err(); err != nil {
-		return Answer{}, err
+		return nil, err
 	}
-	r, err := b.check(ctx, chain, token)
-	if err != nil {
-		return Answer{}, err
-	}
-	return NewAnswer(r), nil
+	return b.check(ctx, chain, token)
 }
 
 // Key is the cache key of a token's answer.

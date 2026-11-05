@@ -1,0 +1,306 @@
+{
+ "sim": {
+  "buy": {
+   "ok": true,
+   "gas": 155423,
+   "tax": 0
+  },
+  "sell": {
+   "ok": true,
+   "gas": 131100,
+   "tax": 0
+  },
+  "block": 26310786,
+  "chain": "ethereum",
+  "token": "0x526526528f35ac738177003b8773b402b8df8143",
+  "venue": "uniswap-v3 0.30% pool 0xDd7CDE74D24D5E85cdbfEF3B5E2f198AC59a89BB",
+  "reasons": [],
+  "verdict": "ok",
+  "transfer": {
+   "ok": true,
+   "gas": 56435,
+   "tax": 0
+  },
+  "spent_eth": 0.004918397108699945,
+  "blind_spot": "a contract can treat later buyers differently (time switches, allowlists, limits it can change), so a clean simulation is not a guarantee",
+  "elapsed_ns": 3811065889
+ },
+ "name": "Re Protocol",
+ "block": 26310786,
+ "chain": "ethereum",
+ "facts": {
+  "gaps": [
+   "deployer history: this token was created through contract 0xc2f7C5fDa6C25ec6E9A2C5Eaa7CB66b90ca4d6ed, so only the deployer's direct deployments are listed",
+   "deployer history: only the last 1000 of 3555 transactions were checked",
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ],
+  "block": 26310786,
+  "chain": "ethereum",
+  "pools": [
+   {
+    "dex": "uniswap-v3",
+    "fee": 3000,
+    "usd": 2203.5457084515506,
+    "quote": "WETH",
+    "address": "0xdd7cde74d24d5e85cdbfef3b5e2f198ac59a89bb",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 0.983679421739989,
+    "token_amount": 101989233056449926113
+   },
+   {
+    "dex": "uniswap-v3",
+    "fee": 100,
+    "usd": 560.0263814998264,
+    "quote": "WETH",
+    "address": "0x37365cbe45a481d19992678994890da7603cd14d",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 0.25,
+    "token_amount": 0
+   },
+   {
+    "dex": "uniswap-v3",
+    "fee": 10000,
+    "usd": 23.588807,
+    "quote": "USDC",
+    "address": "0x17f50f4b3de80d8a1ad23d7313b4a2664594ab90",
+    "quote_token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    "quote_amount": 23.588807,
+    "token_amount": 4947011495245594605145
+   },
+   {
+    "dex": "uniswap-v3",
+    "fee": 3000,
+    "usd": 2.909659,
+    "quote": "USDC",
+    "address": "0x115b999b58f8f332def7dadcbebf6ece40eb72d2",
+    "quote_token": "0xa0b86991c6218b36c1d19d4a2e9eb0ce3606eb48",
+    "quote_amount": 2.909659,
+    "token_amount": 8297662566688093428
+   },
+   {
+    "dex": "uniswap-v3",
+    "fee": 10000,
+    "usd": 0.041357,
+    "quote": "USDT",
+    "address": "0x63b6cc41bdb91fea27f5fb9eb45556c201ee13e3",
+    "quote_token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "quote_amount": 0.041357,
+    "token_amount": 133063745712521088
+   },
+   {
+    "dex": "uniswap-v3",
+    "fee": 3000,
+    "usd": 0.000216,
+    "quote": "USDT",
+    "address": "0xc9869eb8109b1054e1371f409c9de8fd788ff68b",
+    "quote_token": "0xdac17f958d2ee523a2206206994597c13d831ec7",
+    "quote_amount": 0.000216,
+    "token_amount": 235
+   },
+   {
+    "dex": "uniswap-v3",
+    "fee": 10000,
+    "usd": 7.539149762081564e-05,
+    "quote": "WETH",
+    "address": "0x2a30cde11bf58a8be3c5e29ccef0d84f70518737",
+    "quote_token": "0xc02aaa39b223fe8d0a0e5c4f27ead9083c756cc2",
+    "quote_amount": 3.3655333084e-08,
+    "token_amount": 67151258772692704
+   }
+  ],
+  "token": {
+   "name": "Re Protocol",
+   "symbol": "RE",
+   "decimals": 18,
+   "total_supply": 1000000000000000000000000000
+  },
+  "powers": [
+   {
+    "kind": "upgrade",
+    "where": "UUPSUpgradeable.sol:92",
+    "probed": false,
+    "function": "upgradeToAndCall(address,bytes)"
+   }
+  ],
+  "shares": {
+   "owner": 0,
+   "burned": 0,
+   "deployer": 0,
+   "in_pools": 5.0574986058732175e-06
+  },
+  "address": "0x526526528f35ac738177003b8773b402b8df8143",
+  "holders": {
+   "top": [
+    {
+     "label": "contract",
+     "share": 0.3404,
+     "address": "0xa600ec7db69dfcd21f19face5b209a55eab7a7c0",
+     "balance": 340400000000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.2,
+     "address": "0xec7086fe21aa4e4ea00647866b407eccb9142c57",
+     "balance": 200000000000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.165292885,
+     "address": "0x138561a6d13f3dbcae194e363fa07ee0d94dc368",
+     "balance": 165292885000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.134707115,
+     "address": "0xbc0226cc96997d603afba18ed8453491ad3cbbff",
+     "balance": 134707115000000000000000000
+    },
+    {
+     "label": "contract",
+     "share": 0.05772571682170874,
+     "address": "0xebe7843c81cc3c5b2fc526f688d8f58e99be0276",
+     "balance": 57725716821708739000000000
+    },
+    {
+     "label": "contract",
+     "share": 0.0265,
+     "address": "0x8879c8218f3b1169650f9bf71419a9cacd743bb8",
+     "balance": 26500000000000000000000000
+    },
+    {
+     "label": "contract",
+     "share": 0.025184186,
+     "address": "0xbca1b18a64d701ee277b94b378efe76f766a04c5",
+     "balance": 25184186000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.011167599087784997,
+     "address": "0x58476be660ce5ffa9c1e09b773727e0aa349a496",
+     "balance": 11167599087784996368964253
+    },
+    {
+     "label": "wallet",
+     "share": 0.007431048,
+     "address": "0xf977814e90da44bfa03b6295a0616a897441acec",
+     "balance": 7431048000000000000000000
+    },
+    {
+     "label": "wallet",
+     "share": 0.003621588724525094,
+     "address": "0x5227f603c1ee34ce3c06efe6477003bdfccb2f8c",
+     "balance": 3621588724525093768186479
+    }
+   ],
+   "count": 10039,
+   "source": "blockscout",
+   "top_share": 0.3404,
+   "top10_share": 0.9720301386340189
+  },
+  "contract": {
+   "proxy": {
+    "kind": "EIP-1967",
+    "implementation": "0x4d24b40e5b1103b3ce071192fce91ef39abc0273"
+   },
+   "creation": {
+    "Tx": "0x3e73f8098ea6e1162e09b789c53adf7f56722b154eaa5e6317710e916c7efa87",
+    "Block": 25095071,
+    "Factory": "0xc2f7c5fda6c25ec6e9a2c5eaa7cb66b90ca4d6ed",
+    "Deployer": "0x6c15b25e9750dccb698c1a4023f34015bfe57649"
+   },
+   "verified": true,
+   "code_size": 141,
+   "created_at": "2026-05-14T18:08:47Z",
+   "source_name": "ReProtocolToken",
+   "verified_by": "sourcify",
+   "delegatecall": true,
+   "owner_status": "none",
+   "selfdestruct": false
+  },
+  "deployer": {
+   "nonce": 3555,
+   "pulled": 0,
+   "tokens": [
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "RE",
+     "address": "0xb533d33b53227950951e5c9df89d2dc2a9fe1d71"
+    },
+    {
+     "pool": "none",
+     "weth": 0,
+     "symbol": "",
+     "address": "0x4d24b40e5b1103b3ce071192fce91ef39abc0273"
+    }
+   ],
+   "address": "0x6c15b25e9750dccb698c1a4023f34015bfe57649",
+   "scanned": 1000,
+   "balance_eth": 0.000414217627471669
+  },
+  "settings": null,
+  "liquidity": {
+   "dex": "uniswap-v3",
+   "pool": "0xdd7cde74d24d5e85cdbfef3b5e2f198ac59a89bb",
+   "pulled": false,
+   "created_at": "2026-10-31T05:39:59Z",
+   "created_block": 26310712
+  },
+  "block_time": "2026-10-31T05:54:47Z",
+  "checked_at": "2026-10-31T05:54:50.183138569Z",
+  "elapsed_ns": 5526112663,
+  "timings_ms": {
+   "block": 119,
+   "pools": 67,
+   "probe": 0,
+   "basics": 34,
+   "shares": 32,
+   "source": 175,
+   "holders": 1597,
+   "contract": 406,
+   "creation": 3066,
+   "deployer": 1059,
+   "liquidity": 2049
+  }
+ },
+ "symbol": "RE",
+ "address": "0x526526528f35ac738177003b8773b402b8df8143",
+ "verdict": {
+  "level": "high-risk",
+  "reasons": [
+   {
+    "text": "The token is an upgradeable proxy (EIP-1967): whoever controls upgrades can replace its code at any time.",
+    "level": "high-risk"
+   },
+   {
+    "text": "Only $2.8k of liquidity in all pools: a few sales move the price a lot.",
+    "level": "caution"
+   },
+   {
+    "text": "The main pool is 14 minutes old.",
+    "level": "caution"
+   },
+   {
+    "text": "One wallet holds 34% of the supply and could sell it at once.",
+    "level": "caution"
+   },
+   {
+    "text": "Some decisive checks did not finish (LP lock), so this is not a clean bill of health.",
+    "level": "caution"
+   },
+   {
+    "text": "A test buy, transfer and sale on a fork of block 26310786 all worked, with no tax.",
+    "level": "clear"
+   }
+  ],
+  "complete": false,
+  "headline": "High risk: see the reasons below",
+  "not_checked": [
+   "deployer history: this token was created through contract 0xc2f7C5fDa6C25ec6E9A2C5Eaa7CB66b90ca4d6ed, so only the deployer's direct deployments are listed",
+   "deployer history: only the last 1000 of 3555 transactions were checked",
+   "LP lock: the main pool is Uniswap v3, whose positions are NFTs; burn and lock state is not checked"
+  ]
+ },
+ "checked_at": "2026-10-31T05:54:50.183138569Z",
+ "elapsed_ns": 5526184829
+}
