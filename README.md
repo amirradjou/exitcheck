@@ -224,7 +224,9 @@ WebSocket newHeads ─▶ watcher ──(launches, keyed by token)──▶ Kafk
   Kafka moves a stopped worker's partitions to the rest. Each check runs the bot's own rules through the same Redis
   cache, so a token someone asks the bot about right after launch is answered from it.
 - **Alerts** go to the Telegram channel in `TELEGRAM_ALERTS_CHAT` (the bot must be an admin there): every launch
-  judged high risk or scam, once per token.
+  judged high risk or scam, once per token. A launch more than 30 minutes old is stored but not posted: after an outage
+  the watcher reads every block it missed, and a channel should not get a day of old launches at once.
+- **A reboot brings it all back.** Every service restarts on its own, and the watcher resumes from its saved cursor.
 
 Limits:
 - Uniswap v4 pools are not watched.

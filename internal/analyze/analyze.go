@@ -46,12 +46,16 @@ type Analyzer struct {
 	Attempts int
 	// Retry is the wait between attempts.
 	Retry time.Duration
+	// MaxAlertAge is how old a launch may be for its alert to go out. After an outage the watcher reads the blocks it
+	// missed, so nothing is lost, but a channel should not get a day of old launches at once: half of them were pulled
+	// long ago. They are still checked and stored.
+	MaxAlertAge time.Duration
 }
 
 // New returns an analyzer running at most concurrency checks at once (each one forks the chain with Anvil).
 func New(s Store, check bot.Checker, c *cache.Cache, alert Alerter, concurrency int, log *slog.Logger) *Analyzer {
 	return &Analyzer{store: s, check: check, cache: c, alert: alert, log: log,
-		slots: make(chan struct{}, max(concurrency, 1)), Attempts: 3, Retry: 5 * time.Second}
+		slots: make(chan struct{}, max(concurrency, 1)), Attempts: 3, Retry: 5 * time.Second, MaxAlertAge: 30 * time.Minute}
 }
 
 // Handle processes one delivery of a launch. It returns an error only when the store cannot be reached: the stream
@@ -138,7 +142,12 @@ func (a *Analyzer) raise(ctx context.Context, l launch.Launch, level verdict.Lev
 	if !claimed {
 		return nil
 	}
-	if a.alert != nil {
+	post := a.alert != nil
+	if age := time.Since(l.FundedAt); post && age > a.MaxAlertAge {
+		post = false
+		a.log.Warn("launch too old to alert about; stored only", "id", l.ID(), "age_s", age.Seconds())
+	}
+	if post {
 		msg := fmt.Sprintf("🚨 New launch on %s (%s pool, liquidity at block %d, %s UTC)\n\n%s",
 			l.Chain, l.DEX, l.FundedBlock, l.FundedAt.UTC().Format("15:04:05"), text)
 		if err := a.alert(ctx, msg); err != nil {
@@ -150,8 +159,8 @@ func (a *Analyzer) raise(ctx context.Context, l launch.Launch, level verdict.Lev
 			return fmt.Errorf("posting the alert: %w", err)
 		}
 	}
-	a.log.Info("alert", "id", l.ID(), "token", l.Token, "level", level, "posted", a.alert != nil)
-	return a.store.AlertSent(ctx, l.Chain, l.Token, a.alert != nil)
+	a.log.Info("alert", "id", l.ID(), "token", l.Token, "level", level, "posted", post)
+	return a.store.AlertSent(ctx, l.Chain, l.Token, post)
 }
 
 func sleep(ctx context.Context, d time.Duration) {

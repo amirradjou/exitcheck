@@ -211,3 +211,26 @@ func TestAlertIsRetriedUntilPostedOnce(t *testing.T) {
 		t.Errorf("%d posts, %d checks", len(h.posts), h.checks)
 	}
 }
+
+func TestALaunchReadAfterAnOutageIsStoredButNotPosted(t *testing.T) {
+	h := newHarness(t, verdict.Scam)
+	ctx := context.Background()
+	old := lnch(1, 1)
+	old.FundedAt = time.Now().Add(-2 * time.Hour)
+	if err := h.a.Handle(ctx, old); err != nil {
+		t.Fatal(err)
+	}
+	if r := h.store.launches[old.ID()]; r == nil || r.Level != "scam" {
+		t.Fatalf("the old launch should still be stored: %+v", r)
+	}
+	if len(h.posts) != 0 {
+		t.Errorf("posted an alert about a two-hour-old launch: %q", h.posts)
+	}
+	fresh := lnch(2, 2)
+	if err := h.a.Handle(ctx, fresh); err != nil {
+		t.Fatal(err)
+	}
+	if len(h.posts) != 1 {
+		t.Errorf("a fresh launch after the outage should post: %q", h.posts)
+	}
+}
