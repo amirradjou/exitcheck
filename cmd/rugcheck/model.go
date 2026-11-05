@@ -29,8 +29,9 @@ func runLabel(ctx context.Context, args []string) error {
 	fs := flag.NewFlagSet("label", flag.ContinueOnError)
 	horizon := fs.Duration("horizon", outcome.Horizon, "how long after its first liquidity a launch is watched for a pull")
 	limit := fs.Int("limit", 0, "label at most this many launches per chain (0: all)")
+	checked := fs.Bool("checked", false, "only launches with a report, the ones the dataset can use")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck label [-horizon 24h] [-limit N]   (DATABASE_URL)")
+		fmt.Fprintln(fs.Output(), "usage: rugcheck label [-horizon 24h] [-checked] [-limit N]   (DATABASE_URL)")
 		fs.PrintDefaults()
 	}
 	if err := parse(fs, args); err != nil {
@@ -46,7 +47,7 @@ func runLabel(ctx context.Context, args []string) error {
 	}
 	defer st.Close()
 	for _, net := range chain.Networks() {
-		launches, err := st.Unlabelled(ctx, net.Name, time.Now().Add(-*horizon), *limit)
+		launches, err := st.Unlabelled(ctx, net.Name, time.Now().Add(-*horizon), *checked, *limit)
 		if err != nil {
 			return err
 		}

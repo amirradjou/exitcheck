@@ -56,6 +56,15 @@ func FundedPools(ctx context.Context, c *chain.Client, from, to uint64) ([]Funde
 	return out, nil
 }
 
+// Tradeable says whether a pool held, at block, what launch.Tradeable asks for.
+func Tradeable(ctx context.Context, c *chain.Client, p launch.Pool, block uint64) (bool, error) {
+	ok, err := tradeable(ctx, c, []Funded{{Pool: p}}, block)
+	if err != nil {
+		return false, err
+	}
+	return ok[0], nil
+}
+
 // tradeable reads, in one archive Multicall3 at block, whether each pool held what launch.Tradeable asks for.
 func tradeable(ctx context.Context, c *chain.Client, pools []Funded, block uint64) ([]bool, error) {
 	calls := make([]chain.Call, 0, 2*len(pools))
