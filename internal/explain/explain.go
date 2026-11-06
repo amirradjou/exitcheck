@@ -17,9 +17,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/check"
-	"github.com/amirradjou/rugcheck/internal/explorer"
-	"github.com/amirradjou/rugcheck/internal/verdict"
+	"github.com/amirradjou/exitcheck/internal/check"
+	"github.com/amirradjou/exitcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/verdict"
 )
 
 // Kinds of evidence.

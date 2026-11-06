@@ -11,11 +11,11 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 )
 
-// Live tests hit the default public RPCs; run them with RUGCHECK_LIVE=1.
+// Live tests hit the default public RPCs; run them with EXITCHECK_LIVE=1.
 func liveClient(t *testing.T, net Network) *Client {
 	t.Helper()
-	if os.Getenv("RUGCHECK_LIVE") == "" {
-		t.Skip("set RUGCHECK_LIVE=1 to run tests against public RPCs")
+	if os.Getenv("EXITCHECK_LIVE") == "" {
+		t.Skip("set EXITCHECK_LIVE=1 to run tests against public RPCs")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)
 	t.Cleanup(cancel)

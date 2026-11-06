@@ -15,14 +15,14 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/check"
-	"github.com/amirradjou/rugcheck/internal/eval"
-	"github.com/amirradjou/rugcheck/internal/explain"
-	"github.com/amirradjou/rugcheck/internal/explorer"
-	"github.com/amirradjou/rugcheck/internal/facts"
-	"github.com/amirradjou/rugcheck/internal/sim"
-	"github.com/amirradjou/rugcheck/internal/verdict"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/check"
+	"github.com/amirradjou/exitcheck/internal/eval"
+	"github.com/amirradjou/exitcheck/internal/explain"
+	"github.com/amirradjou/exitcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/facts"
+	"github.com/amirradjou/exitcheck/internal/sim"
+	"github.com/amirradjou/exitcheck/internal/verdict"
 )
 
 // newExplainer returns the explainer the environment configures, or nil when no model is.
@@ -48,8 +48,8 @@ func runExplain(ctx context.Context, args []string) error {
 	review := fs.Bool("review", false, "explain the review set instead of one token, and report what survived")
 	out := fs.String("out", "", "with -review: write every sentence and what it cites to this Markdown file, for reading")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck explain [-chain ethereum|base] <token address>   (RUGCHECK_LLM_URL, RUGCHECK_LLM_MODEL)")
-		fmt.Fprintln(fs.Output(), "       rugcheck explain -review [-out review.md]")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck explain [-chain ethereum|base] <token address>   (EXITCHECK_LLM_URL, EXITCHECK_LLM_MODEL)")
+		fmt.Fprintln(fs.Output(), "       exitcheck explain -review [-out review.md]")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(interleave(args)); err != nil {
@@ -60,14 +60,14 @@ func runExplain(ctx context.Context, args []string) error {
 	}
 	e := newExplainer()
 	if e == nil {
-		return usageError{"rugcheck explain: set RUGCHECK_LLM_URL and RUGCHECK_LLM_MODEL (see .env.example)"}
+		return usageError{"exitcheck explain: set EXITCHECK_LLM_URL and EXITCHECK_LLM_MODEL (see .env.example)"}
 	}
 	if *review {
 		return runReview(ctx, e, *out)
 	}
 	if fs.NArg() != 1 || !common.IsHexAddress(fs.Arg(0)) {
 		fs.Usage()
-		return usageError{"rugcheck explain: need one token address"}
+		return usageError{"exitcheck explain: need one token address"}
 	}
 	token := common.HexToAddress(fs.Arg(0))
 	cs, err := dialAll(ctx)

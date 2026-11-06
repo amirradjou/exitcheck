@@ -9,7 +9,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/chain"
 )
 
 func load(t *testing.T, name string) types.Log {

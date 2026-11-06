@@ -2342,7 +2342,7 @@ wheels = [
 ]
 
 [[package]]
-name = "rugcheck-model"
+name = "exitcheck-model"
 version = "0.1.0"
 source = { virtual = "." }
 dependencies = [

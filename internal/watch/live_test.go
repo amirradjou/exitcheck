@@ -8,15 +8,15 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/launch"
 )
 
 // Live: the RPC source against Ethereum's history and head, through the default public RPCs; run with
-// RUGCHECK_LIVE=1.
+// EXITCHECK_LIVE=1.
 func TestLiveRPCSource(t *testing.T) {
-	if os.Getenv("RUGCHECK_LIVE") == "" {
-		t.Skip("set RUGCHECK_LIVE=1 to use the public RPCs")
+	if os.Getenv("EXITCHECK_LIVE") == "" {
+		t.Skip("set EXITCHECK_LIVE=1 to use the public RPCs")
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Minute)
 	defer cancel()

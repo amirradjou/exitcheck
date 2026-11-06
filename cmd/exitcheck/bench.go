@@ -12,12 +12,12 @@ import (
 	"sync"
 	"time"
 
-	"github.com/amirradjou/rugcheck/internal/bot"
-	"github.com/amirradjou/rugcheck/internal/cache"
-	"github.com/amirradjou/rugcheck/internal/eval"
-	"github.com/amirradjou/rugcheck/internal/explorer"
-	"github.com/amirradjou/rugcheck/internal/telegram"
-	"github.com/amirradjou/rugcheck/internal/verdict"
+	"github.com/amirradjou/exitcheck/internal/bot"
+	"github.com/amirradjou/exitcheck/internal/cache"
+	"github.com/amirradjou/exitcheck/internal/eval"
+	"github.com/amirradjou/exitcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/telegram"
+	"github.com/amirradjou/exitcheck/internal/verdict"
 )
 
 // silentTG stands in for Telegram: bench measures the bot's own work, from a message arriving to the answer
@@ -55,7 +55,7 @@ func runBench(ctx context.Context, args []string) error {
 	markdown := fs.Bool("markdown", false, "print a Markdown table of the results")
 	pause := fs.Duration("pause", 2*time.Second, "wait between tokens, to stay under free RPC rate limits")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck bench [-cache redis://…] [-markdown] <cases.json>")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck bench [-cache redis://…] [-markdown] <cases.json>")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(interleave(args)); err != nil {
@@ -66,10 +66,10 @@ func runBench(ctx context.Context, args []string) error {
 	}
 	if fs.NArg() != 1 {
 		fs.Usage()
-		return usageError{"rugcheck bench: need one cases file"}
+		return usageError{"exitcheck bench: need one cases file"}
 	}
 	if *redisURL == "" {
-		return usageError{"rugcheck bench: set -cache or REDIS_URL (docker compose up -d redis)"}
+		return usageError{"exitcheck bench: set -cache or REDIS_URL (docker compose up -d redis)"}
 	}
 	cases, err := eval.Load(fs.Arg(0))
 	if err != nil {

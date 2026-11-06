@@ -14,12 +14,12 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/bot"
-	"github.com/amirradjou/rugcheck/internal/cache"
-	"github.com/amirradjou/rugcheck/internal/check"
-	"github.com/amirradjou/rugcheck/internal/launch"
-	"github.com/amirradjou/rugcheck/internal/store"
-	"github.com/amirradjou/rugcheck/internal/verdict"
+	"github.com/amirradjou/exitcheck/internal/bot"
+	"github.com/amirradjou/exitcheck/internal/cache"
+	"github.com/amirradjou/exitcheck/internal/check"
+	"github.com/amirradjou/exitcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/store"
+	"github.com/amirradjou/exitcheck/internal/verdict"
 )
 
 // Store is the part of the store the analyzer uses.

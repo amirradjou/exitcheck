@@ -30,13 +30,13 @@ jobs:
       postgres:
         image: postgres:17.6-alpine
         env:
-          POSTGRES_USER: rugcheck
-          POSTGRES_PASSWORD: rugcheck
-          POSTGRES_DB: rugcheck
+          POSTGRES_USER: exitcheck
+          POSTGRES_PASSWORD: exitcheck
+          POSTGRES_DB: exitcheck
         ports:
           - 5434:5432
         options: >-
-          --health-cmd "pg_isready -U rugcheck" --health-interval 5s --health-timeout 2s --health-retries 10
+          --health-cmd "pg_isready -U exitcheck" --health-interval 5s --health-timeout 2s --health-retries 10
       kafka:
         image: apache/kafka:3.9.1
         env:
@@ -67,11 +67,11 @@ jobs:
           go-version-file: go.mod
       - name: Integration tests
         env:
-          RUGCHECK_INTEGRATION: "1"
+          EXITCHECK_INTEGRATION: "1"
         run: go test -race -count=1 ./internal/store/ ./internal/stream/
 
   # The classifier's training code (ml/): lint and unit tests. Training itself needs the dataset, which is built
-  # locally from the live watch's Postgres by `rugcheck dataset`.
+  # locally from the live watch's Postgres by `exitcheck dataset`.
   model:
     runs-on: ubuntu-latest
     defaults:

@@ -7,7 +7,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/jackc/pgx/v5"
 
-	"github.com/amirradjou/rugcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/launch"
 )
 
 // Backfill is a launch to check again at a past block.

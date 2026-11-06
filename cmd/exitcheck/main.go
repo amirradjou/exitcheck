@@ -1,4 +1,4 @@
-// Command rugcheck runs the rugcheck watcher, analyzer and Telegram bot (see README.md).
+// Command exitcheck runs the exitcheck watcher, analyzer and Telegram bot (see README.md).
 package main
 
 import (
@@ -15,15 +15,15 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/buildinfo"
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/eval"
-	"github.com/amirradjou/rugcheck/internal/explorer"
-	"github.com/amirradjou/rugcheck/internal/facts"
-	"github.com/amirradjou/rugcheck/internal/sim"
+	"github.com/amirradjou/exitcheck/internal/buildinfo"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/eval"
+	"github.com/amirradjou/exitcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/facts"
+	"github.com/amirradjou/exitcheck/internal/sim"
 )
 
-const usage = `usage: rugcheck <command> [flags]
+const usage = `usage: exitcheck <command> [flags]
 
 commands:
   facts <address>   contract, owner powers, holders and liquidity of a token
@@ -42,15 +42,15 @@ commands:
   dataset           write the labelled launches and their features as CSV, for the model
   version           print the version
 
-Run "rugcheck <command> -h" for a command's flags.
+Run "exitcheck <command> -h" for a command's flags.
 
 environment:
-  RUGCHECK_RPC_ETHEREUM, RUGCHECK_RPC_BASE   RPC endpoints (default: free public RPCs with archive state)
+  EXITCHECK_RPC_ETHEREUM, EXITCHECK_RPC_BASE   RPC endpoints (default: free public RPCs with archive state)
   ETHERSCAN_API_KEY                          optional; lets "verified source" answer no instead of unknown
   TELEGRAM_BOT_TOKEN                         the bot's token from @BotFather (bot only)
   REDIS_URL                                  answer cache, e.g. redis://localhost:6379/0 (bot, check)
-  RUGCHECK_LLM_URL, RUGCHECK_LLM_MODEL       optional; an OpenAI-compatible model for the plain-words "why" (bot, explain)
-  RUGCHECK_LLM_KEY                           its key, if it needs one
+  EXITCHECK_LLM_URL, EXITCHECK_LLM_MODEL       optional; an OpenAI-compatible model for the plain-words "why" (bot, explain)
+  EXITCHECK_LLM_KEY                           its key, if it needs one
 `
 
 func main() {
@@ -112,7 +112,7 @@ func main() {
 			fmt.Fprintln(os.Stderr, err)
 			os.Exit(2)
 		}
-		fmt.Fprintln(os.Stderr, "rugcheck:", err)
+		fmt.Fprintln(os.Stderr, "exitcheck:", err)
 		os.Exit(1)
 	}
 }
@@ -127,7 +127,7 @@ func runFacts(ctx context.Context, args []string) error {
 	asJSON := fs.Bool("json", false, "print JSON instead of the text report")
 	timeout := fs.Duration("timeout", 3*time.Minute, "give up after this long")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck facts [-chain ethereum|base] [-json] <token address>")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck facts [-chain ethereum|base] [-json] <token address>")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(interleave(args)); err != nil {
@@ -138,7 +138,7 @@ func runFacts(ctx context.Context, args []string) error {
 	}
 	if fs.NArg() != 1 || !common.IsHexAddress(fs.Arg(0)) {
 		fs.Usage()
-		return usageError{"rugcheck facts: need one token address"}
+		return usageError{"exitcheck facts: need one token address"}
 	}
 	net, err := chain.ByName(*chainName)
 	if err != nil {
@@ -171,7 +171,7 @@ func runSim(ctx context.Context, args []string) error {
 	asJSON := fs.Bool("json", false, "print JSON instead of the text report")
 	timeout := fs.Duration("timeout", 5*time.Minute, "give up after this long")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck sim [-chain ethereum|base] [-block N] [-json] <token address>")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck sim [-chain ethereum|base] [-block N] [-json] <token address>")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(interleave(args)); err != nil {
@@ -182,7 +182,7 @@ func runSim(ctx context.Context, args []string) error {
 	}
 	if fs.NArg() != 1 || !common.IsHexAddress(fs.Arg(0)) {
 		fs.Usage()
-		return usageError{"rugcheck sim: need one token address"}
+		return usageError{"exitcheck sim: need one token address"}
 	}
 	net, err := chain.ByName(*chainName)
 	if err != nil {
@@ -213,7 +213,7 @@ func runEval(ctx context.Context, args []string) error {
 	withSim := fs.Bool("sim", true, "also run the buy-then-sell simulation where a case expects one (needs anvil)")
 	pause := fs.Duration("pause", 2*time.Second, "wait between tokens, to stay under free RPC rate limits")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck eval [-markdown] [-sim=false] <cases.json>")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck eval [-markdown] [-sim=false] <cases.json>")
 		fs.PrintDefaults()
 	}
 	if err := fs.Parse(interleave(args)); err != nil {
@@ -224,7 +224,7 @@ func runEval(ctx context.Context, args []string) error {
 	}
 	if fs.NArg() != 1 {
 		fs.Usage()
-		return usageError{"rugcheck eval: need one cases file"}
+		return usageError{"exitcheck eval: need one cases file"}
 	}
 	cases, err := eval.Load(fs.Arg(0))
 	if err != nil {

@@ -11,14 +11,14 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/eval"
-	"github.com/amirradjou/rugcheck/internal/facts"
-	"github.com/amirradjou/rugcheck/internal/sim"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/eval"
+	"github.com/amirradjou/exitcheck/internal/facts"
+	"github.com/amirradjou/exitcheck/internal/sim"
 )
 
 // TestLabelledSet judges the 20 labelled tokens from recorded facts and simulations (testdata/<name>.*.json,
-// written by `rugcheck facts -json` and `rugcheck sim -json` on 2026-10-29): every scam must come out at least
+// written by `exitcheck facts -json` and `exitcheck sim -json` on 2026-10-29): every scam must come out at least
 // high risk, and no legitimate token worse than caution.
 func TestLabelledSet(t *testing.T) {
 	cases, err := eval.Load("../../testdata/tokens.json")

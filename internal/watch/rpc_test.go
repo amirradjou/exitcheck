@@ -11,7 +11,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common/hexutil"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/chain"
 )
 
 // logServer answers eth_getLogs like a node whose head is at head: as publicnode does past it (an error), or as

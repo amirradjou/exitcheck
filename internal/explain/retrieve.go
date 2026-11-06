@@ -9,8 +9,8 @@ import (
 	"strings"
 	"unicode"
 
-	"github.com/amirradjou/rugcheck/internal/explorer"
-	"github.com/amirradjou/rugcheck/internal/facts"
+	"github.com/amirradjou/exitcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/facts"
 )
 
 // chunk is one retrievable passage.

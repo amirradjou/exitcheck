@@ -15,7 +15,7 @@ import (
 	"github.com/jackc/pgx/v5"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/amirradjou/rugcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/launch"
 )
 
 //go:embed schema.sql

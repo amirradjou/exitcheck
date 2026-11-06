@@ -17,7 +17,7 @@ import (
 )
 
 // prefix namespaces every key; bump the version when the stored shape changes.
-const prefix = "rugcheck:v1:"
+const prefix = "exitcheck:v1:"
 
 // Timeout bounds each Redis operation, and Cooldown is how long Redis is skipped after one fails. A local Redis
 // answers in well under a millisecond; one that takes longer than Timeout is treated as down.

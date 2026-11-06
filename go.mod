@@ -1,4 +1,4 @@
-module github.com/amirradjou/rugcheck
+module github.com/amirradjou/exitcheck
 
 go 1.26.8
 

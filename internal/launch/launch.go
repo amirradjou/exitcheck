@@ -1,6 +1,6 @@
 // Package launch describes token launches, the events the live watch streams: a pool created against a quote token
 // (WETH, USDC, USDT) that has received its first liquidity. It decodes the pool-creation logs of the DEX factories
-// rugcheck knows.
+// exitcheck knows.
 package launch
 
 import (
@@ -11,7 +11,7 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/chain"
 )
 
 // Topics of the pool-creation events.

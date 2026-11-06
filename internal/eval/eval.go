@@ -1,5 +1,5 @@
-// Package eval checks rugcheck against hand-labelled tokens. Each case states why the token is labelled scam or
-// legitimate and lists facts established independently of rugcheck (block explorer records, cast calls against
+// Package eval checks exitcheck against hand-labelled tokens. Each case states why the token is labelled scam or
+// legitimate and lists facts established independently of exitcheck (block explorer records, cast calls against
 // another RPC, the verified source); a run passes when every stated fact comes out the same, and when the
 // buy-then-sell simulation flags exactly the cases expected to be flagged.
 package eval
@@ -14,9 +14,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/facts"
-	"github.com/amirradjou/rugcheck/internal/sim"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/facts"
+	"github.com/amirradjou/exitcheck/internal/sim"
 )
 
 // Case is one labelled token.
@@ -41,7 +41,7 @@ type SimExpect struct {
 
 // Expect lists facts to check; a field left out is not checked.
 type Expect struct {
-	// Verified true requires verified source. False requires that rugcheck does not claim verified source (it may
+	// Verified true requires verified source. False requires that exitcheck does not claim verified source (it may
 	// say unknown: without an Etherscan key, "not on Sourcify or Blockscout" is not a no).
 	Verified    *bool           `json:"verified,omitempty"`
 	Proxy       *bool           `json:"proxy,omitempty"`

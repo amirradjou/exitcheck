@@ -19,9 +19,9 @@ import (
 	"github.com/ethereum/go-ethereum/core/types"
 	"github.com/ethereum/go-ethereum/rpc"
 
-	"github.com/amirradjou/rugcheck/internal/anvil"
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/facts"
+	"github.com/amirradjou/exitcheck/internal/anvil"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/facts"
 )
 
 // Verdicts. The first four are flags: a buyer would lose money or be stuck.

@@ -13,20 +13,20 @@ import (
 	"sync"
 	"time"
 
-	"github.com/amirradjou/rugcheck/internal/analyze"
-	"github.com/amirradjou/rugcheck/internal/backfill"
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/explorer"
-	"github.com/amirradjou/rugcheck/internal/store"
-	"github.com/amirradjou/rugcheck/internal/stream"
-	"github.com/amirradjou/rugcheck/internal/telegram"
-	"github.com/amirradjou/rugcheck/internal/watch"
+	"github.com/amirradjou/exitcheck/internal/analyze"
+	"github.com/amirradjou/exitcheck/internal/backfill"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/store"
+	"github.com/amirradjou/exitcheck/internal/stream"
+	"github.com/amirradjou/exitcheck/internal/telegram"
+	"github.com/amirradjou/exitcheck/internal/watch"
 )
 
 // Defaults match compose.yaml's ports on the host; inside compose, the services get kafka:9092 and postgres:5432.
 const (
 	defaultBrokers  = "localhost:9094"
-	defaultDatabase = "postgres://rugcheck:rugcheck@localhost:5434/rugcheck?sslmode=disable"
+	defaultDatabase = "postgres://exitcheck:exitcheck@localhost:5434/exitcheck?sslmode=disable"
 	partitions      = 6
 )
 
@@ -51,7 +51,7 @@ func runWatch(ctx context.Context, args []string) error {
 	fs := flag.NewFlagSet("watch", flag.ContinueOnError)
 	chains := fs.String("chains", "ethereum,base", "comma-separated chains to watch")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck watch [-chains ethereum,base]   (KAFKA_BROKERS, DATABASE_URL)")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck watch [-chains ethereum,base]   (KAFKA_BROKERS, DATABASE_URL)")
 		fs.PrintDefaults()
 	}
 	if err := parse(fs, args); err != nil {
@@ -110,7 +110,7 @@ func runAnalyze(ctx context.Context, args []string) error {
 	concurrency := fs.Int("concurrency", 1, "checks running at once in this worker (each runs an Anvil fork)")
 	ttl := fs.Duration("ttl", 10*time.Minute, "how long a cached answer stays fresh")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck analyze [-concurrency N]   (KAFKA_BROKERS, DATABASE_URL, REDIS_URL;")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck analyze [-concurrency N]   (KAFKA_BROKERS, DATABASE_URL, REDIS_URL;")
 		fmt.Fprintln(fs.Output(), "       TELEGRAM_BOT_TOKEN and TELEGRAM_ALERTS_CHAT to post alerts)")
 		fs.PrintDefaults()
 	}
@@ -169,7 +169,7 @@ func runReport(ctx context.Context, args []string) error {
 	since := fs.Duration("since", 24*time.Hour, "window to report on, ending now")
 	markdown := fs.Bool("markdown", false, "print a Markdown table")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck report [-since 24h] [-markdown]   (DATABASE_URL)")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck report [-since 24h] [-markdown]   (DATABASE_URL)")
 		fs.PrintDefaults()
 	}
 	if err := parse(fs, args); err != nil {
@@ -247,7 +247,7 @@ func runAudit(ctx context.Context, args []string) error {
 	chains := fs.String("chains", "ethereum,base", "comma-separated chains")
 	markdown := fs.Bool("markdown", false, "print a Markdown table")
 	fs.Usage = func() {
-		fmt.Fprintln(fs.Output(), "usage: rugcheck audit [-since 24h] [-until 2026-11-01T17:13:00Z] [-markdown]   (DATABASE_URL)")
+		fmt.Fprintln(fs.Output(), "usage: exitcheck audit [-since 24h] [-until 2026-11-01T17:13:00Z] [-markdown]   (DATABASE_URL)")
 		fs.PrintDefaults()
 	}
 	if err := parse(fs, args); err != nil {

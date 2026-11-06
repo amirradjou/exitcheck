@@ -12,9 +12,9 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/facts"
-	"github.com/amirradjou/rugcheck/internal/sim"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/facts"
+	"github.com/amirradjou/exitcheck/internal/sim"
 )
 
 // Level is how dangerous a token looks, from Clear to Scam.

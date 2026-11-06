@@ -16,7 +16,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/launch"
 )
 
 // Source is what the watcher needs from the chain.

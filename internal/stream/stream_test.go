@@ -12,7 +12,7 @@ import (
 
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/launch"
 )
 
 func TestBrokers(t *testing.T) {
@@ -22,11 +22,11 @@ func TestBrokers(t *testing.T) {
 	}
 }
 
-// Integration: needs Kafka (docker compose up -d kafka); run with RUGCHECK_INTEGRATION=1. KAFKA_BROKERS overrides
+// Integration: needs Kafka (docker compose up -d kafka); run with EXITCHECK_INTEGRATION=1. KAFKA_BROKERS overrides
 // the compose default. Each run uses its own topic and group.
 func TestPublishConsumeCommit(t *testing.T) {
-	if os.Getenv("RUGCHECK_INTEGRATION") == "" {
-		t.Skip("set RUGCHECK_INTEGRATION=1 (with Kafka from compose.yaml)")
+	if os.Getenv("EXITCHECK_INTEGRATION") == "" {
+		t.Skip("set EXITCHECK_INTEGRATION=1 (with Kafka from compose.yaml)")
 	}
 	brokers := Brokers(os.Getenv("KAFKA_BROKERS"))
 	if len(brokers) == 0 {

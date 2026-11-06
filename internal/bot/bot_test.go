@@ -13,10 +13,10 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/cache"
-	"github.com/amirradjou/rugcheck/internal/check"
-	"github.com/amirradjou/rugcheck/internal/telegram"
-	"github.com/amirradjou/rugcheck/internal/verdict"
+	"github.com/amirradjou/exitcheck/internal/cache"
+	"github.com/amirradjou/exitcheck/internal/check"
+	"github.com/amirradjou/exitcheck/internal/telegram"
+	"github.com/amirradjou/exitcheck/internal/verdict"
 )
 
 const pepe = "0x6982508145454Ce325dDbE47a25d4ec3d2311933"

@@ -13,11 +13,11 @@ import (
 	"github.com/alicebob/miniredis/v2"
 	"github.com/ethereum/go-ethereum/common"
 
-	"github.com/amirradjou/rugcheck/internal/cache"
-	"github.com/amirradjou/rugcheck/internal/check"
-	"github.com/amirradjou/rugcheck/internal/launch"
-	"github.com/amirradjou/rugcheck/internal/store"
-	"github.com/amirradjou/rugcheck/internal/verdict"
+	"github.com/amirradjou/exitcheck/internal/cache"
+	"github.com/amirradjou/exitcheck/internal/check"
+	"github.com/amirradjou/exitcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/store"
+	"github.com/amirradjou/exitcheck/internal/verdict"
 )
 
 // memStore mirrors the Postgres store's semantics: one row per launch, one alert per token.

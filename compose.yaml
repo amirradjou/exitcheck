@@ -1,6 +1,6 @@
-# Local services for rugcheck. `docker compose up -d` runs the whole live watch (watcher, analyzers, bot);
+# Local services for exitcheck. `docker compose up -d` runs the whole live watch (watcher, analyzers, bot);
 # `make bot` runs only the bot on the host with Redis from here.
-name: rugcheck
+name: exitcheck
 
 services:
   redis:
@@ -20,15 +20,15 @@ services:
     image: postgres:17.6-alpine
     restart: unless-stopped
     environment:
-      POSTGRES_USER: rugcheck
-      POSTGRES_PASSWORD: rugcheck
-      POSTGRES_DB: rugcheck
+      POSTGRES_USER: exitcheck
+      POSTGRES_PASSWORD: exitcheck
+      POSTGRES_DB: exitcheck
     volumes:
       - pgdata:/var/lib/postgresql/data
     ports:
       - "127.0.0.1:5434:5432"
     healthcheck:
-      test: ["CMD", "pg_isready", "-U", "rugcheck"]
+      test: ["CMD", "pg_isready", "-U", "exitcheck"]
       interval: 5s
       timeout: 2s
       retries: 10
@@ -53,7 +53,7 @@ services:
       KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
       KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
       KAFKA_GROUP_INITIAL_REBALANCE_DELAY_MS: 0
-      # Topics are created by `rugcheck watch` with their partition count; a typo must not make a new one.
+      # Topics are created by `exitcheck watch` with their partition count; a typo must not make a new one.
       KAFKA_AUTO_CREATE_TOPICS_ENABLE: "false"
     volumes:
       - kafkadata:/var/lib/kafka/data
@@ -69,11 +69,11 @@ services:
   # `docker compose up -d --scale analyzer=N`, up to the topic's 6 partitions), and the bot.
   watcher:
     build: .
-    image: rugcheck:local
+    image: exitcheck:local
     command: ["watch"]
     environment: &app
       KAFKA_BROKERS: kafka:9092
-      DATABASE_URL: postgres://rugcheck:rugcheck@postgres:5432/rugcheck?sslmode=disable
+      DATABASE_URL: postgres://exitcheck:exitcheck@postgres:5432/exitcheck?sslmode=disable
       REDIS_URL: redis://redis:6379/0
     env_file:
       - path: .env
@@ -88,7 +88,7 @@ services:
     restart: unless-stopped
 
   analyzer:
-    image: rugcheck:local
+    image: exitcheck:local
     command: ["analyze", "-concurrency", "1"]
     environment: *app
     env_file:
@@ -100,7 +100,7 @@ services:
     restart: unless-stopped
 
   bot:
-    image: rugcheck:local
+    image: exitcheck:local
     command: ["bot"]
     environment: *app
     env_file:

@@ -16,8 +16,8 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/crypto"
 
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/evm"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/evm"
 )
 
 // Kinds of privileged power a token can give its owner.
@@ -231,8 +231,8 @@ func baseName(path string) string {
 
 // Probe accounts: arbitrary addresses nobody controls, derived from fixed strings so runs are repeatable.
 var (
-	probeCaller = common.BytesToAddress(crypto.Keccak256([]byte("rugcheck probe caller"))[12:])
-	probeTarget = common.BytesToAddress(crypto.Keccak256([]byte("rugcheck probe target"))[12:])
+	probeCaller = common.BytesToAddress(crypto.Keccak256([]byte("exitcheck probe caller"))[12:])
+	probeTarget = common.BytesToAddress(crypto.Keccak256([]byte("exitcheck probe target"))[12:])
 )
 
 type caller struct {

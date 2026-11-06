@@ -1,5 +1,5 @@
 // Package anvil runs a throwaway local fork of a live chain. Simulated trades happen there and nowhere else:
-// nothing rugcheck does on a fork is ever sent to the real network.
+// nothing exitcheck does on a fork is ever sent to the real network.
 package anvil
 
 import (

@@ -1,13 +1,13 @@
-"""Train and evaluate rugcheck's launch classifier (M4).
+"""Train and evaluate exitcheck's launch classifier (M4).
 
-Reads the CSV that `rugcheck dataset` writes, splits it by time (train on the older launches, choose the alert
+Reads the CSV that `exitcheck dataset` writes, splits it by time (train on the older launches, choose the alert
 threshold on the next ones, test on the newest) and compares the model with the fixed rules on the same test
 launches. The target is whether the launch's liquidity was pulled within a day. Each run is tracked in MLflow
 (local: ml/mlflow.db and ml/mlruns).
 
 usage: uv run train.py [data/dataset.csv]
 
-Without a path it reads data/dataset.csv if `rugcheck dataset` wrote one, or else the published dataset.csv.gz, which
+Without a path it reads data/dataset.csv if `exitcheck dataset` wrote one, or else the published dataset.csv.gz, which
 reproduces the numbers in the README.
 """
 
@@ -327,7 +327,7 @@ def main(path: Path) -> None:
         )
     )
     mlflow.set_tracking_uri(f"sqlite:///{HERE / 'mlflow.db'}")
-    mlflow.set_experiment("rugcheck-m4")
+    mlflow.set_experiment("exitcheck-m4")
     with mlflow.start_run():
         mlflow.log_params(
             {

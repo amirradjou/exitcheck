@@ -15,21 +15,21 @@ import (
 	"github.com/ethereum/go-ethereum/common"
 	"github.com/ethereum/go-ethereum/core/types"
 
-	"github.com/amirradjou/rugcheck/internal/anvil"
-	"github.com/amirradjou/rugcheck/internal/chain"
-	"github.com/amirradjou/rugcheck/internal/check"
-	"github.com/amirradjou/rugcheck/internal/explorer"
-	"github.com/amirradjou/rugcheck/internal/launch"
-	"github.com/amirradjou/rugcheck/internal/store"
+	"github.com/amirradjou/exitcheck/internal/anvil"
+	"github.com/amirradjou/exitcheck/internal/chain"
+	"github.com/amirradjou/exitcheck/internal/check"
+	"github.com/amirradjou/exitcheck/internal/explorer"
+	"github.com/amirradjou/exitcheck/internal/launch"
+	"github.com/amirradjou/exitcheck/internal/store"
 )
 
 // CheckAt checks token as it stood at block, on an Anvil fork of the archive RPC upstream (paced to computeUnits per
 // second; 0 for none). The facts read the fork as the latest state, and the simulation forks the fork, so neither
 // sees anything after block.
 func CheckAt(ctx context.Context, net chain.Network, upstream string, computeUnits int, token common.Address, block uint64) (*check.Report, error) {
-	if os.Getenv("RUGCHECK_RPC_"+strings.ToUpper(net.Name)) != "" || os.Getenv("RUGCHECK_ARCHIVE_RPC_"+strings.ToUpper(net.Name)) != "" {
+	if os.Getenv("EXITCHECK_RPC_"+strings.ToUpper(net.Name)) != "" || os.Getenv("EXITCHECK_ARCHIVE_RPC_"+strings.ToUpper(net.Name)) != "" {
 		// The simulation forks the network's endpoints, which an override would point away from the fork.
-		return nil, fmt.Errorf("unset RUGCHECK_RPC_%[1]s and RUGCHECK_ARCHIVE_RPC_%[1]s for a backfill", strings.ToUpper(net.Name))
+		return nil, fmt.Errorf("unset EXITCHECK_RPC_%[1]s and EXITCHECK_ARCHIVE_RPC_%[1]s for a backfill", strings.ToUpper(net.Name))
 	}
 	node, err := anvil.Start(ctx, anvil.Fork{URL: upstream, Block: block, ComputeUnits: computeUnits})
 	if err != nil {
